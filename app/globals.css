@@ -1,0 +1,110 @@
+@import "tailwindcss";
+
+/* ─── Design Tokens ─────────────────────────────────────────────────────────── */
+:root {
+  /* Color */
+  --bg-primary: #F5F1E8;
+  --bg-secondary: #F8F5EF;
+  --surface: #FFFFFF;
+  --surface-muted: #F0EBE0;
+  --color-primary: #F6D86B;   /* warm yellow — CTAs, active states, progress */
+  --color-secondary: #C8D4CF; /* sage — success, secondary cards, completed */
+  --text-primary: #141827;
+  --text-secondary: #5C6470;
+  --border: #141827;           /* borders are near-black, not gray */
+  --border-muted: #D8D8D8;
+  --shadow-offset: 0 6px 0 rgba(0, 0, 0, 0.9); /* hard, no blur */
+
+  /* Radius */
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
+
+  /* Space (4px base) */
+  --space-xs: 8px;
+  --space-sm: 16px;
+  --space-md: 24px;
+  --space-lg: 32px;
+  --space-xl: 48px;
+  --space-2xl: 64px;
+
+  /* shadcn/ui semantic tokens (CSS-variables mode) */
+  --background: var(--bg-primary);
+  --foreground: var(--text-primary);
+  --card: var(--surface);
+  --card-foreground: var(--text-primary);
+  --popover: var(--surface);
+  --popover-foreground: var(--text-primary);
+  --primary: var(--color-primary);
+  --primary-foreground: var(--text-primary);
+  --secondary: var(--color-secondary);
+  --secondary-foreground: var(--text-primary);
+  --muted: var(--surface-muted);
+  --muted-foreground: var(--text-secondary);
+  --accent: var(--surface-muted);
+  --accent-foreground: var(--text-primary);
+  --destructive: #E54D2E;
+  --destructive-foreground: #FFFFFF;
+  --input: var(--border);
+  --ring: var(--color-primary);
+  --radius: var(--radius-lg);
+}
+
+/* ─── Tailwind v4 Theme Extension ───────────────────────────────────────────── */
+@theme inline {
+  /* Font */
+  --font-sans: var(--font-plus-jakarta-sans), 'Inter', sans-serif;
+
+  /* Map design tokens → Tailwind color utilities */
+  --color-bg-primary: var(--bg-primary);
+  --color-bg-secondary: var(--bg-secondary);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-primary: var(--color-primary);
+  --color-secondary: var(--color-secondary);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-border: var(--border);
+  --color-border-muted: var(--border-muted);
+
+  /* Background / foreground (shadcn compat) */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-input: var(--surface);
+  --color-ring: var(--ring);
+
+  /* Radius */
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+
+  /* Shadows — hard offset only, no blur */
+  --shadow-offset: var(--shadow-offset);
+}
+
+/* ─── Base Styles ────────────────────────────────────────────────────────────── */
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Hard offset shadow utility */
+.shadow-offset {
+  box-shadow: var(--shadow-offset);
+}
