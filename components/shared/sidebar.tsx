@@ -16,22 +16,31 @@ import {
   X 
 } from "lucide-react";
 import { toast } from "sonner";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 interface SidebarProps {
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
   mobileMenuOpen: boolean;
   setMobileMenuOpen: (open: boolean) => void;
 }
 
 export function Sidebar({ 
-  activeTab, 
-  setActiveTab, 
   mobileMenuOpen, 
   setMobileMenuOpen 
 }: SidebarProps) {
   const [language, setLanguage] = useState("English");
   const [showLangDropdown, setShowLangDropdown] = useState(false);
+  const pathname = usePathname();
+
+  // Resolve active tab based on current pathname
+  let activeTab = "home";
+  if (pathname.startsWith("/dashboard")) activeTab = "home";
+  else if (pathname.startsWith("/study/mock-exams")) activeTab = "assignments";
+  else if (pathname.startsWith("/study")) activeTab = "study";
+  else if (pathname.startsWith("/pdfs")) activeTab = "library";
+  else if (pathname.startsWith("/leaderboards")) activeTab = "leaderboard";
+  else if (pathname.startsWith("/analytics")) activeTab = "explore";
+  else if (pathname.startsWith("/profile")) activeTab = "profile";
 
   return (
     <aside className={`
@@ -51,7 +60,7 @@ export function Sidebar({
               <circle cx="16" cy="18" r="1.2" fill="#141827" />
               <circle cx="24" cy="18" r="1.2" fill="#141827" />
               <ellipse cx="20" cy="13" rx="5" ry="1.5" fill="#a06030" stroke="#141827" strokeWidth="1.5" />
-              <path d="M 17.5 13 L 18 10 C 18 9, 22 9, 22 10 L 22.5 13 Z" fill="#a06030" stroke="#141827" strokeWidth="1.5" />
+              <path d="M 17.5 13 L 18 10 C 18 9, 22 9, 22 10 L 22.5 13 Z" fill="#a06030" stroke="#141827" strokeWidth="1.5" strokeLinejoin="round" />
             </svg>
           </div>
           <span className="font-extrabold text-2xl tracking-tight text-text-primary">Piply</span>
@@ -65,8 +74,9 @@ export function Sidebar({
 
         {/* Navigation Items */}
         <nav className="flex flex-col gap-2">
-          <button
-            onClick={() => { setActiveTab("home"); setMobileMenuOpen(false); }}
+          <Link
+            href="/dashboard"
+            onClick={() => setMobileMenuOpen(false)}
             className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl border-2 transition-all font-bold text-sm text-left
               ${activeTab === "home" 
                 ? "bg-[#FFFDF6] text-[#FF9E2C] border-primary shadow-[0_3px_0_#141827]" 
@@ -75,10 +85,11 @@ export function Sidebar({
           >
             <Home size={18} strokeWidth={activeTab === "home" ? 2.5 : 2} />
             <span>HOME</span>
-          </button>
+          </Link>
 
-          <button
-            onClick={() => { setActiveTab("study"); setMobileMenuOpen(false); }}
+          <Link
+            href="/study"
+            onClick={() => setMobileMenuOpen(false)}
             className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl border-2 transition-all font-bold text-sm text-left
               ${activeTab === "study" 
                 ? "bg-[#FFFDF6] text-[#FF9E2C] border-primary shadow-[0_3px_0_#141827]" 
@@ -87,10 +98,11 @@ export function Sidebar({
           >
             <BookOpen size={18} strokeWidth={activeTab === "study" ? 2.5 : 2} />
             <span>STUDY</span>
-          </button>
+          </Link>
 
-          <button
-            onClick={() => { setActiveTab("library"); setMobileMenuOpen(false); }}
+          <Link
+            href="/pdfs"
+            onClick={() => setMobileMenuOpen(false)}
             className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl border-2 transition-all font-bold text-sm text-left
               ${activeTab === "library" 
                 ? "bg-[#FFFDF6] text-[#FF9E2C] border-primary shadow-[0_3px_0_#141827]" 
@@ -99,10 +111,11 @@ export function Sidebar({
           >
             <Library size={18} strokeWidth={activeTab === "library" ? 2.5 : 2} />
             <span>LIBRARY</span>
-          </button>
+          </Link>
 
-          <button
-            onClick={() => { setActiveTab("assignments"); setMobileMenuOpen(false); }}
+          <Link
+            href="/study/mock-exams"
+            onClick={() => setMobileMenuOpen(false)}
             className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl border-2 transition-all font-bold text-sm text-left
               ${activeTab === "assignments" 
                 ? "bg-[#FFFDF6] text-[#FF9E2C] border-primary shadow-[0_3px_0_#141827]" 
@@ -110,11 +123,12 @@ export function Sidebar({
               }`}
           >
             <ClipboardList size={18} strokeWidth={activeTab === "assignments" ? 2.5 : 2} />
-            <span>ASSIGNMENTS</span>
-          </button>
+            <span>MOCK EXAMS</span>
+          </Link>
 
-          <button
-            onClick={() => { setActiveTab("leaderboard"); setMobileMenuOpen(false); }}
+          <Link
+            href="/leaderboards"
+            onClick={() => setMobileMenuOpen(false)}
             className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl border-2 transition-all font-bold text-sm text-left
               ${activeTab === "leaderboard" 
                 ? "bg-[#FFFDF6] text-[#FF9E2C] border-primary shadow-[0_3px_0_#141827]" 
@@ -123,10 +137,11 @@ export function Sidebar({
           >
             <Trophy size={18} strokeWidth={activeTab === "leaderboard" ? 2.5 : 2} />
             <span>LEADERBOARD</span>
-          </button>
+          </Link>
 
-          <button
-            onClick={() => { setActiveTab("explore"); setMobileMenuOpen(false); }}
+          <Link
+            href="/analytics"
+            onClick={() => setMobileMenuOpen(false)}
             className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl border-2 transition-all font-bold text-sm text-left
               ${activeTab === "explore" 
                 ? "bg-[#FFFDF6] text-[#FF9E2C] border-primary shadow-[0_3px_0_#141827]" 
@@ -134,11 +149,12 @@ export function Sidebar({
               }`}
           >
             <Compass size={18} strokeWidth={activeTab === "explore" ? 2.5 : 2} />
-            <span>EXPLORE</span>
-          </button>
+            <span>ANALYTICS</span>
+          </Link>
 
-          <button
-            onClick={() => { setActiveTab("profile"); setMobileMenuOpen(false); }}
+          <Link
+            href="/profile"
+            onClick={() => setMobileMenuOpen(false)}
             className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl border-2 transition-all font-bold text-sm text-left
               ${activeTab === "profile" 
                 ? "bg-[#FFFDF6] text-[#FF9E2C] border-primary shadow-[0_3px_0_#141827]" 
@@ -147,7 +163,7 @@ export function Sidebar({
           >
             <User size={18} strokeWidth={activeTab === "profile" ? 2.5 : 2} />
             <span>PROFILE</span>
-          </button>
+          </Link>
         </nav>
       </div>
 
