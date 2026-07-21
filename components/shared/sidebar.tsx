@@ -35,7 +35,6 @@ export function Sidebar({
   // Resolve active tab based on current pathname
   let activeTab = "home";
   if (pathname.startsWith("/dashboard")) activeTab = "home";
-  else if (pathname.startsWith("/study/mock-exams")) activeTab = "assignments";
   else if (pathname.startsWith("/study")) activeTab = "study";
   else if (pathname.startsWith("/pdfs")) activeTab = "library";
   else if (pathname.startsWith("/leaderboards")) activeTab = "leaderboard";
@@ -111,19 +110,6 @@ export function Sidebar({
           >
             <Library size={18} strokeWidth={activeTab === "library" ? 2.5 : 2} />
             <span>LIBRARY</span>
-          </Link>
-
-          <Link
-            href="/study/mock-exams"
-            onClick={() => setMobileMenuOpen(false)}
-            className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl border-2 transition-all font-bold text-sm text-left
-              ${activeTab === "assignments" 
-                ? "bg-[#FFFDF6] text-[#FF9E2C] border-primary shadow-[0_3px_0_#141827]" 
-                : "bg-transparent text-text-secondary border-transparent hover:text-text-primary hover:bg-bg-secondary"
-              }`}
-          >
-            <ClipboardList size={18} strokeWidth={activeTab === "assignments" ? 2.5 : 2} />
-            <span>MOCK EXAMS</span>
           </Link>
 
           <Link

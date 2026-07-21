@@ -4,8 +4,6 @@
 // - Parses standard error envelope: { error: { code, message, details } } → typed ApiError
 // - On 401: calls /api/auth/refresh proxy once (rotates httpOnly cookies), then retries
 
-import { cookies } from "next/headers";
-
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 export const API_URL = API_BASE;
 
@@ -43,6 +41,7 @@ async function getHeaders(init?: RequestInit): Promise<Headers> {
   // Inject tokens if we are running on the server
   if (typeof window === "undefined") {
     try {
+      const { cookies } = await import("next/headers");
       const cookieStore = await cookies();
       const accessToken = cookieStore.get("accessToken")?.value;
       if (accessToken) {

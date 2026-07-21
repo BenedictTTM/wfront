@@ -2,7 +2,14 @@
 // Two distinct 403 codes per architecture doc §4; never collapse into one "you can't do this".
 // Used by: middleware.ts (route-level), usePermission() hook (component-level)
 
-export type Role = "Student" | "Teacher" | "Admin";
+import { useCurrentUser } from "@/features/auth/hooks";
+
+export type Role =
+  | "STUDENT"
+  | "TEACHER"
+  | "SCHOOL_ADMIN"
+  | "CONTENT_DEVELOPER"
+  | "ADMIN";
 
 export type Permission =
   | "content:view"
@@ -22,9 +29,11 @@ export type GuardResult =
 
 // TODO: populate once real RBAC table is confirmed (architecture doc §4 ⚠️ TODO)
 const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
-  Student: ["content:view"],
-  Teacher: ["content:view", "content:create", "content:manage"],
-  Admin: ["content:view", "content:create", "content:manage", "content:publish", "admin:audit", "admin:schools", "admin:users"],
+  STUDENT: ["content:view"],
+  TEACHER: ["content:view", "content:create", "content:manage"],
+  SCHOOL_ADMIN: ["content:view"],
+  CONTENT_DEVELOPER: ["content:view", "content:create", "content:manage", "content:publish"],
+  ADMIN: ["content:view", "content:create", "content:manage", "content:publish", "admin:audit", "admin:schools", "admin:users"],
 };
 
 /**
@@ -38,9 +47,10 @@ export function hasPermission(role: Role | undefined, permission: Permission): G
 
 /**
  * usePermission — client-side hook wrapping hasPermission for component-level guards.
- * TODO: implement (reads current user from auth context)
+ * Reads current user from auth context
  */
-export function usePermission(_permission: Permission): GuardResult {
-  // TODO
-  return { ok: false, reason: "unauthenticated" };
+export function usePermission(permission: Permission): GuardResult {
+  const user = useCurrentUser();
+  if (!user) return { ok: false, reason: "unauthenticated" };
+  return hasPermission(user.role as Role, permission);
 }

@@ -14,11 +14,16 @@ import {
 import { toast } from "sonner";
 import { Sidebar } from "@/components/shared/sidebar";
 import { StatsProvider, useStats } from "@/components/providers/stats-provider";
+import { useCurrentUser } from "@/features/auth/hooks";
+import { useChallenges } from "@/features/gamification/hooks";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
-  const { xp, gems, streak, completedQuizzes } = useStats();
+  const { xp, gems, streak, energy, completedQuizzes } = useStats();
+  const user = useCurrentUser();
+  const { data: challenges, isLoading: isChallengesLoading } = useChallenges();
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
 
@@ -26,6 +31,8 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [pathname]);
+
+  const userInitial = (user?.name?.[0] || user?.email?.[0] || "S").toUpperCase();
 
   return (
     <div className="min-h-screen flex bg-bg-primary text-text-primary font-sans selection:bg-primary selection:text-text-primary antialiased relative">
@@ -72,7 +79,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
             >
               <Menu size={20} />
             </button>
-            <span className="font-extrabold text-lg tracking-tight">Piply</span>
+            <span className="font-extrabold text-lg tracking-tight">Nay Prep</span>
           </div>
 
           {/* Stats on mobile header */}
@@ -87,9 +94,9 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
             </div>
             <Link
               href="/profile"
-              className="w-8 h-8 rounded-full border-2 border-border overflow-hidden bg-emerald-500 flex items-center justify-center font-bold text-white text-xs"
+              className="w-8 h-8 rounded-full border-2 border-border overflow-hidden bg-primary flex items-center justify-center font-black text-text-primary text-xs"
             >
-              N
+              {userInitial}
             </Link>
           </div>
         </header>
@@ -108,7 +115,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
             {/* Battery / Energy */}
             <div className="flex items-center gap-1.5 font-extrabold text-sm text-[#FF9E2C]" title="Energy">
               <span className="text-lg">🔋</span>
-              <span>20</span>
+              <span>{energy}</span>
             </div>
 
             {/* Streak */}
@@ -117,8 +124,8 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
               <span>{streak}</span>
             </div>
 
-            {/* Gems */}
-            <div className="flex items-center gap-1.5 font-extrabold text-sm text-blue-500" title="Gems">
+            {/* Gems / Diamonds */}
+            <div className="flex items-center gap-1.5 font-extrabold text-sm text-blue-500" title="Gems / Diamonds">
               <Gem size={15} fill="currentColor" />
               <span>{gems}</span>
             </div>
@@ -127,16 +134,16 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-2">
             <button
               onClick={() => toast.info("No new notifications")}
-              className="p-2 border-2 border-border bg-surface rounded-xl text-text-primary hover:bg-bg-secondary transition-colors"
+              className="p-2 border-2 border-border bg-surface rounded-xl text-text-primary hover:bg-bg-secondary transition-colors cursor-pointer"
             >
               <Bell size={16} />
             </button>
             <Link
               href="/profile"
-              className="w-10 h-10 rounded-full border-2 border-border overflow-hidden bg-emerald-500 cursor-pointer flex items-center justify-center font-extrabold text-white text-sm"
-              title="Profile"
+              className="w-10 h-10 rounded-full border-2 border-border overflow-hidden bg-primary cursor-pointer flex items-center justify-center font-black text-text-primary text-sm shadow-[0_2px_0_#141827]"
+              title={user?.name || "Profile"}
             >
-              N
+              {userInitial}
             </Link>
           </div>
         </div>
@@ -159,7 +166,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
             onClick={() => {
               toast.success("💎 Premium active! +100 bonus Gems granted.");
             }}
-            className="w-full text-center py-2.5 bg-primary text-text-primary border-2 border-border rounded-xl font-extrabold text-xs tracking-wider shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 transition-all"
+            className="w-full text-center py-2.5 bg-primary text-text-primary border-2 border-border rounded-xl font-extrabold text-xs tracking-wider shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 transition-all cursor-pointer"
           >
             START FREE TRIAL
           </button>
@@ -201,64 +208,100 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
 
         {/* Daily Quests Card */}
         <div className="bg-surface border-2 border-border rounded-2xl p-5 shadow-offset flex flex-col gap-4">
-          <h3 className="font-extrabold text-xs text-text-secondary tracking-widest uppercase">Daily Quests</h3>
+          <h3 className="font-extrabold text-xs text-text-secondary tracking-widest uppercase">Active Quests</h3>
 
           <div className="flex flex-col gap-4">
-            {/* Quest 1 */}
-            <div className="flex flex-col gap-1.5">
-              <div className="flex items-start gap-2.5">
-                <div className="mt-0.5 text-yellow-500">
-                  <Star size={16} fill={xp >= 50 ? "currentColor" : "none"} />
-                </div>
-                <div className="flex flex-col flex-1">
-                  <div className="flex justify-between items-center text-xs font-bold text-text-primary">
-                    <span>Earn 50 XP</span>
-                    <span className="text-[#FF9E2C] font-extrabold">50 gems</span>
+            {isChallengesLoading ? (
+              <div className="flex flex-col gap-3 animate-pulse">
+                <div className="h-10 bg-bg-primary rounded-xl" />
+                <div className="h-10 bg-bg-primary rounded-xl" />
+              </div>
+            ) : challenges && challenges.length > 0 ? (
+              challenges.slice(0, 3).map((quest) => {
+                const percent = Math.min(100, Math.max(0, (quest.currentCount / quest.targetCount) * 100));
+                return (
+                  <div key={quest.id} className="flex flex-col gap-1.5">
+                    <div className="flex items-start gap-2.5">
+                      <div className="mt-0.5 text-yellow-500">
+                        <Star size={16} fill={quest.completed ? "currentColor" : "none"} />
+                      </div>
+                      <div className="flex flex-col flex-1 min-w-0">
+                        <div className="flex justify-between items-center text-xs font-bold text-text-primary gap-1">
+                          <span className="truncate">{quest.title}</span>
+                          <span className="text-[#FF9E2C] font-extrabold shrink-0">+{quest.xpAward} XP</span>
+                        </div>
+                        <span className="text-[10px] text-text-secondary font-bold">
+                          {quest.currentCount} / {quest.targetCount} Completed
+                        </span>
+                      </div>
+                    </div>
+                    {/* Progress bar */}
+                    <div className="w-full h-3 border-2 border-border rounded-full bg-surface-muted overflow-hidden">
+                      <div
+                        className="h-full bg-primary transition-all duration-300 border-r-2 border-border"
+                        style={{ width: `${percent}%` }}
+                      />
+                    </div>
                   </div>
-                  <span className="text-[10px] text-text-secondary font-bold">
-                    {Math.min(xp, 50)} / 50 XP
-                  </span>
+                );
+              })
+            ) : (
+              <>
+                {/* Default Fallback Quest 1 */}
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex items-start gap-2.5">
+                    <div className="mt-0.5 text-yellow-500">
+                      <Star size={16} fill={xp >= 50 ? "currentColor" : "none"} />
+                    </div>
+                    <div className="flex flex-col flex-1">
+                      <div className="flex justify-between items-center text-xs font-bold text-text-primary">
+                        <span>Earn 50 XP</span>
+                        <span className="text-[#FF9E2C] font-extrabold">50 gems</span>
+                      </div>
+                      <span className="text-[10px] text-text-secondary font-bold">
+                        {Math.min(xp, 50)} / 50 XP
+                      </span>
+                    </div>
+                  </div>
+                  <div className="w-full h-3 border-2 border-border rounded-full bg-surface-muted overflow-hidden">
+                    <div
+                      className="h-full bg-primary transition-all duration-300 border-r-2 border-border"
+                      style={{ width: `${Math.min((xp / 50) * 100, 100)}%` }}
+                    />
+                  </div>
                 </div>
-              </div>
-              {/* Progress bar */}
-              <div className="w-full h-3 border-2 border-border rounded-full bg-surface-muted overflow-hidden">
-                <div
-                  className="h-full bg-primary transition-all duration-300 border-r-2 border-border"
-                  style={{ width: `${Math.min((xp / 50) * 100, 100)}%` }}
-                />
-              </div>
-            </div>
 
-            {/* Quest 2 */}
-            <div className="flex flex-col gap-1.5">
-              <div className="flex items-start gap-2.5">
-                <div className="mt-0.5 text-yellow-500">
-                  <Star size={16} fill={completedQuizzes >= 3 ? "currentColor" : "none"} />
-                </div>
-                <div className="flex flex-col flex-1">
-                  <div className="flex justify-between items-center text-xs font-bold text-text-primary">
-                    <span>Complete 3 Quizzes</span>
-                    <span className="text-[#FF9E2C] font-extrabold">50 gems</span>
+                {/* Default Fallback Quest 2 */}
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex items-start gap-2.5">
+                    <div className="mt-0.5 text-yellow-500">
+                      <Star size={16} fill={completedQuizzes >= 3 ? "currentColor" : "none"} />
+                    </div>
+                    <div className="flex flex-col flex-1">
+                      <div className="flex justify-between items-center text-xs font-bold text-text-primary">
+                        <span>Complete 3 Quizzes</span>
+                        <span className="text-[#FF9E2C] font-extrabold">50 gems</span>
+                      </div>
+                      <span className="text-[10px] text-text-secondary font-bold">
+                        {Math.min(completedQuizzes, 3)} / 3 Quizzes
+                      </span>
+                    </div>
                   </div>
-                  <span className="text-[10px] text-text-secondary font-bold">
-                    {Math.min(completedQuizzes, 3)} / 3 Quizzes
-                  </span>
+                  <div className="w-full h-3 border-2 border-border rounded-full bg-surface-muted overflow-hidden">
+                    <div
+                      className="h-full bg-secondary transition-all duration-300 border-r-2 border-border"
+                      style={{ width: `${Math.min((completedQuizzes / 3) * 100, 100)}%` }}
+                    />
+                  </div>
                 </div>
-              </div>
-              {/* Progress bar */}
-              <div className="w-full h-3 border-2 border-border rounded-full bg-surface-muted overflow-hidden">
-                <div
-                  className="h-full bg-secondary transition-all duration-300 border-r-2 border-border"
-                  style={{ width: `${Math.min((completedQuizzes / 3) * 100, 100)}%` }}
-                />
-              </div>
-            </div>
+              </>
+            )}
           </div>
 
           {/* Quick Quiz shortcut */}
           <Link
-            href="/study/quiz"
-            className="w-full py-1.5 border-2 border-border text-center text-xs font-extrabold rounded-lg hover:bg-bg-secondary block"
+            href="/study"
+            className="w-full py-2 border-2 border-border text-center text-xs font-black rounded-xl hover:bg-bg-secondary transition-colors block"
           >
             PLAY PRACTICE QUIZ
           </Link>

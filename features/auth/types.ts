@@ -15,6 +15,7 @@ export type AuthUser = {
   role: UserRole;
   entitlementActive: boolean;
   createdAt: string; // ISO-8601 string (serialised Date)
+  name?: string | null;
 };
 
 /** Guest identity view returned by GET /api/users/me when caller is a guest */
