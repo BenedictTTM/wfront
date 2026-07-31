@@ -1,6 +1,65 @@
-// features/quiz/hooks — TanStack Query hooks for quiz sessions
-// staleTime: short/none — these are live in-progress records (architecture doc §5.2)
-// TODO: implement
-export function useQuizAttempt(_attemptId: string) { /* TODO: staleTime: 0, refetchOnWindowFocus: true */ }
-export function useCreateQuizAttempt() { /* TODO: useMutation */ }
-export function useSubmitQuizAnswer() { /* TODO: useIdempotentMutation (lib/idempotency.ts) */ }
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  createQuizAttempt,
+  getQuizAttempt,
+  listQuizAttempts,
+  submitQuizAnswer,
+  submitQuizAttempt,
+} from "./api";
+import { CreateAttemptPayload, QuizAnswer } from "./types";
+
+export function useQuizAttempt(attemptId: string) {
+  return useQuery({
+    queryKey: ["quiz", "attempt", attemptId],
+    queryFn: () => getQuizAttempt(attemptId),
+    enabled: !!attemptId,
+    staleTime: 0,
+  });
+}
+
+export function useCreateQuizAttempt() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: CreateAttemptPayload) => createQuizAttempt(payload),
+    onSuccess: () => {
+      // Invalidate gamification query so backend energy deduction is refetched automatically
+      queryClient.invalidateQueries({ queryKey: ["gamification"] });
+    },
+  });
+}
+
+export function useSubmitQuizAnswer() {
+  return useMutation({
+    mutationFn: ({
+      attemptId,
+      answer,
+      idempotencyKey,
+    }: {
+      attemptId: string;
+      answer: QuizAnswer;
+      idempotencyKey: string;
+    }) => submitQuizAnswer(attemptId, answer, idempotencyKey),
+  });
+}
+
+export function useSubmitQuizAttempt() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (attemptId: string) => submitQuizAttempt(attemptId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["gamification"] });
+      queryClient.invalidateQueries({ queryKey: ["quiz", "history"] });
+    },
+  });
+}
+
+export function useQuizAttemptsList(query?: { limit?: number; cursor?: string }) {
+  return useQuery({
+    queryKey: ["quiz", "history", query],
+    queryFn: () => listQuizAttempts(query),
+    staleTime: 30 * 1000,
+  });
+}
+

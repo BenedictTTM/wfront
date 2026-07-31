@@ -109,7 +109,7 @@ async function request<T>(
   const url = `${API_URL}${path.startsWith("/") ? path : `/${path}`}`;
   const headers = await getHeaders(init);
 
-  const response = await fetch(url, { ...init, headers });
+  const response = await fetch(url, { credentials: "include", ...init, headers });
 
   // On 401, attempt one silent token refresh then retry.
   if (response.status === 401 && !_isRetry) {

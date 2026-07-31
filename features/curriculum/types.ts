@@ -1,6 +1,36 @@
-// features/curriculum — subjects, topics, subtopics, PDF reader
-// TODO: implement against confirmed endpoint shapes
-export type Subject = { id: string; name: string; /* TODO */ };
-export type Topic = { id: string; subjectId: string; name: string; /* TODO */ };
-export type Subtopic = { id: string; topicId: string; name: string; /* TODO */ };
-export type Pdf = { id: string; status: "processing" | "published" | "processing_failed"; /* TODO */ };
+// features/curriculum/types.ts — subjects, topics, subtopics types
+
+export type Subject = {
+  id: string;
+  name: string;
+  code: string;
+  slug: string;
+  description?: string;
+  createdAt: string;
+};
+
+export type Topic = {
+  id: string;
+  name: string;
+  slug: string;
+  subjectId: string;
+  createdAt: string;
+};
+
+export type Subtopic = {
+  id: string;
+  name: string;
+  slug: string;
+  topicId: string;
+  createdAt: string;
+};
+
+export type SubjectDetails = Subject & {
+  topics: (Topic & { subtopics?: Subtopic[] })[];
+};
+
+export type Pdf = {
+  id: string;
+  status: "processing" | "published" | "processing_failed";
+};
+

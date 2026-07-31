@@ -1,6 +1,12 @@
-// features/curriculum/api — subjects/topics/subtopics/PDF API calls
-// TODO: implement against confirmed endpoint shapes
-export async function getSubjects(): Promise<void> { /* TODO */ }
-export async function getTopics(_subjectId: string): Promise<void> { /* TODO */ }
-export async function getPdf(_pdfId: string): Promise<void> { /* TODO */ }
-export async function getPdfPageUrl(_pdfId: string, _page: number): Promise<void> { /* TODO */ }
+import { apiGet } from "@/lib/api-client";
+import { Subject, Topic } from "./types";
+
+export async function getSubjects(): Promise<Subject[]> {
+  return apiGet<Subject[]>("/subjects");
+}
+
+export async function getTopics(subjectId: string): Promise<Topic[]> {
+  if (!subjectId) return [];
+  return apiGet<Topic[]>(`/subjects/${subjectId}/topics`);
+}
+

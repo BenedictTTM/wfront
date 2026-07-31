@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useDashboard } from "@/features/gamification/hooks";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface StatsContextType {
   xp: number;
@@ -13,6 +14,7 @@ interface StatsContextType {
   completedQuizzes: number;
   addXp: (amount: number, reason: string) => void;
   addGems: (amount: number) => void;
+  deductEnergy: (amount?: number) => void;
   incrementCompletedQuizzes: () => void;
   setStreak: (streak: number) => void;
 }
@@ -53,6 +55,7 @@ export function StatsProvider({ children }: { children: React.ReactNode }) {
   // Sync from backend dashboard query when available
   useEffect(() => {
     if (dashboardData) {
+      console.log("⚡ [Frontend Stats Sync] Energy from backend:", dashboardData.energy?.current);
       if (typeof dashboardData.xp?.current === "number") setXp(dashboardData.xp.current);
       if (typeof dashboardData.wallet?.gems === "number") setGems(dashboardData.wallet.gems);
       if (typeof dashboardData.streak?.current === "number") setStreak(dashboardData.streak.current);
@@ -75,6 +78,8 @@ export function StatsProvider({ children }: { children: React.ReactNode }) {
     }
   }, [xp, gems, streak, energy, completedQuizzes, isLoaded]);
 
+  const queryClient = useQueryClient();
+
   const addXp = (amount: number, reason: string) => {
     setXp((prev) => {
       const nextXp = prev + amount;
@@ -88,6 +93,10 @@ export function StatsProvider({ children }: { children: React.ReactNode }) {
 
   const addGems = (amount: number) => {
     setGems((prev) => prev + amount);
+  };
+
+  const deductEnergy = () => {
+    queryClient.invalidateQueries({ queryKey: ["gamification"] });
   };
 
   const incrementCompletedQuizzes = () => {
@@ -105,6 +114,7 @@ export function StatsProvider({ children }: { children: React.ReactNode }) {
         completedQuizzes,
         addXp,
         addGems,
+        deductEnergy,
         incrementCompletedQuizzes,
         setStreak,
       }}

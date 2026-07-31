@@ -15,6 +15,7 @@ import {
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useCurrentUser } from "@/features/auth/hooks";
+import { useStats } from "@/components/providers/stats-provider";
 import {
   useDashboard,
   useChallenges,
@@ -24,6 +25,7 @@ import {
 export default function Dashboard() {
   const router = useRouter();
   const user = useCurrentUser();
+  const { energy: currentEnergy, deductEnergy } = useStats();
   const { data: dashboard } = useDashboard();
   const { data: challenges, isLoading: isChallengesLoading } = useChallenges();
   const refillMutation = useRefillEnergy();
@@ -64,7 +66,8 @@ export default function Dashboard() {
   };
 
   const handleStartQuiz = (targetPath: string) => {
-    if (dashboard && dashboard.energy.current < 3) {
+    const availableEnergy = dashboard?.energy?.current ?? currentEnergy;
+    if (availableEnergy < 3) {
       toast.warning("⚡ Not enough Energy to start a quiz! (Requires 3 🔋)", {
         action: {
           label: "Refill (+15 🔋)",
@@ -92,7 +95,7 @@ export default function Dashboard() {
 
           {showStudyModeDropdown && (
             <div className="absolute right-0 mt-2 w-48 bg-surface border-2.5 border-border rounded-xl shadow-offset py-1.5 z-30">
-              {["Study Mode", "Exam Mode", "Focus Mode", "Casual Mode"].map((mode) => (
+              {["Light Mode", "Dark Mode"].map((mode) => (
                 <button
                   key={mode}
                   onClick={() => {
@@ -200,7 +203,7 @@ export default function Dashboard() {
             </div>
             <div>
               <h2 className="text-xl font-extrabold text-text-primary tracking-tight">
-                Active Quests & Challenges
+                Actve Quests & Challenges
               </h2>
               <p className="text-xs font-bold text-text-secondary">
                 Complete goals to earn bonus XP rewards!
@@ -212,49 +215,49 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {isChallengesLoading
             ? [1, 2, 3].map((i) => (
-                <div key={i} className="h-40 bg-surface border-2.5 border-border rounded-2xl animate-pulse" />
-              ))
+              <div key={i} className="h-40 bg-surface border-2.5 border-border rounded-2xl animate-pulse" />
+            ))
             : (challenges ?? []).map((quest) => (
-                <div
-                  key={quest.id}
-                  className="bg-surface border-2.5 border-border rounded-2xl p-5 shadow-offset flex flex-col justify-between gap-3 hover:-translate-y-0.5 transition-all duration-200"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex flex-col gap-1">
-                      <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 bg-bg-primary border border-border rounded-md text-text-secondary w-fit">
-                        {quest.type}
-                      </span>
-                      <h3 className="text-base font-extrabold text-text-primary mt-1">
-                        {quest.title}
-                      </h3>
-                      <p className="text-xs font-bold text-text-secondary leading-snug">
-                        {quest.description}
-                      </p>
-                    </div>
-                    <div className="px-2.5 py-1 bg-primary border-2 border-border rounded-xl font-black text-xs text-text-primary shrink-0 shadow-[0_2px_0_#141827] whitespace-nowrap">
-                      +{quest.xpAward} XP
-                    </div>
+              <div
+                key={quest.id}
+                className="bg-surface border-2.5 border-border rounded-2xl p-5 shadow-offset flex flex-col justify-between gap-3 hover:-translate-y-0.5 transition-all duration-200"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 bg-bg-primary border border-border rounded-md text-text-secondary w-fit">
+                      {quest.type}
+                    </span>
+                    <h3 className="text-base font-extrabold text-text-primary mt-1">
+                      {quest.title}
+                    </h3>
+                    <p className="text-xs font-bold text-text-secondary leading-snug">
+                      {quest.description}
+                    </p>
                   </div>
-
-                  <div className="flex flex-col gap-1.5 mt-2 pt-2 border-t border-border/10">
-                    <div className="flex items-center justify-between text-xs font-bold">
-                      <span className="text-text-secondary">Progress</span>
-                      <span className="text-text-primary font-black">
-                        {quest.currentCount} / {quest.targetCount}
-                      </span>
-                    </div>
-
-                    <div className="w-full h-3 bg-bg-primary border-2 border-border rounded-full overflow-hidden p-0.5">
-                      <div
-                        className="h-full bg-primary rounded-full transition-all duration-300"
-                        style={{
-                          width: `${Math.min(100, (quest.currentCount / quest.targetCount) * 100)}%`,
-                        }}
-                      />
-                    </div>
+                  <div className="px-2.5 py-1 bg-primary border-2 border-border rounded-xl font-black text-xs text-text-primary shrink-0 shadow-[0_2px_0_#141827] whitespace-nowrap">
+                    +{quest.xpAward} XP
                   </div>
                 </div>
-              ))}
+
+                <div className="flex flex-col gap-1.5 mt-2 pt-2 border-t border-border/10">
+                  <div className="flex items-center justify-between text-xs font-bold">
+                    <span className="text-text-secondary">Progress</span>
+                    <span className="text-text-primary font-black">
+                      {quest.currentCount} / {quest.targetCount}
+                    </span>
+                  </div>
+
+                  <div className="w-full h-3 bg-bg-primary border-2 border-border rounded-full overflow-hidden p-0.5">
+                    <div
+                      className="h-full bg-primary rounded-full transition-all duration-300"
+                      style={{
+                        width: `${Math.min(100, (quest.currentCount / quest.targetCount) * 100)}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
         </div>
       </section>
 
@@ -276,7 +279,7 @@ export default function Dashboard() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {/* Action 1: Practice Quiz */}
-          <div className="bg-surface border-2.5 border-border rounded-2xl p-6 shadow-offset flex flex-col justify-between gap-5 group hover:-translate-y-0.5 transition-all duration-200">
+          <div className="bg-surface border-2.5 border-border rounded-2xl p-6 flex flex-col justify-between gap-5 group hover:-translate-y-0.5 transition-all duration-200">
             <div className="flex items-start justify-between">
               <div className="w-12 h-12 rounded-2xl bg-primary border-2.5 border-border flex items-center justify-center text-text-primary text-xl font-black shadow-[0_3px_0_#141827]">
                 <Play size={22} fill="currentColor" />
@@ -305,7 +308,7 @@ export default function Dashboard() {
           </div>
 
           {/* Action 2: Mock Exam */}
-          <div className="bg-surface border-2.5 border-border rounded-2xl p-6 shadow-offset flex flex-col justify-between gap-5 group hover:-translate-y-0.5 transition-all duration-200">
+          <div className="bg-surface border-2.5 border-border rounded-2xl p-6 flex flex-col justify-between gap-5 group hover:-translate-y-0.5 transition-all duration-200">
             <div className="flex items-start justify-between">
               <div className="w-12 h-12 rounded-2xl bg-secondary border-2.5 border-border flex items-center justify-center text-text-primary text-xl font-black shadow-[0_3px_0_#141827]">
                 <FileText size={22} />
