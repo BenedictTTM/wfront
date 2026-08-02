@@ -27,7 +27,11 @@ export async function refillEnergy(): Promise<UserEnergy> {
 }
 
 export async function getChallenges(): Promise<Challenge[]> {
-  return apiGet<Challenge[]>("/challenges/active");
+  return apiGet<Challenge[]>('/users/me/challenges');
+}
+
+export async function getActiveChallenges(): Promise<Challenge[]> {
+  return apiGet<Challenge[]>('/challenges/active');
 }
 
 export async function getAchievements(): Promise<Achievement[]> {

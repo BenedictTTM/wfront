@@ -6,7 +6,6 @@ import {
   ChevronDown,
   Plus,
   Search,
-  Trophy,
   ArrowRight,
   Play,
   FileText,
@@ -18,7 +17,6 @@ import { useCurrentUser } from "@/features/auth/hooks";
 import { useStats } from "@/components/providers/stats-provider";
 import {
   useDashboard,
-  useChallenges,
   useRefillEnergy,
 } from "@/features/gamification/hooks";
 
@@ -27,7 +25,6 @@ export default function Dashboard() {
   const user = useCurrentUser();
   const { energy: currentEnergy, deductEnergy } = useStats();
   const { data: dashboard } = useDashboard();
-  const { data: challenges, isLoading: isChallengesLoading } = useChallenges();
   const refillMutation = useRefillEnergy();
 
   // Mode Dropdown
@@ -193,73 +190,6 @@ export default function Dashboard() {
           </div>
         </div>
       </form>
-
-      {/* ── DAILY QUESTS & ACTIVE CHALLENGES ── */}
-      <section className="flex flex-col gap-4">
-        <div className="flex items-center justify-between border-b-2 border-border/10 pb-3">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-primary border-2 border-border flex items-center justify-center shadow-[0_2px_0_#141827]">
-              <Trophy size={18} className="text-text-primary" />
-            </div>
-            <div>
-              <h2 className="text-xl font-extrabold text-text-primary tracking-tight">
-                Actve Quests & Challenges
-              </h2>
-              <p className="text-xs font-bold text-text-secondary">
-                Complete goals to earn bonus XP rewards!
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {isChallengesLoading
-            ? [1, 2, 3].map((i) => (
-              <div key={i} className="h-40 bg-surface border-2.5 border-border rounded-2xl animate-pulse" />
-            ))
-            : (challenges ?? []).map((quest) => (
-              <div
-                key={quest.id}
-                className="bg-surface border-2.5 border-border rounded-2xl p-5 shadow-offset flex flex-col justify-between gap-3 hover:-translate-y-0.5 transition-all duration-200"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 bg-bg-primary border border-border rounded-md text-text-secondary w-fit">
-                      {quest.type}
-                    </span>
-                    <h3 className="text-base font-extrabold text-text-primary mt-1">
-                      {quest.title}
-                    </h3>
-                    <p className="text-xs font-bold text-text-secondary leading-snug">
-                      {quest.description}
-                    </p>
-                  </div>
-                  <div className="px-2.5 py-1 bg-primary border-2 border-border rounded-xl font-black text-xs text-text-primary shrink-0 shadow-[0_2px_0_#141827] whitespace-nowrap">
-                    +{quest.xpAward} XP
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-1.5 mt-2 pt-2 border-t border-border/10">
-                  <div className="flex items-center justify-between text-xs font-bold">
-                    <span className="text-text-secondary">Progress</span>
-                    <span className="text-text-primary font-black">
-                      {quest.currentCount} / {quest.targetCount}
-                    </span>
-                  </div>
-
-                  <div className="w-full h-3 bg-bg-primary border-2 border-border rounded-full overflow-hidden p-0.5">
-                    <div
-                      className="h-full bg-primary rounded-full transition-all duration-300"
-                      style={{
-                        width: `${Math.min(100, (quest.currentCount / quest.targetCount) * 100)}%`,
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
-        </div>
-      </section>
 
       {/* ── QUICK LAUNCH STUDY ACTIONS ── */}
       <section className="flex flex-col gap-4">
