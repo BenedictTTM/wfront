@@ -23,8 +23,9 @@ export function useCreateQuizAttempt() {
   return useMutation({
     mutationFn: (payload: CreateAttemptPayload) => createQuizAttempt(payload),
     onSuccess: () => {
-      // Invalidate gamification query so backend energy deduction is refetched automatically
+      // Invalidate gamification and quest queries so energy deduction and quests sync automatically
       queryClient.invalidateQueries({ queryKey: ["gamification"] });
+      queryClient.invalidateQueries({ queryKey: ["quests"] });
     },
   });
 }
@@ -50,6 +51,7 @@ export function useSubmitQuizAttempt() {
     mutationFn: (attemptId: string) => submitQuizAttempt(attemptId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["gamification"] });
+      queryClient.invalidateQueries({ queryKey: ["quests"] });
       queryClient.invalidateQueries({ queryKey: ["quiz", "history"] });
     },
   });

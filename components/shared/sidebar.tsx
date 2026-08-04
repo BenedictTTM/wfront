@@ -13,11 +13,16 @@ import {
   HelpCircle, 
   ExternalLink, 
   ChevronDown, 
-  X 
+  X,
+  LogOut,
+  LogIn,
 } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useMe } from "@/features/auth/hooks";
+import { useLogoutMutation } from "@/features/auth/hooks";
+import { isGuestIdentity } from "@/features/auth/types";
 
 interface SidebarProps {
   mobileMenuOpen: boolean;
@@ -31,6 +36,26 @@ export function Sidebar({
   const [language, setLanguage] = useState("English");
   const [showLangDropdown, setShowLangDropdown] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+
+  const { data: meData } = useMe();
+  const isGuest = !meData || isGuestIdentity(meData);
+  const logoutMutation = useLogoutMutation();
+
+  const handleLogout = () => {
+    logoutMutation.mutate(undefined, {
+      onSuccess: () => {
+        toast.success("You've been signed out. See you next time! 👋");
+        router.push("/login");
+      },
+      onError: () => {
+        // Best-effort: cookies are already cleared by the proxy, redirect anyway
+        toast.info("Signed out.");
+        router.push("/login");
+      },
+    });
+  };
+
 
   // Resolve active tab based on current pathname
   let activeTab = "home";
@@ -198,6 +223,26 @@ export function Sidebar({
           <span>Ask for Help</span>
           <ExternalLink size={12} className="ml-auto" />
         </a>
+
+        {/* Logout / Sign In */}
+        {isGuest ? (
+          <Link
+            href="/login"
+            className="flex items-center gap-2 px-3 py-2.5 bg-primary text-text-primary border-2 border-border rounded-xl text-xs font-black hover:bg-[#ebd060] shadow-[0_2px_0_#141827] active:translate-y-0.5 active:shadow-none hover:-translate-y-0.5 transition-all"
+          >
+            <LogIn size={16} strokeWidth={2.5} />
+            <span>SIGN IN</span>
+          </Link>
+        ) : (
+          <button
+            onClick={handleLogout}
+            disabled={logoutMutation.isPending}
+            className="flex items-center gap-2 px-3 py-2.5 text-xs font-bold text-text-secondary hover:text-red-500 hover:bg-red-50 border-2 border-transparent hover:border-red-200 rounded-xl transition-all disabled:opacity-60 cursor-pointer disabled:cursor-not-allowed w-full"
+          >
+            <LogOut size={16} strokeWidth={2} />
+            <span>{logoutMutation.isPending ? "Signing out..." : "Sign Out"}</span>
+          </button>
+        )}
       </div>
     </aside>
   );

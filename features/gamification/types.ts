@@ -50,6 +50,40 @@ export interface Challenge {
   expiresAt: string;
 }
 
+export interface UserQuest {
+  periodId: string;
+  questId: string;
+  slug: string;
+  title: string;
+  description: string;
+  type: "DAILY" | "WEEKLY" | "ACHIEVEMENT" | string;
+  metric: string;
+  xpAward: number;
+  targetCount: number;
+  currentCount: number;
+  auxCount: number;
+  completed: boolean;
+  rewardClaimed: boolean;
+  expiresAt: string;
+  claimedAt: string | null;
+}
+
+export interface QuestDefinition {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  type: string;
+  metric: string;
+  targetCount: number;
+  xpAward: number;
+}
+
+export interface ClaimRewardResponse {
+  xpAwarded: number;
+  questTitle: string;
+}
+
 export interface LeaderboardEntry {
   userId: string;
   name: string;

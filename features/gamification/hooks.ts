@@ -2,14 +2,44 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  getAchievements,
+  claimQuestReward,
   getChallenges,
   getDashboard,
   getEnergy,
   getLeaderboard,
+  getQuestCatalog,
   getStreak,
+  getUserQuests,
   refillEnergy,
 } from "./api";
+
+export function useQuests() {
+  return useQuery({
+    queryKey: ["quests", "user"],
+    queryFn: getUserQuests,
+    staleTime: 30 * 1000,
+  });
+}
+
+export function useQuestCatalog() {
+  return useQuery({
+    queryKey: ["quests", "catalog"],
+    queryFn: getQuestCatalog,
+    staleTime: 60 * 1000,
+  });
+}
+
+export function useClaimQuestReward() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (periodId: string) => claimQuestReward(periodId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["quests"] });
+      queryClient.invalidateQueries({ queryKey: ["gamification"] });
+    },
+  });
+}
 
 export function useDashboard() {
   return useQuery({
@@ -38,17 +68,9 @@ export function useStreak() {
 
 export function useChallenges() {
   return useQuery({
-    queryKey: ["gamification", "challenges"],
-    queryFn: getChallenges,
-    staleTime: 60 * 1000,
-  });
-}
-
-export function useAchievements() {
-  return useQuery({
-    queryKey: ["gamification", "achievements"],
-    queryFn: getAchievements,
-    staleTime: 60 * 1000,
+    queryKey: ["quests", "user"],
+    queryFn: getUserQuests,
+    staleTime: 30 * 1000,
   });
 }
 

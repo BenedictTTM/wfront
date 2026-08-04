@@ -7,12 +7,12 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { API_URL } from "@/lib/api-client";
 
-async function fetchMe(accessToken: string) {
+async function fetchMe(headers: Record<string, string>) {
   return fetch(`${API_URL}/users/me`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
+      ...headers,
     },
     // Do not cache — always fresh on each Next.js route handler invocation
     cache: "no-store",
@@ -22,18 +22,28 @@ async function fetchMe(accessToken: string) {
 export async function GET() {
   const cookieStore = await cookies();
   const accessToken = cookieStore.get("accessToken")?.value;
+  const guestToken =
+    cookieStore.get("guestToken")?.value ||
+    cookieStore.get("anonymousToken")?.value;
 
-  if (!accessToken) {
+  if (!accessToken && !guestToken) {
     return NextResponse.json(
       { message: "No active session. Please log in." },
       { status: 401 }
     );
   }
 
-  let response = await fetchMe(accessToken);
+  const reqHeaders: Record<string, string> = {};
+  if (accessToken) {
+    reqHeaders["Authorization"] = `Bearer ${accessToken}`;
+  } else if (guestToken) {
+    reqHeaders["X-Guest-Token"] = guestToken;
+  }
 
-  // On 401, attempt a silent token refresh via the auth proxy then retry once.
-  if (response.status === 401) {
+  let response = await fetchMe(reqHeaders);
+
+  // On 401 with accessToken, attempt a silent token refresh via the auth proxy then retry once.
+  if (response.status === 401 && accessToken) {
     const refreshRes = await fetch(
       `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/api/auth/refresh`,
       { method: "POST" }
@@ -44,7 +54,7 @@ export async function GET() {
       const updatedCookies = await cookies();
       const newAccessToken = updatedCookies.get("accessToken")?.value;
       if (newAccessToken) {
-        response = await fetchMe(newAccessToken);
+        response = await fetchMe({ Authorization: `Bearer ${newAccessToken}` });
       }
     }
   }

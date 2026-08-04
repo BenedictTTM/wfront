@@ -9,23 +9,33 @@ import {
   ArrowRight,
   Play,
   FileText,
-  Target
+  Target,
+  LogIn,
+  Zap,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { useCurrentUser } from "@/features/auth/hooks";
+import { useCurrentUser, useMe } from "@/features/auth/hooks";
+import { isGuestIdentity } from "@/features/auth/types";
 import { useStats } from "@/components/providers/stats-provider";
 import {
   useDashboard,
   useRefillEnergy,
 } from "@/features/gamification/hooks";
 
+const GUEST_MAX_ENERGY = 10;
+
 export default function Dashboard() {
   const router = useRouter();
   const user = useCurrentUser();
+  const { data: meData } = useMe();
+  const isGuest = !meData || isGuestIdentity(meData);
   const { energy: currentEnergy, deductEnergy } = useStats();
   const { data: dashboard } = useDashboard();
   const refillMutation = useRefillEnergy();
+
+  // For guests, cap energy at GUEST_MAX_ENERGY
+  const guestEnergy = Math.min(currentEnergy, GUEST_MAX_ENERGY);
 
   // Mode Dropdown
   const [studyMode, setStudyMode] = useState("Study Mode");
@@ -63,14 +73,25 @@ export default function Dashboard() {
   };
 
   const handleStartQuiz = (targetPath: string) => {
-    const availableEnergy = dashboard?.energy?.current ?? currentEnergy;
+    const availableEnergy = isGuest
+      ? guestEnergy
+      : (dashboard?.energy?.current ?? currentEnergy);
     if (availableEnergy < 3) {
-      toast.warning("⚡ Not enough Energy to start a quiz! (Requires 3 🔋)", {
-        action: {
-          label: "Refill (+15 🔋)",
-          onClick: handleRefillEnergy,
-        },
-      });
+      if (isGuest) {
+        toast.warning("⚡ You've used up your guest energy! Sign in to get full access.", {
+          action: {
+            label: "Sign In",
+            onClick: () => router.push("/login"),
+          },
+        });
+      } else {
+        toast.warning("⚡ Not enough Energy to start a quiz! (Requires 3 🔋)", {
+          action: {
+            label: "Refill (+15 🔋)",
+            onClick: handleRefillEnergy,
+          },
+        });
+      }
       return;
     }
     router.push(targetPath);
@@ -110,6 +131,32 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+
+      {/* ── Guest Mode Banner ── */}
+      {isGuest && (
+        <div className="w-full bg-surface border-2.5 border-border rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between ">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-primary border-2 border-border flex items-center justify-center shadow-[0_2px_0_#141827] shrink-0">
+              <Zap size={18} className="text-text-primary" fill="currentColor" />
+            </div>
+            <div className="text-left">
+              <p className="text-sm font-black text-text-primary">
+                You are currently in Guest Mode
+              </p>
+              <p className="text-xs font-bold text-text-secondary leading-relaxed">
+                You have <span className="text-text-primary font-black">{guestEnergy} / {GUEST_MAX_ENERGY} ⚡</span> energy. Sign in to unlock full access, save progress &amp; compete on leaderboards.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => router.push("/login")}
+            className="shrink-0 flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-[#ebd060] text-text-primary border-2.5 border-border rounded-xl text-sm font-black shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 transition-all cursor-pointer whitespace-nowrap"
+          >
+            <LogIn size={16} strokeWidth={2.5} />
+            <span>SIGN IN</span>
+          </button>
+        </div>
+      )}
 
       {/* ── Mascot & Welcome Banner ── */}
       <div className="flex flex-col items-center text-center gap-4 py-2">
@@ -158,10 +205,14 @@ export default function Dashboard() {
 
         <div className="flex flex-col gap-1.5">
           <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-text-primary">
-            Welcome back, {user?.name || user?.email?.split("@")[0] || "Scholar"}! 🎓
+            {isGuest
+              ? "Welcome, Guest Scholar! 👋"
+              : `Welcome back, ${user?.name || user?.email?.split("@")[0] || "Scholar"}! 🎓`}
           </h1>
           <p className="text-sm md:text-base text-text-secondary max-w-md mx-auto leading-relaxed">
-            Ready to master your WASSCE subjects? Attempt quizzes, complete daily quests, and climb the leaderboard!
+            {isGuest
+              ? "You're exploring Nay Prep in guest mode. Sign in to save your progress and unlock all features!"
+              : "Ready to master your WASSCE subjects? Attempt quizzes, complete daily quests, and climb the leaderboard!"}
           </p>
         </div>
       </div>
