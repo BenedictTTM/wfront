@@ -79,10 +79,20 @@ export function useLeaderboard(params?: {
   subjectId?: string;
   week?: string;
 }) {
+  // Don't fetch when scope=subject but no subjectId has been selected yet
+  // (avoids a 400/404 during the subject-tab render before the useEffect fires)
+  const isReady =
+    params?.scope !== "subject" || Boolean(params?.subjectId);
+
   return useQuery({
     queryKey: ["gamification", "leaderboard", params],
     queryFn: () => getLeaderboard(params),
     staleTime: 60 * 1000,
+    enabled: isReady,
+    // Retry up to 3 times with exponential backoff to handle intermittent
+    // Neon WebSocket / cold-start failures on the backend
+    retry: 3,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10_000),
   });
 }
 

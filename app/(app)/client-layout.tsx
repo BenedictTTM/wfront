@@ -368,55 +368,13 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
                   );
                 })
               ) : (
-                <>
-                  {/* Default Fallback Quest 1 */}
-                  <div className="flex flex-col gap-1.5">
-                    <div className="flex items-start gap-2.5">
-                      <div className="mt-0.5 text-yellow-500">
-                        <Star size={16} fill={xp >= 50 ? "currentColor" : "none"} />
-                      </div>
-                      <div className="flex flex-col flex-1">
-                        <div className="flex justify-between items-center text-xs font-bold text-text-primary">
-                          <span>Earn 50 XP</span>
-                          <span className="text-[#FF9E2C] font-extrabold">50 gems</span>
-                        </div>
-                        <span className="text-[10px] text-text-secondary font-bold">
-                          {Math.min(xp, 50)} / 50 XP
-                        </span>
-                      </div>
-                    </div>
-                    <div className="w-full h-3 border-2 border-border rounded-full bg-surface-muted overflow-hidden">
-                      <div
-                        className="h-full bg-primary transition-all duration-300 border-r-2 border-border"
-                        style={{ width: `${Math.min((xp / 50) * 100, 100)}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Default Fallback Quest 2 */}
-                  <div className="flex flex-col gap-1.5">
-                    <div className="flex items-start gap-2.5">
-                      <div className="mt-0.5 text-yellow-500">
-                        <Star size={16} fill={completedQuizzes >= 3 ? "currentColor" : "none"} />
-                      </div>
-                      <div className="flex flex-col flex-1">
-                        <div className="flex justify-between items-center text-xs font-bold text-text-primary">
-                          <span>Complete 3 Quizzes</span>
-                          <span className="text-[#FF9E2C] font-extrabold">50 gems</span>
-                        </div>
-                        <span className="text-[10px] text-text-secondary font-bold">
-                          {Math.min(completedQuizzes, 3)} / 3 Quizzes
-                        </span>
-                      </div>
-                    </div>
-                    <div className="w-full h-3 border-2 border-border rounded-full bg-surface-muted overflow-hidden">
-                      <div
-                        className="h-full bg-secondary transition-all duration-300 border-r-2 border-border"
-                        style={{ width: `${Math.min((completedQuizzes / 3) * 100, 100)}%` }}
-                      />
-                    </div>
-                  </div>
-                </>
+                <div className="flex flex-col items-center gap-2 py-4 text-center">
+                  <CheckCircle2 size={28} className="text-primary opacity-80" />
+                  <p className="text-xs font-bold text-text-primary">All quests complete!</p>
+                  <p className="text-[10px] text-text-secondary leading-relaxed">
+                    New quests refresh daily &amp; weekly. Check back soon.
+                  </p>
+                </div>
               )}
             </div>
 

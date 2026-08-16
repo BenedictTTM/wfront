@@ -8,6 +8,7 @@ import {
   ClipboardList, 
   Trophy, 
   Compass, 
+  Medal,
   User, 
   Globe, 
   HelpCircle, 
@@ -64,6 +65,7 @@ export function Sidebar({
   else if (pathname.startsWith("/pdfs")) activeTab = "library";
   else if (pathname.startsWith("/leaderboards")) activeTab = "leaderboard";
   else if (pathname.startsWith("/analytics")) activeTab = "explore";
+  else if (pathname.startsWith("/achievements")) activeTab = "achievements";
   else if (pathname.startsWith("/profile")) activeTab = "profile";
 
   return (
@@ -161,6 +163,19 @@ export function Sidebar({
           >
             <Compass size={18} strokeWidth={activeTab === "explore" ? 2.5 : 2} />
             <span>ANALYTICS</span>
+          </Link>
+
+          <Link
+            href="/achievements"
+            onClick={() => setMobileMenuOpen(false)}
+            className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl border-2 transition-all font-bold text-sm text-left
+              ${activeTab === "achievements" 
+                ? "bg-[#FFFDF6] text-[#FF9E2C] border-primary shadow-[0_3px_0_#141827]" 
+                : "bg-transparent text-text-secondary border-transparent hover:text-text-primary hover:bg-bg-secondary"
+              }`}
+          >
+            <Medal size={18} strokeWidth={activeTab === "achievements" ? 2.5 : 2} />
+            <span>ACHIEVEMENTS</span>
           </Link>
 
           <Link
