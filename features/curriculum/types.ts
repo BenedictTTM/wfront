@@ -34,3 +34,27 @@ export type Pdf = {
   status: "processing" | "published" | "processing_failed";
 };
 
+// ── Learning Path ──────────────────────────────────────────────────────────
+
+export type LearningPathNodeStatus = "COMPLETED" | "CURRENT" | "LOCKED";
+
+export type LearningPathNode = {
+  subtopic: { id: string; name: string; slug: string };
+  status: LearningPathNodeStatus;
+  order: number;
+};
+
+export type LearningPathSection = {
+  topic: { id: string; name: string; slug: string; order: number };
+  totalSubtopics: number;
+  completedSubtopics: number;
+  nodes: LearningPathNode[];
+};
+
+export type LearningPath = {
+  subject: { id: string; name: string; slug: string };
+  sections: LearningPathSection[];
+  totalNodes: number;
+  completedNodes: number;
+};
+

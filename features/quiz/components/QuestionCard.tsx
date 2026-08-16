@@ -9,36 +9,32 @@ interface QuestionCardProps {
   totalQuestions: number;
 }
 
+const DIFFICULTY_STYLES: Record<string, string> = {
+  EASY: "bg-secondary/30 text-text-primary border-border",
+  MEDIUM: "bg-primary/20 text-text-primary border-border",
+  HARD: "bg-text-primary/10 text-text-primary border-border",
+};
+
 export function QuestionCard({ question, questionNumber, totalQuestions }: QuestionCardProps) {
-  const getDifficultyBadge = (difficulty: string) => {
-    switch (difficulty?.toUpperCase()) {
-      case "EASY":
-        return "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30";
-      case "HARD":
-        return "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30";
-      case "MEDIUM":
-      default:
-        return "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30";
-    }
-  };
+  const diffClass =
+    DIFFICULTY_STYLES[(question.difficulty ?? "MEDIUM").toUpperCase()] ??
+    DIFFICULTY_STYLES.MEDIUM;
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-black uppercase text-text-secondary tracking-wider">
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <span className="text-xs font-black uppercase text-text-secondary tracking-widest">
           Question {questionNumber} of {totalQuestions}
         </span>
         <div className="flex items-center gap-2">
           {question.type && (
-            <span className="px-2.5 py-0.5 border border-border bg-surface-muted text-text-secondary text-[11px] font-bold rounded-full uppercase">
+            <span className="px-2.5 py-0.5 border-[2px] border-border bg-surface-muted text-text-secondary text-[11px] font-black rounded-full uppercase tracking-wide">
               {question.type.replace("_", " ")}
             </span>
           )}
           {question.difficulty && (
             <span
-              className={`px-2.5 py-0.5 border text-[11px] font-bold rounded-full uppercase ${getDifficultyBadge(
-                question.difficulty
-              )}`}
+              className={`px-2.5 py-0.5 border-[2px] text-[11px] font-black rounded-full uppercase tracking-wide ${diffClass}`}
             >
               {question.difficulty}
             </span>
@@ -46,7 +42,7 @@ export function QuestionCard({ question, questionNumber, totalQuestions }: Quest
         </div>
       </div>
 
-      <div className="p-5 bg-bg-primary border-2 border-border rounded-xl">
+      <div className="p-5 bg-bg-primary border-[2px] border-border rounded-xl shadow-[0_3px_0_rgba(20,24,39,0.9)]">
         <h4 className="font-extrabold text-sm md:text-base text-text-primary leading-relaxed whitespace-pre-wrap">
           {question.text}
         </h4>

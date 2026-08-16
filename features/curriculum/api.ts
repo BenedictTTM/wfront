@@ -1,5 +1,5 @@
 import { apiGet } from "@/lib/api-client";
-import { Subject, Topic } from "./types";
+import { Subject, Topic, LearningPath } from "./types";
 
 export async function getSubjects(): Promise<Subject[]> {
   return apiGet<Subject[]>("/subjects");
@@ -10,3 +10,6 @@ export async function getTopics(subjectId: string): Promise<Topic[]> {
   return apiGet<Topic[]>(`/subjects/${subjectId}/topics`);
 }
 
+export async function getLearningPath(subjectSlug: string): Promise<LearningPath> {
+  return apiGet<LearningPath>(`/subjects/${subjectSlug}/learning-path`);
+}

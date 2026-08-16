@@ -20,18 +20,18 @@ export function OptionSelector({
   onSelectOption,
   onChangeText,
 }: OptionSelectorProps) {
-  if (questionType === "SHORT_ANSWER" || (!options || options.length === 0)) {
+  if (questionType === "SHORT_ANSWER" || !options || options.length === 0) {
     return (
       <div className="flex flex-col gap-2">
-        <label className="text-xs font-bold text-text-secondary">
-          Type your answer below:
+        <label className="text-xs font-black uppercase tracking-widest text-text-secondary">
+          Your answer
         </label>
         <textarea
           value={submittedText}
           onChange={(e) => onChangeText(e.target.value)}
-          placeholder="Enter answer text..."
+          placeholder="Write your answer here…"
           rows={3}
-          className="w-full p-3.5 bg-surface border-2 border-border rounded-xl text-xs md:text-sm font-bold text-text-primary focus:outline-none focus:border-primary transition-all resize-none"
+          className="w-full p-3.5 bg-bg-primary border-[2px] border-border rounded-xl text-xs md:text-sm font-bold text-text-primary focus:outline-none focus:border-border focus:ring-2 focus:ring-primary/40 transition-all resize-none"
         />
       </div>
     );
@@ -40,7 +40,6 @@ export function OptionSelector({
   return (
     <div className="flex flex-col gap-2.5">
       {options.map((option, idx) => {
-        // Backend options are { key: "A" | "B" | ..., text: "..." }
         const optionKey = option.key || String.fromCharCode(65 + idx);
         const isSelected = selectedOptionId === optionKey;
 
@@ -49,19 +48,21 @@ export function OptionSelector({
             key={optionKey}
             type="button"
             onClick={() => onSelectOption(optionKey)}
-            className={`w-full text-left p-3.5 border-2 rounded-xl text-xs md:text-sm font-bold transition-all flex items-center justify-between cursor-pointer ${
+            className={[
+              "w-full text-left p-3.5 border-[2px] rounded-xl text-xs md:text-sm font-bold transition-all flex items-center justify-between gap-3 cursor-pointer",
               isSelected
-                ? "bg-[#FFFDF6] dark:bg-amber-950/20 border-[#FF9E2C] text-[#FF9E2C] dark:text-amber-400 shadow-[0_2.5px_0_#FF9E2C]"
-                : "bg-surface border-border hover:bg-bg-secondary text-text-primary"
-            }`}
+                ? "bg-primary/15 border-border shadow-[0_2.5px_0_rgba(20,24,39,0.9)] text-text-primary"
+                : "bg-surface border-border hover:bg-bg-secondary text-text-primary",
+            ].join(" ")}
           >
-            <span className="pr-4 leading-normal">{option.text}</span>
+            <span className="leading-normal pr-2">{option.text}</span>
             <span
-              className={`w-6 h-6 rounded-full border-2 flex items-center justify-center text-xs font-extrabold shrink-0 transition-colors ${
+              className={[
+                "w-7 h-7 rounded-full border-[2px] flex items-center justify-center text-xs font-black shrink-0 transition-colors",
                 isSelected
-                  ? "border-[#FF9E2C] bg-[#FF9E2C] text-white"
-                  : "border-border text-text-secondary"
-              }`}
+                  ? "border-border bg-primary text-text-primary"
+                  : "border-border-muted bg-surface-muted text-text-secondary",
+              ].join(" ")}
             >
               {optionKey}
             </span>

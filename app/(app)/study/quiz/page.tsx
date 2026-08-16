@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, Suspense } from "react";
-import { Star, X, Loader2, Sparkles } from "lucide-react";
+import { BookOpen, X, Loader2, Sparkles, ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -23,20 +23,30 @@ import {
 } from "@/features/quiz/components";
 import { AttemptMode, QuizAttempt, SubmitAttemptResponseDto } from "@/features/quiz/types";
 
+// ─── Loading skeleton ─────────────────────────────────────────────────────────
+
+function LoadingCard({ label }: { label: string }) {
+  return (
+    <div className="w-full max-w-xl mx-auto bg-surface border-[3px] border-border rounded-2xl shadow-[0_6px_0_rgba(20,24,39,0.9)] p-12 flex flex-col items-center justify-center gap-3 text-text-secondary">
+      <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <span className="text-xs font-black text-text-primary">{label}</span>
+    </div>
+  );
+}
+
+// ─── Main content ─────────────────────────────────────────────────────────────
+
 function PracticeQuizContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Query params
   const initialSubjectId = searchParams.get("subjectId") || "";
   const initialTopicId = searchParams.get("topicId") || "";
   const queryAttemptId = searchParams.get("attemptId") || "";
 
-  // Energy state from server
   const { data: energyData } = useEnergy();
   const userEnergy = energyData?.currentEnergy ?? 30;
 
-  // Active quiz session state
   const [activeAttemptId, setActiveAttemptId] = useState<string>(queryAttemptId);
   const [currentAttempt, setCurrentAttempt] = useState<QuizAttempt | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
@@ -44,20 +54,19 @@ function PracticeQuizContent() {
     Record<string, { selectedOptionId?: string; submittedText?: string }>
   >({});
   const [submissionResults, setSubmissionResults] = useState<SubmitAttemptResponseDto | null>(null);
-
-  // Modals & UI states
   const [showEnergyWarning, setShowEnergyWarning] = useState<boolean>(false);
   const [isSubmittingFinal, setIsSubmittingFinal] = useState<boolean>(false);
 
-  // React Query mutations & queries
   const createAttemptMutation = useCreateQuizAttempt();
   const submitAnswerMutation = useSubmitQuizAnswer();
   const submitQuizMutation = useSubmitQuizAttempt();
 
-  // Query for resuming existing attempt if activeAttemptId is set
-  const { data: fetchedAttempt, isLoading: loadingAttempt, error: attemptError } = useQuizAttempt(activeAttemptId);
+  const {
+    data: fetchedAttempt,
+    isLoading: loadingAttempt,
+    error: attemptError,
+  } = useQuizAttempt(activeAttemptId);
 
-  // Sync fetched attempt to state when resuming or after creation
   useEffect(() => {
     if (fetchedAttempt) {
       setCurrentAttempt(fetchedAttempt);
@@ -78,20 +87,17 @@ function PracticeQuizContent() {
     }
   }, [fetchedAttempt]);
 
-  // Handle start quiz
-  const handleStartQuiz = async (subjectId: string, topicId?: string, mode: AttemptMode = "PRACTICE") => {
+  const handleStartQuiz = async (
+    subjectId: string,
+    topicId?: string,
+    mode: AttemptMode = "PRACTICE",
+  ) => {
     if (userEnergy < 3) {
       setShowEnergyWarning(true);
       return;
     }
-
     try {
-      const newAttempt = await createAttemptMutation.mutateAsync({
-        mode,
-        subjectId,
-        topicId,
-      });
-
+      const newAttempt = await createAttemptMutation.mutateAsync({ mode, subjectId, topicId });
       setCurrentAttempt(newAttempt);
       setActiveAttemptId(newAttempt.id);
       setCurrentQuestionIndex(0);
@@ -108,15 +114,13 @@ function PracticeQuizContent() {
     }
   };
 
-  // Save answer to backend for a given question
   const saveAnswerToBackend = async (
     questionId: string,
     selectedOptionId?: string,
     submittedText?: string,
-    rethrowError = false
+    rethrowError = false,
   ) => {
     if (!activeAttemptId || (!selectedOptionId && !submittedText?.trim())) return;
-
     const key = generateIdempotencyKey();
     try {
       await submitAnswerMutation.mutateAsync({
@@ -129,110 +133,74 @@ function PracticeQuizContent() {
         idempotencyKey: key,
       });
     } catch (err: any) {
-      console.error("Failed to save answer to backend:", err);
+      console.error("Failed to save answer:", err);
       if (rethrowError) throw err;
     }
   };
 
-  // Handle option selection for current question
   const handleSelectOption = (optionKey: string) => {
     if (!currentAttempt?.questions) return;
-    const currentQuestion = currentAttempt.questions[currentQuestionIndex];
-    if (!currentQuestion) return;
-
-    const updatedAnswer = {
-      ...answersMap[currentQuestion.id],
-      selectedOptionId: optionKey,
-    };
-
-    setAnswersMap((prev) => ({
-      ...prev,
-      [currentQuestion.id]: updatedAnswer,
-    }));
-
-    saveAnswerToBackend(currentQuestion.id, optionKey, updatedAnswer.submittedText);
+    const q = currentAttempt.questions[currentQuestionIndex];
+    if (!q) return;
+    const updated = { ...answersMap[q.id], selectedOptionId: optionKey };
+    setAnswersMap((prev) => ({ ...prev, [q.id]: updated }));
+    saveAnswerToBackend(q.id, optionKey, updated.submittedText);
   };
 
-  // Handle text change for current question
   const handleChangeText = (text: string) => {
     if (!currentAttempt?.questions) return;
-    const currentQuestion = currentAttempt.questions[currentQuestionIndex];
-    if (!currentQuestion) return;
-
-    const updatedAnswer = {
-      ...answersMap[currentQuestion.id],
-      submittedText: text,
-    };
-
-    setAnswersMap((prev) => ({
-      ...prev,
-      [currentQuestion.id]: updatedAnswer,
-    }));
+    const q = currentAttempt.questions[currentQuestionIndex];
+    if (!q) return;
+    setAnswersMap((prev) => ({ ...prev, [q.id]: { ...prev[q.id], submittedText: text } }));
   };
 
-  // Save current question before navigation
-  const saveCurrentQuestionAnswer = async (rethrowError = false) => {
+  const saveCurrentAnswer = async (rethrow = false) => {
     if (!currentAttempt?.questions) return;
-    const currentQuestion = currentAttempt.questions[currentQuestionIndex];
-    if (!currentQuestion) return;
-
-    const currentAns = answersMap[currentQuestion.id];
-    if (currentAns?.selectedOptionId || currentAns?.submittedText?.trim()) {
-      await saveAnswerToBackend(
-        currentQuestion.id,
-        currentAns.selectedOptionId,
-        currentAns.submittedText,
-        rethrowError
-      );
+    const q = currentAttempt.questions[currentQuestionIndex];
+    if (!q) return;
+    const ans = answersMap[q.id];
+    if (ans?.selectedOptionId || ans?.submittedText?.trim()) {
+      await saveAnswerToBackend(q.id, ans.selectedOptionId, ans.submittedText, rethrow);
     }
   };
 
-  // Handle next question
   const handleNextQuestion = async () => {
     if (!currentAttempt?.questions) return;
-    await saveCurrentQuestionAnswer();
+    await saveCurrentAnswer();
     if (currentQuestionIndex + 1 < currentAttempt.questions.length) {
-      setCurrentQuestionIndex((prev) => prev + 1);
+      setCurrentQuestionIndex((p) => p + 1);
     }
   };
 
-  // Handle previous question
   const handlePreviousQuestion = async () => {
     if (!currentAttempt?.questions || currentQuestionIndex === 0) return;
-    await saveCurrentQuestionAnswer();
-    setCurrentQuestionIndex((prev) => prev - 1);
+    await saveCurrentAnswer();
+    setCurrentQuestionIndex((p) => p - 1);
   };
 
-  // Handle final quiz submission
   const handleFinishQuiz = async () => {
     if (!currentAttempt || !activeAttemptId) return;
     setIsSubmittingFinal(true);
-
     try {
-      // 1. Save current question answer
-      await saveCurrentQuestionAnswer(true);
-
-      // 2. Persist all recorded answers to backend
-      const savePromises = Object.entries(answersMap).map(([qId, ans]) => {
-        if (ans.selectedOptionId || ans.submittedText?.trim()) {
-          return saveAnswerToBackend(qId, ans.selectedOptionId, ans.submittedText, true);
-        }
-        return Promise.resolve();
-      });
-      await Promise.all(savePromises);
-
-      // 3. Submit quiz attempt
+      await saveCurrentAnswer(true);
+      await Promise.all(
+        Object.entries(answersMap).map(([qId, ans]) => {
+          if (ans.selectedOptionId || ans.submittedText?.trim()) {
+            return saveAnswerToBackend(qId, ans.selectedOptionId, ans.submittedText, true);
+          }
+          return Promise.resolve();
+        }),
+      );
       const results = await submitQuizMutation.mutateAsync(activeAttemptId);
       setSubmissionResults(results);
-      toast.success("Quiz completed and submitted!");
+      toast.success("Quiz submitted!");
     } catch (err: any) {
-      toast.error(err?.message || "Failed to submit quiz attempt");
+      toast.error(err?.message || "Failed to submit quiz");
     } finally {
       setIsSubmittingFinal(false);
     }
   };
 
-  // Reset quiz session
   const handleResetQuiz = () => {
     setActiveAttemptId("");
     setCurrentAttempt(null);
@@ -241,22 +209,23 @@ function PracticeQuizContent() {
     setSubmissionResults(null);
   };
 
-  // Auto-start if subjectId was provided in query parameters on mount
   useEffect(() => {
     if (initialSubjectId && !activeAttemptId && !currentAttempt && !createAttemptMutation.isPending) {
       handleStartQuiz(initialSubjectId, initialTopicId || undefined, "PRACTICE");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialSubjectId, initialTopicId]);
 
-  // View state determination
+  // ── Results ──────────────────────────────────────────────────────────────────
   if (submissionResults) {
     return (
-      <div className="w-full max-w-xl mx-auto bg-surface border-3 border-border rounded-2xl shadow-offset p-6">
+      <div className="w-full max-w-xl mx-auto bg-surface border-[3px] border-border rounded-2xl shadow-[0_6px_0_rgba(20,24,39,0.9)] p-6">
         <QuizResultsScreen results={submissionResults} onReset={handleResetQuiz} />
       </div>
     );
   }
 
+  // ── Selector ─────────────────────────────────────────────────────────────────
   if (!activeAttemptId && !currentAttempt) {
     return (
       <>
@@ -274,33 +243,30 @@ function PracticeQuizContent() {
     );
   }
 
+  // ── Loading ───────────────────────────────────────────────────────────────────
   if (loadingAttempt || createAttemptMutation.isPending) {
-    return (
-      <div className="w-full max-w-xl mx-auto bg-surface border-3 border-border rounded-2xl shadow-offset p-12 flex flex-col items-center justify-center gap-3 text-text-secondary">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        <span className="text-sm font-extrabold text-text-primary">
-          Generating practice quiz questions...
-        </span>
-      </div>
-    );
+    return <LoadingCard label="Generating practice quiz questions…" />;
   }
 
+  // ── Error / empty ─────────────────────────────────────────────────────────────
   if (attemptError || !currentAttempt || !currentAttempt.questions || currentAttempt.questions.length === 0) {
     return (
-      <div className="w-full max-w-xl mx-auto bg-surface border-3 border-border rounded-2xl shadow-offset p-8 flex flex-col items-center text-center gap-4">
-        <div className="p-3 bg-rose-500/10 text-rose-500 rounded-full">
-          <X size={24} />
+      <div className="w-full max-w-xl mx-auto bg-surface border-[3px] border-border rounded-2xl shadow-[0_6px_0_rgba(20,24,39,0.9)] p-8 flex flex-col items-center text-center gap-5">
+        <div className="w-14 h-14 rounded-2xl bg-surface-muted border-[2px] border-border flex items-center justify-center">
+          <X size={24} className="text-text-secondary" />
         </div>
-        <h4 className="text-base font-black text-text-primary">No Questions Available</h4>
-        <p className="text-xs text-text-secondary max-w-sm">
-          {attemptError instanceof Error
-            ? attemptError.message
-            : "No published questions found for this subject/topic scope yet."}
-        </p>
+        <div className="flex flex-col gap-1">
+          <h4 className="text-base font-black text-text-primary">No Questions Available</h4>
+          <p className="text-xs text-text-secondary max-w-sm">
+            {attemptError instanceof Error
+              ? attemptError.message
+              : "No published questions found for this subject/topic yet."}
+          </p>
+        </div>
         <button
           type="button"
           onClick={handleResetQuiz}
-          className="px-5 py-2.5 bg-primary border-2 border-border rounded-xl text-xs font-black shadow-[0_2.5px_0_#141827] cursor-pointer"
+          className="px-5 py-2.5 bg-primary border-[2px] border-border rounded-xl text-xs font-black shadow-[0_3px_0_#141827] active:translate-y-0.5 cursor-pointer"
         >
           TRY ANOTHER SUBJECT
         </button>
@@ -308,22 +274,25 @@ function PracticeQuizContent() {
     );
   }
 
+  // ── Active quiz ───────────────────────────────────────────────────────────────
   const questions = currentAttempt.questions;
   const currentQuestion = questions[currentQuestionIndex];
   const activeAnswer = currentQuestion ? answersMap[currentQuestion.id] : undefined;
   const isLastQuestion = currentQuestionIndex + 1 === questions.length;
+  const progressPct = ((currentQuestionIndex + 1) / questions.length) * 100;
 
   return (
-    <div className="w-full max-w-xl mx-auto bg-surface border-3 border-border rounded-2xl shadow-offset p-6 flex flex-col gap-5 animate-in fade-in zoom-in-95 duration-150">
-      {/* Header bar */}
-      <div className="flex items-center justify-between border-b-2 border-border pb-3">
+    <div className="w-full max-w-xl mx-auto bg-surface border-[3px] border-border rounded-2xl shadow-[0_6px_0_rgba(20,24,39,0.9)] p-6 flex flex-col gap-5 animate-in fade-in zoom-in-95 duration-150">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b-[2px] border-border pb-3">
         <h3 className="text-sm md:text-base font-black flex items-center gap-2 text-text-primary">
-          <Star size={18} fill="#F6D86B" className="text-yellow-500" />
-          <span>WASSCE Practice Session</span>
+          <BookOpen size={18} className="text-primary" />
+          WASSCE Practice Session
         </h3>
         <Link
           href="/study"
-          className="p-1.5 border-2 border-border rounded-lg hover:bg-surface-muted transition-colors"
+          className="p-1.5 border-[2px] border-border rounded-lg hover:bg-surface-muted transition-colors"
+          aria-label="Exit quiz"
         >
           <X size={16} />
         </Link>
@@ -331,15 +300,18 @@ function PracticeQuizContent() {
 
       {/* Progress bar */}
       <div className="flex flex-col gap-1.5">
-        <div className="w-full h-2.5 border-2 border-border rounded-full bg-surface-muted overflow-hidden">
+        <div className="w-full h-3 border-[2px] border-border rounded-full bg-surface-muted overflow-hidden">
           <div
-            className="h-full bg-primary transition-all duration-300"
-            style={{ width: `${((currentQuestionIndex + 1) / questions.length) * 100}%` }}
+            className="h-full bg-primary transition-all duration-300 rounded-full"
+            style={{ width: `${progressPct}%` }}
           />
         </div>
+        <span className="text-[11px] font-bold text-text-secondary text-right">
+          {currentQuestionIndex + 1} / {questions.length}
+        </span>
       </div>
 
-      {/* Question Card */}
+      {/* Question */}
       <QuestionCard
         question={currentQuestion}
         questionNumber={currentQuestionIndex + 1}
@@ -356,48 +328,47 @@ function PracticeQuizContent() {
         onChangeText={handleChangeText}
       />
 
-      {/* Navigation Buttons */}
-      <div className="flex justify-between items-center pt-4 border-t-2 border-border">
+      {/* Navigation */}
+      <div className="flex justify-between items-center pt-4 border-t-[2px] border-border">
         <button
           type="button"
           onClick={handlePreviousQuestion}
           disabled={currentQuestionIndex === 0 || isSubmittingFinal}
-          className="px-4 py-2.5 border-2 border-border rounded-xl font-bold text-xs hover:bg-surface-muted disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer"
+          className="flex items-center gap-1.5 px-4 py-2.5 border-[2px] border-border rounded-xl font-black text-xs hover:bg-surface-muted disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer"
         >
+          <ChevronLeft size={14} />
           PREVIOUS
         </button>
 
-        <div className="flex gap-2">
-          {!isLastQuestion ? (
-            <button
-              type="button"
-              onClick={handleNextQuestion}
-              disabled={isSubmittingFinal}
-              className="px-5 py-2.5 bg-primary text-text-primary border-2 border-border rounded-xl font-black text-xs shadow-[0_2.5px_0_#141827] active:translate-y-0.5 active:shadow-[0_0.5px_0_#141827] disabled:opacity-50 transition-all cursor-pointer"
-            >
-              NEXT QUESTION
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={handleFinishQuiz}
-              disabled={isSubmittingFinal}
-              className="px-5 py-2.5 bg-emerald-400 text-text-primary border-2 border-border rounded-xl font-black text-xs shadow-[0_2.5px_0_#141827] active:translate-y-0.5 active:shadow-[0_0.5px_0_#141827] disabled:opacity-50 flex items-center gap-2 cursor-pointer"
-            >
-              {isSubmittingFinal ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>SUBMITTING...</span>
-                </>
-              ) : (
-                <>
-                  <Sparkles size={14} />
-                  <span>FINISH & SUBMIT</span>
-                </>
-              )}
-            </button>
-          )}
-        </div>
+        {!isLastQuestion ? (
+          <button
+            type="button"
+            onClick={handleNextQuestion}
+            disabled={isSubmittingFinal}
+            className="px-5 py-2.5 bg-primary text-text-primary border-[2px] border-border rounded-xl font-black text-xs shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 disabled:opacity-50 transition-all cursor-pointer"
+          >
+            NEXT QUESTION
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={handleFinishQuiz}
+            disabled={isSubmittingFinal}
+            className="px-5 py-2.5 bg-primary text-text-primary border-[2px] border-border rounded-xl font-black text-xs shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 disabled:opacity-50 flex items-center gap-2 cursor-pointer transition-all"
+          >
+            {isSubmittingFinal ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>SUBMITTING…</span>
+              </>
+            ) : (
+              <>
+                <Sparkles size={14} />
+                <span>FINISH & SUBMIT</span>
+              </>
+            )}
+          </button>
+        )}
       </div>
 
       <EnergyWarningModal
@@ -409,16 +380,11 @@ function PracticeQuizContent() {
   );
 }
 
+// ─── Page shell ───────────────────────────────────────────────────────────────
+
 export default function PracticeQuizPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="w-full max-w-xl mx-auto bg-surface border-3 border-border rounded-2xl shadow-offset p-12 flex flex-col items-center justify-center gap-3 text-text-secondary">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          <span className="text-xs font-bold">Loading quiz center...</span>
-        </div>
-      }
-    >
+    <Suspense fallback={<LoadingCard label="Loading quiz centre…" />}>
       <PracticeQuizContent />
     </Suspense>
   );
