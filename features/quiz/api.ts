@@ -6,6 +6,7 @@ import {
   AttemptAnswerResponseDto,
   SubmitAttemptResponseDto,
   AttemptListResponseDto,
+  FlashcardListResponse,
 } from "./types";
 
 export async function createQuizAttempt(payload: CreateAttemptPayload): Promise<QuizAttempt> {
@@ -40,4 +41,9 @@ export async function listQuizAttempts(query?: {
   const queryString = searchParams.toString();
   return apiGet<AttemptListResponseDto>(`/quiz-attempts${queryString ? `?${queryString}` : ""}`);
 }
+
+export async function getFlashcardsForAttempt(attemptId: string): Promise<FlashcardListResponse> {
+  return apiGet<FlashcardListResponse>(`/quiz-attempts/${attemptId}/flashcards`);
+}
+
 

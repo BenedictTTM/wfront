@@ -90,3 +90,18 @@ export type AttemptListResponseDto = {
   nextCursor: string | null;
 };
 
+export type FlashcardDto = {
+  id: string;
+  questionId: string;
+  front: string;
+  back: string;
+  explanation?: string | null;
+  difficulty?: "easy" | "medium" | "hard" | string | null;
+  topic?: string | null;
+};
+
+export type FlashcardListResponse = {
+  flashcards: FlashcardDto[];
+};
+
+

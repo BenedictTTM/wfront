@@ -10,6 +10,7 @@ import { useEnergy } from "@/features/gamification/hooks";
 import { generateIdempotencyKey } from "@/lib/idempotency";
 import {
   useCreateQuizAttempt,
+  useFlashcards,
   useQuizAttempt,
   useSubmitQuizAnswer,
   useSubmitQuizAttempt,
@@ -20,8 +21,10 @@ import {
   OptionSelector,
   QuizResultsScreen,
   EnergyWarningModal,
+  FlashcardReview,
 } from "@/features/quiz/components";
 import { AttemptMode, QuizAttempt, SubmitAttemptResponseDto } from "@/features/quiz/types";
+
 
 // ─── Loading skeleton ─────────────────────────────────────────────────────────
 
@@ -43,6 +46,7 @@ function PracticeQuizContent() {
   const initialSubjectId = searchParams.get("subjectId") || "";
   const initialTopicId = searchParams.get("topicId") || "";
   const queryAttemptId = searchParams.get("attemptId") || "";
+  const initialMode = searchParams.get("mode") || "";
 
   const { data: energyData } = useEnergy();
   const userEnergy = energyData?.currentEnergy ?? 30;
@@ -56,6 +60,7 @@ function PracticeQuizContent() {
   const [submissionResults, setSubmissionResults] = useState<SubmitAttemptResponseDto | null>(null);
   const [showEnergyWarning, setShowEnergyWarning] = useState<boolean>(false);
   const [isSubmittingFinal, setIsSubmittingFinal] = useState<boolean>(false);
+  const [inFlashcardReview, setInFlashcardReview] = useState<boolean>(initialMode !== "quiz");
 
   const createAttemptMutation = useCreateQuizAttempt();
   const submitAnswerMutation = useSubmitQuizAnswer();
@@ -66,6 +71,12 @@ function PracticeQuizContent() {
     isLoading: loadingAttempt,
     error: attemptError,
   } = useQuizAttempt(activeAttemptId);
+
+  const {
+    data: flashcardsData,
+    isLoading: loadingFlashcards,
+  } = useFlashcards(activeAttemptId);
+
 
   useEffect(() => {
     if (fetchedAttempt) {
@@ -91,6 +102,7 @@ function PracticeQuizContent() {
     subjectId: string,
     topicId?: string,
     mode: AttemptMode = "PRACTICE",
+    overrideFlashcardReview?: boolean,
   ) => {
     if (userEnergy < 3) {
       setShowEnergyWarning(true);
@@ -103,6 +115,7 @@ function PracticeQuizContent() {
       setCurrentQuestionIndex(0);
       setAnswersMap({});
       setSubmissionResults(null);
+      setInFlashcardReview(overrideFlashcardReview ?? (initialMode !== "quiz"));
       toast.success("Quiz attempt started!");
     } catch (err: any) {
       const message = err?.message || "Failed to start quiz attempt";
@@ -207,6 +220,7 @@ function PracticeQuizContent() {
     setCurrentQuestionIndex(0);
     setAnswersMap({});
     setSubmissionResults(null);
+    setInFlashcardReview(true);
   };
 
   useEffect(() => {
@@ -243,10 +257,28 @@ function PracticeQuizContent() {
     );
   }
 
-  // ── Loading ───────────────────────────────────────────────────────────────────
+  // ── Loading Quiz Attempt ───────────────────────────────────────────────────────
   if (loadingAttempt || createAttemptMutation.isPending) {
     return <LoadingCard label="Generating practice quiz questions…" />;
   }
+
+  // ── Loading Flashcards ───────────────────────────────────────────────────────
+  if (inFlashcardReview && activeAttemptId && loadingFlashcards) {
+    return <LoadingCard label="Preparing your quick review…" />;
+  }
+
+  // ── Flashcard Review Screen ──────────────────────────────────────────────────
+  const flashcards = flashcardsData?.flashcards || [];
+  if (inFlashcardReview && activeAttemptId && flashcards.length > 0) {
+    return (
+      <FlashcardReview
+        flashcards={flashcards}
+        onStartQuiz={() => setInFlashcardReview(false)}
+        onSkip={() => setInFlashcardReview(false)}
+      />
+    );
+  }
+
 
   // ── Error / empty ─────────────────────────────────────────────────────────────
   if (attemptError || !currentAttempt || !currentAttempt.questions || currentAttempt.questions.length === 0) {

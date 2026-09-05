@@ -1,11 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createQuizAttempt,
+  getFlashcardsForAttempt,
   getQuizAttempt,
   listQuizAttempts,
   submitQuizAnswer,
   submitQuizAttempt,
 } from "./api";
+
 import { CreateAttemptPayload, QuizAnswer } from "./types";
 
 export function useQuizAttempt(attemptId: string) {
@@ -16,6 +18,16 @@ export function useQuizAttempt(attemptId: string) {
     staleTime: 0,
   });
 }
+
+export function useFlashcards(attemptId: string) {
+  return useQuery({
+    queryKey: ["quiz", "flashcards", attemptId],
+    queryFn: () => getFlashcardsForAttempt(attemptId),
+    enabled: !!attemptId,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
 
 export function useCreateQuizAttempt() {
   const queryClient = useQueryClient();

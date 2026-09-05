@@ -1,24 +1,76 @@
-// middleware.ts — route-level auth/role redirect (coarse gate only)
-// Fine-grained permission checks happen at component level via lib/permissions.ts
-//
-// Guard matrix per architecture doc §2 / §4:
-//   (auth)/*     → redirect to /dashboard if already authenticated
-//   (public)/*   → always accessible (no guard)
-//   (app)/*      → redirect to /login if no session (accessToken OR anonymousToken)
-//   (teacher)/*  → redirect to /dashboard if role !== 'Teacher' && role !== 'Admin'
-//   (admin)/*    → redirect to /dashboard if role !== 'Admin'
-//
-// NOTE: This is coarse gating only — a Teacher hitting /admin/questions/review
-// must be redirected BEFORE any render (not just nav-item hiding).
-// TODO: implement once cookie names are confirmed from auth Route Handler
-
 import { type NextRequest, NextResponse } from "next/server";
 
-export async function middleware(_request: NextRequest): Promise<NextResponse> {
-  // TODO:
-  // 1. Read accessToken + role from cookies (httpOnly, so readable in middleware)
-  // 2. Apply guard matrix above
-  // 3. Redirect as needed; pass through on ok
+// Routes that require either a logged-in user session (accessToken) or a guest session (guestToken / anonymousToken)
+const PROTECTED_ROUTES = [
+  "/dashboard",
+  "/study",
+  "/quiz",
+  "/mock-exam",
+  "/history",
+  "/profile",
+  "/quests",
+  "/leaderboard",
+];
+
+// Routes restricted to authenticated users only (guests should be redirected to login)
+const AUTH_ONLY_ROUTES = [
+  "/profile",
+  "/history",
+];
+
+// Auth routes (redirect to /dashboard if already logged in)
+const AUTH_ROUTES = ["/login", "/register"];
+
+export async function middleware(request: NextRequest): Promise<NextResponse> {
+  const { pathname } = request.nextUrl;
+
+  const accessToken = request.cookies.get("accessToken")?.value;
+  const role = request.cookies.get("role")?.value;
+  const guestToken = request.cookies.get("guestToken")?.value || request.cookies.get("anonymousToken")?.value;
+
+  const isAuthenticated = !!accessToken;
+  const hasGuestSession = !!guestToken;
+  const hasAnySession = isAuthenticated || hasGuestSession;
+
+  // 1. Auth routes check: if logged in with user account, redirect away from /login & /register
+  if (AUTH_ROUTES.some((route) => pathname.startsWith(route))) {
+    if (isAuthenticated) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+    return NextResponse.next();
+  }
+
+  // 2. Auth-only routes check (e.g. /profile, /history): require full account
+  if (AUTH_ONLY_ROUTES.some((route) => pathname.startsWith(route))) {
+    if (!isAuthenticated) {
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("from", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+  }
+
+  // 3. General protected routes check: require either user auth or guest session
+  if (PROTECTED_ROUTES.some((route) => pathname.startsWith(route))) {
+    if (!hasAnySession) {
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("from", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+  }
+
+  // 4. Role-based checks
+  if (pathname.startsWith("/teacher")) {
+    if (!isAuthenticated || (role !== "Teacher" && role !== "Admin")) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+  }
+
+  if (pathname.startsWith("/admin")) {
+    if (!isAuthenticated || role !== "Admin") {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+  }
+
   return NextResponse.next();
 }
 
@@ -28,3 +80,4 @@ export const config = {
     "/((?!_next/static|_next/image|favicon.ico|api/).*)",
   ],
 };
+

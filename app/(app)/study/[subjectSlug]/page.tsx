@@ -68,16 +68,17 @@ function Connector({ completed }: { completed: boolean }) {
 
 // ─── Current Node Popup ───────────────────────────────────────────────────────
 
+import { StudyModeModal, LectureSlidesModal } from "@/features/curriculum/components";
+
+// ─── Current Node Popup ───────────────────────────────────────────────────────
+
 function NodePopup({
   node,
-  subjectId,
-  onClose,
+  onOpenModeModal,
 }: {
   node: LearningPathNode;
-  subjectId: string;
-  onClose: () => void;
+  onOpenModeModal: (node: LearningPathNode) => void;
 }) {
-  const isCurrent = node.status === "CURRENT";
   const isCompleted = node.status === "COMPLETED";
 
   return (
@@ -90,13 +91,13 @@ function NodePopup({
           {node.subtopic.name}
         </h4>
       </div>
-      <Link
-        href={`/study/quiz?subtopicId=${node.subtopic.id}&subjectId=${subjectId}`}
-        className="w-full py-3 bg-primary text-text-primary border-[3px] border-border rounded-xl text-xs font-black shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 transition-all text-center tracking-widest"
-        onClick={onClose}
+      <button
+        type="button"
+        onClick={() => onOpenModeModal(node)}
+        className="w-full py-3 bg-primary text-text-primary border-[3px] border-border rounded-xl text-xs font-black shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 transition-all text-center tracking-widest cursor-pointer"
       >
         {isCompleted ? "PRACTICE AGAIN" : "CONTINUE"}
-      </Link>
+      </button>
     </div>
   );
 }
@@ -106,18 +107,50 @@ function NodePopup({
 function PathSection({
   section,
   subjectId,
+  subjectName,
 }: {
   section: LearningPathSection;
   subjectId: string;
+  subjectName: string;
 }) {
+  const router = useRouter();
   const [activeNodeId, setActiveNodeId] = useState<string | null>(
     () => section.nodes.find((n) => n.status === "CURRENT")?.subtopic.id ?? null,
   );
+  const [modalNode, setModalNode] = useState<LearningPathNode | null>(null);
+  const [slidesNode, setSlidesNode] = useState<LearningPathNode | null>(null);
 
   const activeNode = section.nodes.find((n) => n.subtopic.id === activeNodeId) ?? null;
 
   function handleSelect(node: LearningPathNode) {
     setActiveNodeId((prev) => (prev === node.subtopic.id ? null : node.subtopic.id));
+  }
+
+  function handleOpenModeModal(node: LearningPathNode) {
+    setModalNode(node);
+  }
+
+  function handleSelectQuiz() {
+    if (!modalNode) return;
+    const subtopicId = modalNode.subtopic.id;
+    setModalNode(null);
+    setActiveNodeId(null);
+    router.push(`/study/quiz?subtopicId=${subtopicId}&subjectId=${subjectId}&mode=quiz`);
+  }
+
+  function handleSelectFlashcards() {
+    if (!modalNode) return;
+    const subtopicId = modalNode.subtopic.id;
+    setModalNode(null);
+    setActiveNodeId(null);
+    router.push(`/study/quiz?subtopicId=${subtopicId}&subjectId=${subjectId}&mode=flashcards`);
+  }
+
+  function handleSelectSlides() {
+    if (!modalNode) return;
+    const node = modalNode;
+    setModalNode(null);
+    setSlidesNode(node);
   }
 
   return (
@@ -174,14 +207,49 @@ function PathSection({
               {isNodeActive && activeNode && (
                 <NodePopup
                   node={activeNode}
-                  subjectId={subjectId}
-                  onClose={() => setActiveNodeId(null)}
+                  onOpenModeModal={handleOpenModeModal}
                 />
               )}
             </React.Fragment>
           );
         })}
       </div>
+
+      {/* Choose Study Mode Modal */}
+      {modalNode && (
+        <StudyModeModal
+          isOpen={!!modalNode}
+          onClose={() => setModalNode(null)}
+          subtopicName={modalNode.subtopic.name}
+          onSelectQuiz={handleSelectQuiz}
+          onSelectFlashcards={handleSelectFlashcards}
+          onSelectSlides={handleSelectSlides}
+        />
+      )}
+
+      {/* Lecture Material (Slides) Modal */}
+      {slidesNode && (
+        <LectureSlidesModal
+          isOpen={!!slidesNode}
+          onClose={() => setSlidesNode(null)}
+          subtopicName={slidesNode.subtopic.name}
+          subjectName={subjectName}
+          subtopicId={slidesNode.subtopic.id}
+          subjectId={subjectId}
+          onStartQuiz={() => {
+            const subId = slidesNode.subtopic.id;
+            setSlidesNode(null);
+            setActiveNodeId(null);
+            router.push(`/study/quiz?subtopicId=${subId}&subjectId=${subjectId}&mode=quiz`);
+          }}
+          onStartFlashcards={() => {
+            const subId = slidesNode.subtopic.id;
+            setSlidesNode(null);
+            setActiveNodeId(null);
+            router.push(`/study/quiz?subtopicId=${subId}&subjectId=${subjectId}&mode=flashcards`);
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -292,6 +360,7 @@ export default function LearningPathPage() {
             key={section.topic.id}
             section={section}
             subjectId={path.subject.id}
+            subjectName={path.subject.name}
           />
         ))}
       </div>

@@ -89,7 +89,7 @@ export function Sidebar({
               <path d="M 17.5 13 L 18 10 C 18 9, 22 9, 22 10 L 22.5 13 Z" fill="#a06030" stroke="#141827" strokeWidth="1.5" strokeLinejoin="round" />
             </svg>
           </div>
-          <span className="font-extrabold text-2xl tracking-tight text-text-primary">Piply</span>
+          <span className="font-extrabold text-2xl tracking-tight text-text-primary">Panda</span>
           <button 
             className="lg:hidden ml-auto p-1 border-2 border-border rounded-md hover:bg-surface-muted"
             onClick={() => setMobileMenuOpen(false)}
