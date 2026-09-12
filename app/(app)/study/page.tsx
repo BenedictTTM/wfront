@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { BookOpen, Zap, ChevronRight, Loader2, FlaskConical } from "lucide-react";
+import { BookOpen, Zap, ChevronRight, Loader2 } from "lucide-react";
 import { useSubjects } from "@/features/curriculum/hooks";
 
 export default function StudyCenterPage() {
@@ -18,40 +18,24 @@ export default function StudyCenterPage() {
       </div>
 
       {/* Quick actions */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4">
         <Link
           href="/study/quiz"
-          className="p-5 bg-surface border-[2px] border-border rounded-2xl shadow-[0_4px_0_rgba(20,24,39,0.9)] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-[0_1px_0_rgba(20,24,39,0.9)] transition-all flex flex-col gap-3 cursor-pointer"
+          className="p-5 bg-surface border-[2px] border-border rounded-2xl shadow-[0_4px_0_rgba(20,24,39,0.9)] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-[0_1px_0_rgba(20,24,39,0.9)] transition-all flex items-center justify-between gap-3 cursor-pointer"
         >
-          <div className="w-10 h-10 rounded-xl bg-primary border-[2px] border-border flex items-center justify-center shadow-[0_2px_0_rgba(20,24,39,0.9)]">
-            <Zap size={20} className="fill-text-primary text-text-primary" />
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-primary border-[2px] border-border flex items-center justify-center shadow-[0_2px_0_rgba(20,24,39,0.9)] shrink-0">
+              <Zap size={20} className="fill-text-primary text-text-primary" />
+            </div>
+            <div>
+              <h3 className="font-black text-text-primary text-sm">Practice Quiz</h3>
+              <p className="text-xs text-text-secondary font-medium mt-0.5">
+                Quick random questions across any subject or topic
+              </p>
+            </div>
           </div>
-          <div>
-            <h3 className="font-black text-text-primary text-sm">Practice Quiz</h3>
-            <p className="text-xs text-text-secondary font-medium mt-0.5">
-              Quick random questions across any subject or topic
-            </p>
-          </div>
-          <span className="text-xs font-black text-primary flex items-center gap-1 mt-auto">
+          <span className="text-xs font-black text-primary flex items-center gap-1 shrink-0">
             START QUIZ <ChevronRight size={12} />
-          </span>
-        </Link>
-
-        <Link
-          href="/study/mock-exams"
-          className="p-5 bg-surface border-[2px] border-border rounded-2xl shadow-[0_4px_0_rgba(20,24,39,0.9)] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-[0_1px_0_rgba(20,24,39,0.9)] transition-all flex flex-col gap-3 cursor-pointer"
-        >
-          <div className="w-10 h-10 rounded-xl bg-secondary/50 border-[2px] border-border flex items-center justify-center shadow-[0_2px_0_rgba(20,24,39,0.9)]">
-            <FlaskConical size={20} className="text-text-primary" />
-          </div>
-          <div>
-            <h3 className="font-black text-text-primary text-sm">Mock Exam</h3>
-            <p className="text-xs text-text-secondary font-medium mt-0.5">
-              Timed WASSCE-style exam under real conditions
-            </p>
-          </div>
-          <span className="text-xs font-black text-text-primary flex items-center gap-1 mt-auto">
-            SIMULATE EXAM <ChevronRight size={12} />
           </span>
         </Link>
       </div>

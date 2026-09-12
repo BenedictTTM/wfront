@@ -11,6 +11,7 @@ import {
   getStreak,
   getUserQuests,
   refillEnergy,
+  convertDiamondsToEnergy,
 } from "./api";
 
 export function useQuests() {
@@ -101,6 +102,17 @@ export function useRefillEnergy() {
 
   return useMutation({
     mutationFn: refillEnergy,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["gamification"] });
+    },
+  });
+}
+
+export function useConvertDiamondsToEnergy() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (diamonds?: number) => convertDiamondsToEnergy(diamonds),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["gamification"] });
     },

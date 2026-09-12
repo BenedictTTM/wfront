@@ -29,6 +29,10 @@ export async function refillEnergy(): Promise<UserEnergy> {
   return apiPost<UserEnergy>("/users/me/refill-energy");
 }
 
+export async function convertDiamondsToEnergy(diamonds?: number): Promise<UserEnergy> {
+  return apiPost<UserEnergy>("/users/me/diamonds-to-energy", { diamonds });
+}
+
 export async function getUserQuests(): Promise<UserQuest[]> {
   return apiGet<UserQuest[]>("/users/me/quests");
 }

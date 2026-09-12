@@ -371,13 +371,13 @@ export default function LearningPathPage() {
           <CheckCircle2 size={36} className="text-text-primary" />
           <h3 className="text-lg font-black text-text-primary">Subject Complete! 🎉</h3>
           <p className="text-xs text-text-secondary max-w-xs">
-            You&apos;ve completed all subtopics in {path.subject.name}. Time for a mock exam!
+            You&apos;ve completed all subtopics in {path.subject.name}. Time to test your skills with a quiz!
           </p>
           <Link
-            href="/study/mock-exams"
+            href="/study/quiz"
             className="px-6 py-3 bg-primary border-[3px] border-border rounded-xl text-xs font-black shadow-[0_4px_0_#141827] active:translate-y-0.5 hover:-translate-y-0.5 transition-all"
           >
-            TAKE MOCK EXAM
+            PRACTICE QUIZ
           </Link>
         </div>
       )}

@@ -253,7 +253,7 @@ export default function Dashboard() {
               Quick Study Launch
             </h2>
             <p className="text-xs font-bold text-text-secondary">
-              Jump straight into practice questions or mock exams.
+              Jump straight into practice questions or explore your curriculum.
             </p>
           </div>
         </div>
@@ -280,7 +280,7 @@ export default function Dashboard() {
             </div>
 
             <button
-              onClick={() => handleStartQuiz("/study")}
+              onClick={() => handleStartQuiz("/study/quiz")}
               className="w-full py-3 bg-primary hover:bg-[#ebd060] text-text-primary border-2.5 border-border rounded-xl font-black text-sm shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
               <span>START PRACTICE QUIZ</span>
@@ -288,31 +288,31 @@ export default function Dashboard() {
             </button>
           </div>
 
-          {/* Action 2: Mock Exam */}
+          {/* Action 2: Study Center */}
           <div className="bg-surface border-2.5 border-border rounded-2xl p-6 flex flex-col justify-between gap-5 group hover:-translate-y-0.5 transition-all duration-200">
             <div className="flex items-start justify-between">
               <div className="w-12 h-12 rounded-2xl bg-secondary border-2.5 border-border flex items-center justify-center text-text-primary text-xl font-black shadow-[0_3px_0_#141827]">
-                <FileText size={22} />
+                <BookOpen size={22} />
               </div>
               <span className="text-xs font-black px-3 py-1 bg-bg-primary border-2 border-border rounded-xl whitespace-nowrap">
-                Cost: 3 🔋
+                Free
               </span>
             </div>
 
             <div>
               <h3 className="text-lg font-extrabold text-text-primary">
-                Mock Examinations
+                Learning Paths
               </h3>
               <p className="text-xs font-bold text-text-secondary mt-1 leading-relaxed">
-                Simulate official full-length WASSCE exams under realistic timer conditions with automatic submission.
+                Explore structured WASSCE curriculum topics, reading materials, and track your syllabus progress.
               </p>
             </div>
 
             <button
-              onClick={() => handleStartQuiz("/study/mock-exams")}
+              onClick={() => router.push("/study")}
               className="w-full py-3 bg-secondary hover:bg-[#b2c3bc] text-text-primary border-2.5 border-border rounded-xl font-black text-sm shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
-              <span>ENTER MOCK EXAM</span>
+              <span>BROWSE SUBJECTS</span>
               <ArrowRight size={16} strokeWidth={3} />
             </button>
           </div>

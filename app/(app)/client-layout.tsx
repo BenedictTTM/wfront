@@ -19,7 +19,6 @@ import { StatsProvider, useStats } from "@/components/providers/stats-provider";
 import { useCurrentUser, useMe } from "@/features/auth/hooks";
 import { isGuestIdentity } from "@/features/auth/types";
 import { useQuests, useClaimQuestReward } from "@/features/gamification/hooks";
-import { useLockIn } from "@/features/mock-exam/lockin-context";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -31,7 +30,6 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   const { data: meData } = useMe();
   const isGuest = !meData || isGuestIdentity(meData);
   const router = useRouter();
-  const { isLockInActive } = useLockIn();
 
   // Cap energy for guests
   const displayEnergy = isGuest ? Math.min(energy, GUEST_MAX_ENERGY) : energy;
@@ -62,7 +60,6 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen flex bg-bg-primary text-text-primary font-sans selection:bg-primary selection:text-text-primary antialiased relative">
-      {/* LockIn™ immersive mode CSS — hides chrome when data-lockin="active" is set on <html> */}
       <style>{`
         @keyframes capy-bob {
           0%, 100% { transform: translateY(0) scale(1); }
@@ -78,17 +75,10 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
         .wave-bar {
           animation: wave-pulse 1.2s ease-in-out infinite;
         }
-        /* LockIn™ immersive mode: hide sidebar chrome */
-        [data-lockin="active"] .lockin-hide {
-          display: none !important;
-        }
-        [data-lockin="active"] main {
-          border-right: none !important;
-        }
       `}</style>
 
       {/* ─── LEFT SIDEBAR ─────────────────────────────────────────────────────────── */}
-      <div className="lockin-hide">
+      <div>
         <Sidebar
           mobileMenuOpen={mobileMenuOpen}
           setMobileMenuOpen={setMobileMenuOpen}
@@ -98,7 +88,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
       {/* Mobile Menu Backdrop */}
       {mobileMenuOpen && (
         <div
-          className="fixed inset-0 z-30 bg-black/40 lg:hidden lockin-hide"
+          className="fixed inset-0 z-30 bg-black/40 lg:hidden"
           onClick={() => setMobileMenuOpen(false)}
         />
       )}
@@ -106,7 +96,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
       {/* ─── CENTER CONTENT AREA ─────────────────────────────────────────────────── */}
       <main className="flex-1 min-w-0 bg-surface border-r-3 border-border flex flex-col h-screen overflow-y-auto">
         {/* Mobile Header Bar */}
-        <header className="lg:hidden lockin-hide flex items-center justify-between p-4 border-b-2 border-border bg-bg-secondary sticky top-0 z-20">
+        <header className="lg:hidden flex items-center justify-between p-4 border-b-2 border-border bg-bg-secondary sticky top-0 z-20">
           <div className="flex items-center gap-2">
             <button
               className="p-1.5 border-2 border-border rounded-lg bg-surface"
@@ -137,15 +127,13 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Main Viewport Container */}
-        <div className={`flex-1 w-full px-6 py-8 md:p-10 flex flex-col gap-10 ${
-          isLockInActive ? 'max-w-none' : 'max-w-4xl mx-auto'
-        }`}>
+        <div className="flex-1 w-full px-6 py-8 md:p-10 flex flex-col gap-10 max-w-4xl mx-auto">
           {children}
         </div>
       </main>
 
       {/* ─── RIGHT SIDEBAR (STATS & QUESTS) ─────────────────────────────────────── */}
-      <aside className="lockin-hide hidden lg:flex w-80 bg-bg-primary h-screen flex-col p-6 sticky top-0 overflow-y-auto gap-6 shrink-0 border-l border-border/20">
+      <aside className="hidden lg:flex w-80 bg-bg-primary h-screen flex-col p-6 sticky top-0 overflow-y-auto gap-6 shrink-0 border-l border-border/20">
         {/* Top Header stats */}
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-4 bg-surface px-4 py-2 border-2 border-border rounded-xl">

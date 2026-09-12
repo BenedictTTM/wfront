@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { 
   Home, 
   BookOpen, 
-  Library, 
   ClipboardList, 
   Trophy, 
   Compass, 
@@ -62,7 +61,6 @@ export function Sidebar({
   let activeTab = "home";
   if (pathname.startsWith("/dashboard")) activeTab = "home";
   else if (pathname.startsWith("/study")) activeTab = "study";
-  else if (pathname.startsWith("/pdfs")) activeTab = "library";
   else if (pathname.startsWith("/leaderboards")) activeTab = "leaderboard";
   else if (pathname.startsWith("/analytics")) activeTab = "explore";
   else if (pathname.startsWith("/achievements")) activeTab = "achievements";
@@ -124,19 +122,6 @@ export function Sidebar({
           >
             <BookOpen size={18} strokeWidth={activeTab === "study" ? 2.5 : 2} />
             <span>STUDY</span>
-          </Link>
-
-          <Link
-            href="/pdfs"
-            onClick={() => setMobileMenuOpen(false)}
-            className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl border-2 transition-all font-bold text-sm text-left
-              ${activeTab === "library" 
-                ? "bg-[#FFFDF6] text-[#FF9E2C] border-primary shadow-[0_3px_0_#141827]" 
-                : "bg-transparent text-text-secondary border-transparent hover:text-text-primary hover:bg-bg-secondary"
-              }`}
-          >
-            <Library size={18} strokeWidth={activeTab === "library" ? 2.5 : 2} />
-            <span>LIBRARY</span>
           </Link>
 
           <Link

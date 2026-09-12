@@ -5,7 +5,6 @@ const PROTECTED_ROUTES = [
   "/dashboard",
   "/study",
   "/quiz",
-  "/mock-exam",
   "/history",
   "/profile",
   "/quests",

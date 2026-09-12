@@ -49,7 +49,7 @@ function PracticeQuizContent() {
   const initialMode = searchParams.get("mode") || "";
 
   const { data: energyData } = useEnergy();
-  const userEnergy = energyData?.currentEnergy ?? 30;
+  const userEnergy = energyData?.current ?? 30;
 
   const [activeAttemptId, setActiveAttemptId] = useState<string>(queryAttemptId);
   const [currentAttempt, setCurrentAttempt] = useState<QuizAttempt | null>(null);
