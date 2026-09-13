@@ -1,386 +1,220 @@
 "use client";
 
-import React, { useState } from "react";
-import Link from "next/link";
+import React, { useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { CheckCircle2, BookOpen, Lock, Loader2, ChevronRight, ArrowLeft, Target } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowLeft,
+  Compass,
+  Loader2,
+  RefreshCw,
+  Sparkles,
+} from "lucide-react";
+import Link from "next/link";
+import { toast } from "sonner";
 
-import { useLearningPath } from "@/features/curriculum/hooks";
-import { LearningPathNode, LearningPathSection } from "@/features/curriculum/types";
+import { useLearningJourney } from "@/features/curriculum/journey-hooks";
+import {
+  JourneyMap,
+  JourneyProgress,
+} from "@/features/curriculum/components/journey";
+import { JourneyLevelItem } from "@/features/curriculum/types";
 
-// ─── Hex Node ────────────────────────────────────────────────────────────────
+// ── Loading Skeleton ──────────────────────────────────────────────────────────
 
-function HexNode({
-  node,
-  onSelect,
-}: {
-  node: LearningPathNode;
-  onSelect: (node: LearningPathNode) => void;
-}) {
-  const isCompleted = node.status === "COMPLETED";
-  const isCurrent = node.status === "CURRENT";
-  const isLocked = node.status === "LOCKED";
-
+function JourneyLoadingSkeleton() {
   return (
-    <button
-      type="button"
-      onClick={() => !isLocked && onSelect(node)}
-      disabled={isLocked}
-      aria-label={node.subtopic.name}
-      className={[
-        "relative flex items-center justify-center w-16 h-16 transition-all duration-150",
-        !isLocked ? "hover:-translate-y-1 active:translate-y-0.5 cursor-pointer" : "cursor-not-allowed opacity-55",
-      ].join(" ")}
-      style={{ clipPath: "polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)" }}
-    >
-      <div
-        className={[
-          "absolute inset-0 border-[3px] transition-colors",
-          isCompleted ? "bg-secondary border-border drop-shadow-[0_4px_0_rgba(20,24,39,0.9)]" : "",
-          isCurrent ? "bg-primary border-border drop-shadow-[0_4px_0_rgba(20,24,39,0.9)]" : "",
-          isLocked ? "bg-surface-muted border-border-muted" : "",
-        ].join(" ")}
-        style={{ clipPath: "polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)" }}
-      />
-      <div className="relative z-10 flex items-center justify-center">
-        {isCompleted && <CheckCircle2 size={22} className="text-text-primary stroke-[2.5]" />}
-        {isCurrent && <BookOpen size={22} className="text-text-primary stroke-[2.5]" />}
-        {isLocked && <Lock size={18} className="text-text-secondary stroke-[2]" />}
-      </div>
-    </button>
-  );
-}
-
-// ─── Connector Line ───────────────────────────────────────────────────────────
-
-function Connector({ completed }: { completed: boolean }) {
-  return (
-    <div className="flex justify-center pointer-events-none h-6">
-      <div
-        className={[
-          "w-1 h-full rounded-full",
-          completed ? "bg-border" : "bg-border-muted opacity-40",
-        ].join(" ")}
-      />
-    </div>
-  );
-}
-
-// ─── Current Node Popup ───────────────────────────────────────────────────────
-
-import { StudyModeModal, LectureSlidesModal } from "@/features/curriculum/components";
-
-// ─── Current Node Popup ───────────────────────────────────────────────────────
-
-function NodePopup({
-  node,
-  onOpenModeModal,
-}: {
-  node: LearningPathNode;
-  onOpenModeModal: (node: LearningPathNode) => void;
-}) {
-  const isCompleted = node.status === "COMPLETED";
-
-  return (
-    <div className="w-full max-w-[260px] mx-auto mt-3 mb-1 bg-surface border-[3px] border-border rounded-2xl shadow-[0_6px_0_rgba(20,24,39,0.9)] p-5 flex flex-col gap-4 animate-in zoom-in-95 fade-in duration-200 relative">
-      <div className="flex flex-col gap-1">
-        <span className="text-[10px] font-black uppercase tracking-widest text-text-secondary">
-          {isCompleted ? "Completed" : "Up next"}
-        </span>
-        <h4 className="text-sm font-black text-text-primary leading-snug">
-          {node.subtopic.name}
-        </h4>
-      </div>
-      <button
-        type="button"
-        onClick={() => onOpenModeModal(node)}
-        className="w-full py-3 bg-primary text-text-primary border-[3px] border-border rounded-xl text-xs font-black shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 transition-all text-center tracking-widest cursor-pointer"
-      >
-        {isCompleted ? "PRACTICE AGAIN" : "CONTINUE"}
-      </button>
-    </div>
-  );
-}
-
-// ─── Section ──────────────────────────────────────────────────────────────────
-
-function PathSection({
-  section,
-  subjectId,
-  subjectName,
-}: {
-  section: LearningPathSection;
-  subjectId: string;
-  subjectName: string;
-}) {
-  const router = useRouter();
-  const [activeNodeId, setActiveNodeId] = useState<string | null>(
-    () => section.nodes.find((n) => n.status === "CURRENT")?.subtopic.id ?? null,
-  );
-  const [modalNode, setModalNode] = useState<LearningPathNode | null>(null);
-  const [slidesNode, setSlidesNode] = useState<LearningPathNode | null>(null);
-
-  const activeNode = section.nodes.find((n) => n.subtopic.id === activeNodeId) ?? null;
-
-  function handleSelect(node: LearningPathNode) {
-    setActiveNodeId((prev) => (prev === node.subtopic.id ? null : node.subtopic.id));
-  }
-
-  function handleOpenModeModal(node: LearningPathNode) {
-    setModalNode(node);
-  }
-
-  function handleSelectQuiz() {
-    if (!modalNode) return;
-    const subtopicId = modalNode.subtopic.id;
-    setModalNode(null);
-    setActiveNodeId(null);
-    router.push(`/study/quiz?subtopicId=${subtopicId}&subjectId=${subjectId}&mode=quiz`);
-  }
-
-  function handleSelectFlashcards() {
-    if (!modalNode) return;
-    const subtopicId = modalNode.subtopic.id;
-    setModalNode(null);
-    setActiveNodeId(null);
-    router.push(`/study/quiz?subtopicId=${subtopicId}&subjectId=${subjectId}&mode=flashcards`);
-  }
-
-  function handleSelectSlides() {
-    if (!modalNode) return;
-    const node = modalNode;
-    setModalNode(null);
-    setSlidesNode(node);
-  }
-
-  return (
-    <div className="flex flex-col items-center gap-0">
-      {/* Section header */}
-      <div className="w-full flex items-center gap-3 px-4 py-3 mb-5 bg-surface border-[2px] border-border rounded-2xl shadow-[0_4px_0_rgba(20,24,39,0.9)]">
-        <div className="flex flex-col gap-1.5 flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2">
-            <h3 className="text-sm font-black text-text-primary truncate">{section.topic.name}</h3>
-            <span className="text-[11px] font-bold text-text-secondary whitespace-nowrap">
-              {section.completedSubtopics} / {section.totalSubtopics}
-            </span>
-          </div>
-          <div className="flex gap-1">
-            {Array.from({ length: section.totalSubtopics }).map((_, i) => (
-              <div
-                key={i}
-                className={[
-                  "flex-1 h-2 rounded-full border border-border-muted transition-colors duration-300",
-                  i < section.completedSubtopics ? "bg-primary" : "bg-surface-muted",
-                ].join(" ")}
-              />
-            ))}
-          </div>
-        </div>
+    <div className="w-full max-w-2xl mx-auto flex flex-col gap-6 py-4 animate-pulse">
+      {/* Progress HUD Skeleton */}
+      <div className="w-full bg-surface border-[3px] border-border rounded-3xl p-6 flex flex-col gap-4 shadow-[0_6px_0_rgba(20,24,39,0.9)]">
+        <div className="h-5 w-48 bg-surface-muted rounded-md" />
+        <div className="h-3 w-full bg-surface-muted rounded-full" />
+        <div className="h-12 w-full bg-surface-muted rounded-2xl" />
       </div>
 
-      {/* Nodes */}
-      <div className="flex flex-col items-center w-full">
-        {section.nodes.map((node, idx) => {
-          const isNodeActive = activeNodeId === node.subtopic.id;
-          const isAltSide = idx % 2 !== 0;
-
-          return (
-            <React.Fragment key={node.subtopic.id}>
-              {idx > 0 && (
-                <Connector
-                  completed={
-                    section.nodes[idx - 1].status === "COMPLETED" ||
-                    node.status === "COMPLETED"
-                  }
-                />
-              )}
-
-              <div
-                className={[
-                  "flex w-full max-w-xs items-center",
-                  isAltSide ? "justify-end pr-10" : "justify-start pl-10",
-                ].join(" ")}
-              >
-                <HexNode node={node} onSelect={handleSelect} />
-              </div>
-
-              {isNodeActive && activeNode && (
-                <NodePopup
-                  node={activeNode}
-                  onOpenModeModal={handleOpenModeModal}
-                />
-              )}
-            </React.Fragment>
-          );
-        })}
+      {/* Stage Banner Skeleton */}
+      <div className="w-full max-w-xl mx-auto bg-surface border-[3px] border-border rounded-2xl p-5 shadow-[0_5px_0_rgba(20,24,39,0.9)]">
+        <div className="h-5 w-40 bg-surface-muted rounded-md mb-2" />
+        <div className="h-3 w-64 bg-surface-muted rounded-md" />
       </div>
 
-      {/* Choose Study Mode Modal */}
-      {modalNode && (
-        <StudyModeModal
-          isOpen={!!modalNode}
-          onClose={() => setModalNode(null)}
-          subtopicName={modalNode.subtopic.name}
-          onSelectQuiz={handleSelectQuiz}
-          onSelectFlashcards={handleSelectFlashcards}
-          onSelectSlides={handleSelectSlides}
-        />
-      )}
-
-      {/* Lecture Material (Slides) Modal */}
-      {slidesNode && (
-        <LectureSlidesModal
-          isOpen={!!slidesNode}
-          onClose={() => setSlidesNode(null)}
-          subtopicName={slidesNode.subtopic.name}
-          subjectName={subjectName}
-          subtopicId={slidesNode.subtopic.id}
-          subjectId={subjectId}
-          onStartQuiz={() => {
-            const subId = slidesNode.subtopic.id;
-            setSlidesNode(null);
-            setActiveNodeId(null);
-            router.push(`/study/quiz?subtopicId=${subId}&subjectId=${subjectId}&mode=quiz`);
-          }}
-          onStartFlashcards={() => {
-            const subId = slidesNode.subtopic.id;
-            setSlidesNode(null);
-            setActiveNodeId(null);
-            router.push(`/study/quiz?subtopicId=${subId}&subjectId=${subjectId}&mode=flashcards`);
-          }}
-        />
-      )}
-    </div>
-  );
-}
-
-// ─── Page ─────────────────────────────────────────────────────────────────────
-
-export default function LearningPathPage() {
-  const params = useParams<{ subjectSlug: string }>();
-  const router = useRouter();
-  const slug = params.subjectSlug;
-
-  const { data: path, isLoading, error } = useLearningPath(slug);
-
-  if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center gap-4 py-20 text-text-secondary">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        <span className="text-xs font-bold">Loading study path…</span>
-      </div>
-    );
-  }
-
-  if (error || !path) {
-    return (
-      <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
-        <div className="w-14 h-14 rounded-2xl bg-surface-muted border-[2px] border-border flex items-center justify-center">
-          <Target size={28} className="text-text-secondary" />
-        </div>
-        <h3 className="text-base font-black text-text-primary">Path not found</h3>
-        <p className="text-xs text-text-secondary max-w-xs">
-          We couldn&apos;t load this learning path. Make sure you&apos;re signed in.
-        </p>
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="px-5 py-2.5 bg-primary border-[2px] border-border rounded-xl text-xs font-black shadow-[0_3px_0_#141827] active:translate-y-0.5 transition-all"
-        >
-          GO BACK
-        </button>
-      </div>
-    );
-  }
-
-  // Find which section contains the current node for breadcrumb
-  let currentSection: LearningPathSection | undefined;
-  let currentNodeOrder = 0;
-  for (const section of path.sections) {
-    const cur = section.nodes.find((n) => n.status === "CURRENT");
-    if (cur) {
-      currentSection = section;
-      currentNodeOrder = cur.order;
-      break;
-    }
-  }
-
-  const cappedTotal = Math.min(path.totalNodes, 24);
-
-  return (
-    <div className="flex flex-col gap-6 pb-16">
-      {/* ── Header card: breadcrumb + segmented global progress ── */}
-      <div className="bg-surface border-[2px] border-border rounded-2xl shadow-[0_4px_0_rgba(20,24,39,0.9)] p-4 flex flex-col gap-3">
-        <div className="flex items-center gap-1.5 text-xs font-bold flex-wrap">
-          <Link
-            href="/study"
-            className="text-primary hover:underline flex items-center gap-1"
-          >
-            <ArrowLeft size={12} />
-            Study
-          </Link>
-          <ChevronRight size={12} className="text-text-secondary" />
-          <span className="text-text-primary font-black">{path.subject.name}</span>
-          {currentSection && (
-            <>
-              <ChevronRight size={12} className="text-text-secondary" />
-              <span className="text-text-secondary">
-                Section {currentSection.topic.order + 1} · Chapter {currentNodeOrder + 1}
-              </span>
-            </>
-          )}
-        </div>
-
-        <h2 className="text-xl font-black text-text-primary">
-          {path.subject.name}
-        </h2>
-
-        <div className="flex items-center gap-2">
-          <div className="flex flex-1 gap-[3px]">
-            {Array.from({ length: cappedTotal }).map((_, i) => (
-              <div
-                key={i}
-                className={[
-                  "flex-1 h-2.5 rounded-full border border-border-muted transition-colors duration-300",
-                  i < path.completedNodes ? "bg-primary" : "bg-surface-muted",
-                ].join(" ")}
-              />
-            ))}
-          </div>
-          <span className="text-xs font-black text-text-secondary whitespace-nowrap">
-            {path.completedNodes} / {path.totalNodes}
-          </span>
-        </div>
-      </div>
-
-      {/* ── Sections ── */}
-      <div className="flex flex-col gap-10">
-        {path.sections.map((section) => (
-          <PathSection
-            key={section.topic.id}
-            section={section}
-            subjectId={path.subject.id}
-            subjectName={path.subject.name}
+      {/* Nodes Winding Skeleton */}
+      <div className="flex flex-col items-center gap-8 py-4">
+        {[0, 1, 2, 3].map((i) => (
+          <div
+            key={i}
+            className={[
+              "w-20 h-20 rounded-3xl border-[3.5px] border-border-muted bg-surface-muted shadow-[0_6px_0_#D8D8D8]",
+              i % 2 === 0 ? "-translate-x-12" : "translate-x-12",
+            ].join(" ")}
           />
         ))}
       </div>
+    </div>
+  );
+}
 
-      {/* ── All done banner ── */}
-      {path.completedNodes === path.totalNodes && path.totalNodes > 0 && (
-        <div className="bg-secondary/20 border-[2px] border-border rounded-2xl p-6 flex flex-col items-center text-center gap-3 shadow-[0_4px_0_rgba(20,24,39,0.9)]">
-          <CheckCircle2 size={36} className="text-text-primary" />
-          <h3 className="text-lg font-black text-text-primary">Subject Complete! 🎉</h3>
-          <p className="text-xs text-text-secondary max-w-xs">
-            You&apos;ve completed all subtopics in {path.subject.name}. Time to test your skills with a quiz!
-          </p>
-          <Link
-            href="/study/quiz"
-            className="px-6 py-3 bg-primary border-[3px] border-border rounded-xl text-xs font-black shadow-[0_4px_0_#141827] active:translate-y-0.5 hover:-translate-y-0.5 transition-all"
-          >
-            PRACTICE QUIZ
-          </Link>
-        </div>
-      )}
+// ── Error State ───────────────────────────────────────────────────────────────
+
+function JourneyErrorState({
+  error,
+  onRetry,
+}: {
+  error: Error | null;
+  onRetry: () => void;
+}) {
+  return (
+    <div className="w-full max-w-md mx-auto my-12 bg-surface border-[3px] border-border rounded-3xl p-8 flex flex-col items-center text-center gap-4 shadow-[0_6px_0_rgba(20,24,39,0.9)]">
+      <div className="w-14 h-14 rounded-2xl bg-red-100 border-[2px] border-border flex items-center justify-center text-destructive">
+        <AlertCircle size={28} />
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <h3 className="text-lg font-black text-text-primary">
+          Unable to Load Learning Journey
+        </h3>
+        <p className="text-xs text-text-secondary">
+          {error?.message || "There was a problem retrieving your curriculum map."}
+        </p>
+      </div>
+
+      <div className="flex items-center gap-3 mt-2">
+        <Link
+          href="/study"
+          className="px-4 py-2 bg-surface-muted border-[2px] border-border rounded-xl text-xs font-black hover:bg-border-muted/40 active:translate-y-0.5 transition-all"
+        >
+          Return to Study
+        </Link>
+        <button
+          type="button"
+          onClick={onRetry}
+          className="px-5 py-2 bg-primary text-text-primary border-[2px] border-border rounded-xl text-xs font-black shadow-[0_2px_0_#141827] active:translate-y-0.5 transition-all flex items-center gap-1.5 cursor-pointer"
+        >
+          <RefreshCw size={14} />
+          <span>Try Again</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── Empty State ───────────────────────────────────────────────────────────────
+
+function JourneyEmptyState() {
+  return (
+    <div className="w-full max-w-md mx-auto my-12 bg-surface border-[3px] border-border rounded-3xl p-8 flex flex-col items-center text-center gap-4 shadow-[0_6px_0_rgba(20,24,39,0.9)]">
+      <div className="w-14 h-14 rounded-2xl bg-surface-muted border-[2px] border-border flex items-center justify-center">
+        <Compass size={28} className="text-text-secondary" />
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <h3 className="text-lg font-black text-text-primary">
+          Curriculum Under Construction
+        </h3>
+        <p className="text-xs text-text-secondary">
+          This subject does not have an active structured journey yet. Practice quizzes remain available.
+        </p>
+      </div>
+
+      <Link
+        href="/study"
+        className="px-5 py-2.5 bg-primary text-text-primary border-[2px] border-border rounded-xl text-xs font-black shadow-[0_3px_0_#141827] active:translate-y-0.5 transition-all"
+      >
+        Back to Study Center
+      </Link>
+    </div>
+  );
+}
+
+// ── Main Page Component ───────────────────────────────────────────────────────
+
+export default function SubjectJourneyPage() {
+  const router = useRouter();
+  const params = useParams();
+  const subjectSlug = (params?.subjectSlug as string) || "";
+
+  const {
+    data: journey,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useLearningJourney(subjectSlug);
+
+  // Flatten all levels to find current level
+  const allLevels = useMemo(() => {
+    return journey?.stages.flatMap((s) => s.levels) || [];
+  }, [journey?.stages]);
+
+  const currentLevel = useMemo(() => {
+    if (journey?.currentLevelId) {
+      const found = allLevels.find((l) => l.id === journey.currentLevelId);
+      if (found) return found;
+    }
+    return (
+      allLevels.find((l) => l.state === "ACTIVE") ||
+      allLevels.find((l) => l.state === "AVAILABLE") ||
+      allLevels[0] ||
+      null
+    );
+  }, [allLevels, journey?.currentLevelId]);
+
+  // Navigate to challenge
+  const handleStartChallenge = (level: JourneyLevelItem) => {
+    if (level.state === "LOCKED") {
+      toast.error("This level is locked. Complete the prerequisite level first.");
+      return;
+    }
+
+    // Launch quiz challenge for this level
+    const targetUrl = level.subtopicId
+      ? `/study/quiz?subtopicId=${level.subtopicId}&subjectId=${journey?.subjectId}&levelId=${level.id}&mode=quiz`
+      : `/study/quiz?subjectId=${journey?.subjectId}&levelId=${level.id}&mode=quiz`;
+
+    router.push(targetUrl);
+  };
+
+  if (isLoading) {
+    return <JourneyLoadingSkeleton />;
+  }
+
+  if (isError || !journey) {
+    return (
+      <JourneyErrorState
+        error={error as Error}
+        onRetry={() => refetch()}
+      />
+    );
+  }
+
+  if (journey.stages.length === 0 || allLevels.length === 0) {
+    return <JourneyEmptyState />;
+  }
+
+  return (
+    <div className="w-full max-w-2xl mx-auto flex flex-col gap-6 py-4 pb-24">
+      {/* Sticky Progress HUD Header */}
+      <JourneyProgress
+        subjectName={journey.subjectName}
+        subjectSlug={journey.subjectSlug}
+        completedLevels={journey.completedLevels}
+        totalLevels={journey.totalLevels}
+        masteredLevels={journey.masteredLevels}
+        completionPercentage={journey.completionPercentage}
+        totalXpEarned={journey.completedLevels * 50 + journey.masteredLevels * 25}
+        currentLevel={currentLevel}
+        onContinueCurrent={
+          currentLevel ? () => handleStartChallenge(currentLevel) : undefined
+        }
+      />
+
+      {/* Winding Game Progression Canvas */}
+      <main aria-label={`${journey.subjectName} Learning Progression Map`}>
+        <JourneyMap
+          journey={journey}
+          onStartChallenge={handleStartChallenge}
+        />
+      </main>
     </div>
   );
 }

@@ -108,3 +108,11 @@ body {
 .shadow-offset {
   box-shadow: var(--shadow-offset);
 }
+
+/* Custom border width utilities matching design scheme */
+.border-2\.5 {
+  border-width: 2.5px;
+}
+.border-3 {
+  border-width: 3px;
+}

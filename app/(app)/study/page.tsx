@@ -1,85 +1,153 @@
 "use client";
 
-import React from "react";
-import Link from "next/link";
-import { BookOpen, Zap, ChevronRight, Loader2 } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { AlertCircle, BookOpen, RefreshCw } from "lucide-react";
 import { useSubjects } from "@/features/curriculum/hooks";
+import { useSubjectJourney } from "@/features/curriculum/journey-hooks";
+import {
+  ContinueJourneyCard,
+  PlayModesSection,
+  SubjectJourneysList,
+  StudyCenterSkeleton,
+} from "@/features/curriculum/components";
+import { Subject } from "@/features/curriculum/types";
 
 export default function StudyCenterPage() {
-  const { data: subjects, isLoading } = useSubjects();
+  const {
+    data: subjects,
+    isLoading: isLoadingSubjects,
+    isError: isSubjectsError,
+    error: subjectsError,
+    refetch: refetchSubjects,
+  } = useSubjects();
+
+  const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
+
+  // Initialize selected subject once subjects load
+  useEffect(() => {
+    if (subjects && subjects.length > 0 && !selectedSubject) {
+      try {
+        const savedSlug = localStorage.getItem("panda_active_subject_slug");
+        const found = subjects.find((s) => s.slug === savedSlug);
+        setSelectedSubject(found || subjects[0]);
+      } catch {
+        setSelectedSubject(subjects[0]);
+      }
+    }
+  }, [subjects, selectedSubject]);
+
+  const activeSlug = selectedSubject?.slug ?? "";
+  const {
+    data: journey,
+    isLoading: isLoadingJourney,
+    isError: isJourneyError,
+    refetch: refetchJourney,
+  } = useSubjectJourney(activeSlug);
+
+  const handleSelectSubject = (subj: Subject) => {
+    setSelectedSubject(subj);
+    try {
+      localStorage.setItem("panda_active_subject_slug", subj.slug);
+    } catch {
+      // Ignore localStorage restrictions
+    }
+  };
+
+  // ─── Loading State ──────────────────────────────────────────────────────────
+  if (isLoadingSubjects || (selectedSubject && isLoadingJourney)) {
+    return <StudyCenterSkeleton />;
+  }
+
+  // ─── Error State ────────────────────────────────────────────────────────────
+  if (isSubjectsError || !subjects) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4 text-center px-4">
+        <div className="w-14 h-14 rounded-2xl bg-destructive/10 border-[2px] border-border flex items-center justify-center text-destructive">
+          <AlertCircle size={28} />
+        </div>
+        <div className="flex flex-col gap-1 max-w-md">
+          <h2 className="text-lg font-black text-text-primary">
+            Unable to Load Study Center
+          </h2>
+          <p className="text-xs text-text-secondary font-medium">
+            {subjectsError instanceof Error
+              ? subjectsError.message
+              : "A network error occurred while loading curriculum data."}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => refetchSubjects()}
+          className="px-5 py-2.5 bg-primary text-text-primary border-[2px] border-border rounded-xl text-xs font-black shadow-[0_3px_0_#141827] active:translate-y-0.5 transition-all flex items-center gap-2 cursor-pointer"
+        >
+          <RefreshCw size={14} />
+          RETRY
+        </button>
+      </div>
+    );
+  }
+
+  // ─── Empty State ────────────────────────────────────────────────────────────
+  if (subjects.length === 0) {
+    return (
+      <div className="p-10 bg-surface border-[3px] border-border rounded-2xl shadow-[0_6px_0_rgba(20,24,39,0.9)] text-center flex flex-col items-center gap-4 max-w-md mx-auto my-8">
+        <div className="w-14 h-14 rounded-2xl bg-surface-muted border-[2px] border-border flex items-center justify-center">
+          <BookOpen size={28} className="text-text-secondary" />
+        </div>
+        <div className="flex flex-col gap-1">
+          <h2 className="text-lg font-black text-text-primary">No Curriculum Available</h2>
+          <p className="text-xs text-text-secondary">
+            Curriculum subjects are currently being prepared. Check back soon!
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex flex-col gap-8 py-4">
-      <div className="flex flex-col gap-1">
-        <h2 className="text-2xl font-black text-text-primary">Study Center</h2>
-        <p className="text-sm text-text-secondary font-medium">
-          Choose a subject to start your learning path, or jump straight into practice.
+    <div className="flex flex-col gap-8 py-2 max-w-3xl mx-auto w-full">
+      {/* ─── Page Title Header ────────────────────────────────────────────────── */}
+      <header className="flex flex-col gap-1">
+        <h1 className="text-2xl md:text-3xl font-black text-text-primary tracking-tight">
+          Study
+        </h1>
+        <p className="text-xs md:text-sm text-text-secondary font-medium">
+          Continue your guided WASSCE journey, compete in live speed rounds, or practice at your own pace.
         </p>
-      </div>
+      </header>
 
-      {/* Quick actions */}
-      <div className="grid grid-cols-1 gap-4">
-        <Link
-          href="/study/quiz"
-          className="p-5 bg-surface border-[2px] border-border rounded-2xl shadow-[0_4px_0_rgba(20,24,39,0.9)] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-[0_1px_0_rgba(20,24,39,0.9)] transition-all flex items-center justify-between gap-3 cursor-pointer"
-        >
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-xl bg-primary border-[2px] border-border flex items-center justify-center shadow-[0_2px_0_rgba(20,24,39,0.9)] shrink-0">
-              <Zap size={20} className="fill-text-primary text-text-primary" />
-            </div>
-            <div>
-              <h3 className="font-black text-text-primary text-sm">Practice Quiz</h3>
-              <p className="text-xs text-text-secondary font-medium mt-0.5">
-                Quick random questions across any subject or topic
-              </p>
-            </div>
+      {/* ─── 1. CONTINUE JOURNEY (Primary Recommended Next Step) ──────────────── */}
+      {selectedSubject && journey ? (
+        <ContinueJourneyCard subject={selectedSubject} journey={journey} />
+      ) : selectedSubject && isJourneyError ? (
+        <div className="p-5 bg-surface border-[2px] border-border rounded-2xl shadow-[0_4px_0_rgba(20,24,39,0.9)] flex items-center justify-between gap-3">
+          <div className="flex flex-col gap-0.5">
+            <span className="text-xs font-black text-text-primary">
+              Ready to study {selectedSubject.name}?
+            </span>
+            <span className="text-[11px] text-text-secondary">
+              Open the full journey map to select your starting checkpoint.
+            </span>
           </div>
-          <span className="text-xs font-black text-primary flex items-center gap-1 shrink-0">
-            START QUIZ <ChevronRight size={12} />
-          </span>
-        </Link>
-      </div>
+          <button
+            type="button"
+            onClick={() => refetchJourney()}
+            className="px-3.5 py-2 bg-primary text-text-primary border-[2px] border-border rounded-xl text-xs font-black shrink-0 shadow-[0_2px_0_#141827] cursor-pointer"
+          >
+            RETRY JOURNEY
+          </button>
+        </div>
+      ) : null}
 
-      {/* Learning paths by subject */}
-      <div className="flex flex-col gap-3">
-        <h3 className="text-xs font-black uppercase tracking-widest text-text-secondary">
-          Learning Paths
-        </h3>
+      {/* ─── 2. PLAY (Multiplayer & Quick Practice) ───────────────────────────── */}
+      <PlayModesSection />
 
-        {isLoading ? (
-          <div className="flex items-center justify-center gap-2 py-8 text-text-secondary">
-            <Loader2 className="w-5 h-5 animate-spin text-primary" />
-            <span className="text-xs font-bold">Loading subjects…</span>
-          </div>
-        ) : !subjects || subjects.length === 0 ? (
-          <div className="p-6 bg-bg-primary border-[2px] border-border rounded-xl text-center text-xs font-bold text-text-secondary">
-            No subjects available yet.
-          </div>
-        ) : (
-          <div className="flex flex-col gap-2">
-            {subjects.map((subj) => (
-              <Link
-                key={subj.id}
-                href={`/study/${subj.slug}`}
-                className="flex items-center justify-between p-4 bg-surface border-[2px] border-border rounded-xl shadow-[0_3px_0_rgba(20,24,39,0.9)] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-[0_1px_0_rgba(20,24,39,0.9)] transition-all cursor-pointer"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-primary/15 border-[2px] border-border flex items-center justify-center shrink-0">
-                    <BookOpen size={16} className="text-text-primary" />
-                  </div>
-                  <div>
-                    <span className="font-black text-sm text-text-primary">{subj.name}</span>
-                    <span className="block text-[10px] font-bold text-text-secondary uppercase tracking-wide">
-                      {subj.code}
-                    </span>
-                  </div>
-                </div>
-                <ChevronRight size={16} className="text-text-secondary shrink-0" />
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
+      {/* ─── 3. YOUR JOURNEYS / SUBJECTS ───────────────────────────────────────── */}
+      <SubjectJourneysList
+        subjects={subjects}
+        activeSubjectSlug={selectedSubject?.slug ?? ""}
+        onSelectSubject={handleSelectSubject}
+      />
     </div>
   );
 }

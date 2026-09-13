@@ -46,4 +46,8 @@ export async function getFlashcardsForAttempt(attemptId: string): Promise<Flashc
   return apiGet<FlashcardListResponse>(`/quiz-attempts/${attemptId}/flashcards`);
 }
 
+export async function abandonQuizAttempt(attemptId: string): Promise<QuizAttempt> {
+  return apiPost<QuizAttempt>(`/quiz-attempts/${attemptId}/abandon`);
+}
+
 

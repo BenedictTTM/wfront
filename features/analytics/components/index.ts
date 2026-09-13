@@ -1,3 +1,12 @@
-// features/analytics/components — performance charts, topic breakdown, cross-subject filter
-// Note: cross-subject filter renders only for fullAnalytics entitlement (paywall otherwise)
-export {};
+// features/analytics/components/index.ts — exports for all analytics components
+
+export * from './PerformanceSnapshot';
+export * from './PerformanceTrend';
+export * from './SubjectPerformance';
+export * from './StrengthsAndWeaknesses';
+export * from './LearningProfile';
+export * from './TopicMasteryBreakdown';
+export * from './JourneyProgressCard';
+export * from './MultiplayerCard';
+export * from './AnalyticsEmptyState';
+export * from './AnalyticsSkeleton';

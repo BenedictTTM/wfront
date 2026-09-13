@@ -107,6 +107,11 @@ export async function POST(
     if (path === "logout") {
       return NextResponse.json({ ok: true });
     }
+    if (path === "refresh") {
+      cookieStore.delete("accessToken");
+      cookieStore.delete("refreshToken");
+      cookieStore.delete("role");
+    }
     return NextResponse.json(data, { status: response.status });
   }
 

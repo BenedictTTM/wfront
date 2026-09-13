@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, Suspense } from "react";
-import { BookOpen, X, Loader2, Sparkles, ChevronLeft } from "lucide-react";
+import { BookOpen, X, Loader2, Sparkles, ChevronLeft, CheckCircle2, XCircle, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -15,6 +15,7 @@ import {
   useSubmitQuizAnswer,
   useSubmitQuizAttempt,
 } from "@/features/quiz/hooks";
+import { abandonQuizAttempt } from "@/features/quiz/api";
 import {
   SubjectTopicSelector,
   QuestionCard,
@@ -45,6 +46,10 @@ function PracticeQuizContent() {
 
   const initialSubjectId = searchParams.get("subjectId") || "";
   const initialTopicId = searchParams.get("topicId") || "";
+  const initialSubtopicId = searchParams.get("subtopicId") || "";
+  const initialLevelId = searchParams.get("levelId") || "";
+  const initialChallengeId = searchParams.get("challengeId") || "";
+  const initialJourneyId = searchParams.get("journeyId") || "";
   const queryAttemptId = searchParams.get("attemptId") || "";
   const initialMode = searchParams.get("mode") || "";
 
@@ -57,10 +62,13 @@ function PracticeQuizContent() {
   const [answersMap, setAnswersMap] = useState<
     Record<string, { selectedOptionId?: string; submittedText?: string }>
   >({});
+  const [feedbackMap, setFeedbackMap] = useState<
+    Record<string, { isCorrect?: boolean; correctOption?: string; explanation?: string | null }>
+  >({});
   const [submissionResults, setSubmissionResults] = useState<SubmitAttemptResponseDto | null>(null);
   const [showEnergyWarning, setShowEnergyWarning] = useState<boolean>(false);
   const [isSubmittingFinal, setIsSubmittingFinal] = useState<boolean>(false);
-  const [inFlashcardReview, setInFlashcardReview] = useState<boolean>(initialMode !== "quiz");
+  const [inFlashcardReview, setInFlashcardReview] = useState<boolean>(initialMode !== "quiz" && !initialLevelId);
 
   const createAttemptMutation = useCreateQuizAttempt();
   const submitAnswerMutation = useSubmitQuizAnswer();
@@ -77,7 +85,7 @@ function PracticeQuizContent() {
     isLoading: loadingFlashcards,
   } = useFlashcards(activeAttemptId);
 
-
+  // Rehydrate state from fetched attempt (resilient to browser refresh)
   useEffect(() => {
     if (fetchedAttempt) {
       setCurrentAttempt(fetchedAttempt);
@@ -94,29 +102,72 @@ function PracticeQuizContent() {
           });
           return updated;
         });
+
+        setFeedbackMap((prev) => {
+          const updated = { ...prev };
+          fetchedAttempt.answers?.forEach((a) => {
+            if (a.questionId && (a.selectedOptionId || a.submittedText)) {
+              updated[a.questionId] = {
+                isCorrect: a.isCorrect,
+                correctOption: a.correctOption,
+                explanation: a.explanation,
+              };
+            }
+          });
+          return updated;
+        });
+      }
+
+      // If attempt is already submitted, fetch scored outcome idempotently
+      if (fetchedAttempt.status === "SUBMITTED" && !submissionResults && !submitQuizMutation.isPending) {
+        submitQuizMutation.mutateAsync(fetchedAttempt.id).then((res) => {
+          setSubmissionResults(res);
+        }).catch(console.error);
       }
     }
   }, [fetchedAttempt]);
 
-  const handleStartQuiz = async (
-    subjectId: string,
-    topicId?: string,
-    mode: AttemptMode = "PRACTICE",
-    overrideFlashcardReview?: boolean,
-  ) => {
+  const handleStartQuiz = async (params: {
+    subjectId: string;
+    topicId?: string;
+    subtopicId?: string;
+    levelId?: string;
+    challengeId?: string;
+    journeyId?: string;
+    mode?: AttemptMode;
+    overrideFlashcardReview?: boolean;
+  }) => {
+    const mode = params.mode ?? (params.levelId ? "JOURNEY" : "PRACTICE");
     if (userEnergy < 3) {
       setShowEnergyWarning(true);
       return;
     }
     try {
-      const newAttempt = await createAttemptMutation.mutateAsync({ mode, subjectId, topicId });
+      const newAttempt = await createAttemptMutation.mutateAsync({
+        mode,
+        subjectId: params.subjectId,
+        topicId: params.topicId,
+        subtopicId: params.subtopicId,
+        levelId: params.levelId,
+        challengeId: params.challengeId,
+        journeyId: params.journeyId,
+      });
       setCurrentAttempt(newAttempt);
       setActiveAttemptId(newAttempt.id);
       setCurrentQuestionIndex(0);
       setAnswersMap({});
+      setFeedbackMap({});
       setSubmissionResults(null);
-      setInFlashcardReview(overrideFlashcardReview ?? (initialMode !== "quiz"));
-      toast.success("Quiz attempt started!");
+      setInFlashcardReview(params.overrideFlashcardReview ?? (initialMode !== "quiz" && !params.levelId));
+
+      // Update URL with attemptId so page refresh keeps active session
+      if (typeof window !== "undefined") {
+        const url = new URL(window.location.href);
+        url.searchParams.set("attemptId", newAttempt.id);
+        window.history.replaceState({}, "", url.toString());
+      }
+
+      toast.success(mode === "JOURNEY" ? "Challenge session ready!" : "Practice quiz started!");
     } catch (err: any) {
       const message = err?.message || "Failed to start quiz attempt";
       if (message.toLowerCase().includes("energy")) {
@@ -133,10 +184,10 @@ function PracticeQuizContent() {
     submittedText?: string,
     rethrowError = false,
   ) => {
-    if (!activeAttemptId || (!selectedOptionId && !submittedText?.trim())) return;
+    if (!activeAttemptId || (!selectedOptionId && !submittedText?.trim())) return null;
     const key = generateIdempotencyKey();
     try {
-      await submitAnswerMutation.mutateAsync({
+      const res = await submitAnswerMutation.mutateAsync({
         attemptId: activeAttemptId,
         answer: {
           questionId,
@@ -145,49 +196,60 @@ function PracticeQuizContent() {
         },
         idempotencyKey: key,
       });
+      return res;
     } catch (err: any) {
       console.error("Failed to save answer:", err);
       if (rethrowError) throw err;
+      return null;
     }
   };
 
-  const handleSelectOption = (optionKey: string) => {
+  const handleSelectOption = async (optionKey: string) => {
     if (!currentAttempt?.questions) return;
     const q = currentAttempt.questions[currentQuestionIndex];
     if (!q) return;
+
+    // Prevent changing answer if already answered and feedback revealed
+    if (feedbackMap[q.id]) return;
+
     const updated = { ...answersMap[q.id], selectedOptionId: optionKey };
     setAnswersMap((prev) => ({ ...prev, [q.id]: updated }));
-    saveAnswerToBackend(q.id, optionKey, updated.submittedText);
+
+    // Immediate authoritative pedagogical feedback
+    try {
+      const res = await saveAnswerToBackend(q.id, optionKey, updated.submittedText);
+      if (res) {
+        setFeedbackMap((prev) => ({
+          ...prev,
+          [q.id]: {
+            isCorrect: res.isCorrect,
+            correctOption: res.correctOption,
+            explanation: res.explanation || q.explanation,
+          },
+        }));
+      }
+    } catch (err: any) {
+      toast.error("Network issue saving answer. Please retry.");
+    }
   };
 
   const handleChangeText = (text: string) => {
     if (!currentAttempt?.questions) return;
     const q = currentAttempt.questions[currentQuestionIndex];
     if (!q) return;
+    if (feedbackMap[q.id]) return;
     setAnswersMap((prev) => ({ ...prev, [q.id]: { ...prev[q.id], submittedText: text } }));
   };
 
-  const saveCurrentAnswer = async (rethrow = false) => {
+  const handleNextQuestion = () => {
     if (!currentAttempt?.questions) return;
-    const q = currentAttempt.questions[currentQuestionIndex];
-    if (!q) return;
-    const ans = answersMap[q.id];
-    if (ans?.selectedOptionId || ans?.submittedText?.trim()) {
-      await saveAnswerToBackend(q.id, ans.selectedOptionId, ans.submittedText, rethrow);
-    }
-  };
-
-  const handleNextQuestion = async () => {
-    if (!currentAttempt?.questions) return;
-    await saveCurrentAnswer();
     if (currentQuestionIndex + 1 < currentAttempt.questions.length) {
       setCurrentQuestionIndex((p) => p + 1);
     }
   };
 
-  const handlePreviousQuestion = async () => {
+  const handlePreviousQuestion = () => {
     if (!currentAttempt?.questions || currentQuestionIndex === 0) return;
-    await saveCurrentAnswer();
     setCurrentQuestionIndex((p) => p - 1);
   };
 
@@ -195,18 +257,9 @@ function PracticeQuizContent() {
     if (!currentAttempt || !activeAttemptId) return;
     setIsSubmittingFinal(true);
     try {
-      await saveCurrentAnswer(true);
-      await Promise.all(
-        Object.entries(answersMap).map(([qId, ans]) => {
-          if (ans.selectedOptionId || ans.submittedText?.trim()) {
-            return saveAnswerToBackend(qId, ans.selectedOptionId, ans.submittedText, true);
-          }
-          return Promise.resolve();
-        }),
-      );
       const results = await submitQuizMutation.mutateAsync(activeAttemptId);
       setSubmissionResults(results);
-      toast.success("Quiz submitted!");
+      toast.success("Quiz submitted successfully!");
     } catch (err: any) {
       toast.error(err?.message || "Failed to submit quiz");
     } finally {
@@ -219,32 +272,89 @@ function PracticeQuizContent() {
     setCurrentAttempt(null);
     setCurrentQuestionIndex(0);
     setAnswersMap({});
+    setFeedbackMap({});
     setSubmissionResults(null);
     setInFlashcardReview(true);
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("attemptId");
+      window.history.replaceState({}, "", url.toString());
+    }
   };
 
+  const handleExitSession = async () => {
+    if (!activeAttemptId) {
+      router.push("/study");
+      return;
+    }
+    const confirmExit = window.confirm("Are you sure you want to exit? Your attempt will be abandoned.");
+    if (!confirmExit) return;
+
+    try {
+      await abandonQuizAttempt(activeAttemptId);
+      toast.info("Session exited");
+    } catch (e) {
+      // ignore
+    }
+    router.push("/study");
+  };
+
+  const handleContinueNextLevel = (nextLevelId: string) => {
+    handleResetQuiz();
+    const subjectParam = currentAttempt?.subjectId || initialSubjectId;
+    router.push(`/study/quiz?levelId=${nextLevelId}&subjectId=${subjectParam}&mode=quiz`);
+  };
+
+  // Launch Journey challenge or practice quiz when params are present in URL
   useEffect(() => {
-    if (initialSubjectId && !activeAttemptId && !currentAttempt && !createAttemptMutation.isPending) {
-      handleStartQuiz(initialSubjectId, initialTopicId || undefined, "PRACTICE");
+    if (initialLevelId && !activeAttemptId && !currentAttempt && !createAttemptMutation.isPending) {
+      handleStartQuiz({
+        subjectId: initialSubjectId,
+        levelId: initialLevelId,
+        challengeId: initialChallengeId || undefined,
+        journeyId: initialJourneyId || undefined,
+        subtopicId: initialSubtopicId || undefined,
+        mode: "JOURNEY",
+        overrideFlashcardReview: false,
+      });
+    } else if (
+      initialSubjectId &&
+      !initialLevelId &&
+      !activeAttemptId &&
+      !currentAttempt &&
+      !createAttemptMutation.isPending
+    ) {
+      handleStartQuiz({
+        subjectId: initialSubjectId,
+        topicId: initialTopicId || undefined,
+        subtopicId: initialSubtopicId || undefined,
+        mode: "PRACTICE",
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialSubjectId, initialTopicId]);
+  }, [initialLevelId, initialSubjectId, initialTopicId, initialSubtopicId]);
 
-  // ── Results ──────────────────────────────────────────────────────────────────
+  // ── Results Screen ───────────────────────────────────────────────────────────
   if (submissionResults) {
     return (
       <div className="w-full max-w-xl mx-auto bg-surface border-[3px] border-border rounded-2xl shadow-[0_6px_0_rgba(20,24,39,0.9)] p-6">
-        <QuizResultsScreen results={submissionResults} onReset={handleResetQuiz} />
+        <QuizResultsScreen
+          results={submissionResults}
+          onReset={handleResetQuiz}
+          onContinueNextLevel={handleContinueNextLevel}
+        />
       </div>
     );
   }
 
-  // ── Selector ─────────────────────────────────────────────────────────────────
+  // ── Selector (if no active session) ───────────────────────────────────────────
   if (!activeAttemptId && !currentAttempt) {
     return (
       <>
         <SubjectTopicSelector
-          onStartQuiz={handleStartQuiz}
+          onStartQuiz={(subjectId, topicId, mode) =>
+            handleStartQuiz({ subjectId, topicId, mode })
+          }
           isStarting={createAttemptMutation.isPending}
           userEnergy={userEnergy}
         />
@@ -259,7 +369,7 @@ function PracticeQuizContent() {
 
   // ── Loading Quiz Attempt ───────────────────────────────────────────────────────
   if (loadingAttempt || createAttemptMutation.isPending) {
-    return <LoadingCard label="Generating practice quiz questions…" />;
+    return <LoadingCard label="Preparing challenge questions…" />;
   }
 
   // ── Loading Flashcards ───────────────────────────────────────────────────────
@@ -279,8 +389,7 @@ function PracticeQuizContent() {
     );
   }
 
-
-  // ── Error / empty ─────────────────────────────────────────────────────────────
+  // ── Error / empty state ───────────────────────────────────────────────────────
   if (attemptError || !currentAttempt || !currentAttempt.questions || currentAttempt.questions.length === 0) {
     return (
       <div className="w-full max-w-xl mx-auto bg-surface border-[3px] border-border rounded-2xl shadow-[0_6px_0_rgba(20,24,39,0.9)] p-8 flex flex-col items-center text-center gap-5">
@@ -288,46 +397,67 @@ function PracticeQuizContent() {
           <X size={24} className="text-text-secondary" />
         </div>
         <div className="flex flex-col gap-1">
-          <h4 className="text-base font-black text-text-primary">No Questions Available</h4>
+          <h4 className="text-base font-black text-text-primary">Unable to Load Challenge</h4>
           <p className="text-xs text-text-secondary max-w-sm">
             {attemptError instanceof Error
               ? attemptError.message
-              : "No published questions found for this subject/topic yet."}
+              : "No questions currently configured for this challenge level."}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={handleResetQuiz}
-          className="px-5 py-2.5 bg-primary border-[2px] border-border rounded-xl text-xs font-black shadow-[0_3px_0_#141827] active:translate-y-0.5 cursor-pointer"
-        >
-          TRY ANOTHER SUBJECT
-        </button>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={handleResetQuiz}
+            className="px-5 py-2.5 bg-primary border-[2px] border-border rounded-xl text-xs font-black shadow-[0_3px_0_#141827] active:translate-y-0.5 cursor-pointer"
+          >
+            TRY ANOTHER TOPIC
+          </button>
+          <Link
+            href="/study"
+            className="px-4 py-2.5 border-[2px] border-border rounded-xl text-xs font-black hover:bg-surface-muted transition-colors"
+          >
+            RETURN TO MAP
+          </Link>
+        </div>
       </div>
     );
   }
 
-  // ── Active quiz ───────────────────────────────────────────────────────────────
+  // ── Active Quiz Session ───────────────────────────────────────────────────────
   const questions = currentAttempt.questions;
   const currentQuestion = questions[currentQuestionIndex];
   const activeAnswer = currentQuestion ? answersMap[currentQuestion.id] : undefined;
+  const currentFeedback = currentQuestion ? feedbackMap[currentQuestion.id] : undefined;
+  const isAnswered = Boolean(activeAnswer?.selectedOptionId || activeAnswer?.submittedText?.trim());
   const isLastQuestion = currentQuestionIndex + 1 === questions.length;
   const progressPct = ((currentQuestionIndex + 1) / questions.length) * 100;
+  const isJourneyMode = currentAttempt.mode === "JOURNEY";
 
   return (
     <div className="w-full max-w-xl mx-auto bg-surface border-[3px] border-border rounded-2xl shadow-[0_6px_0_rgba(20,24,39,0.9)] p-6 flex flex-col gap-5 animate-in fade-in zoom-in-95 duration-150">
       {/* Header */}
       <div className="flex items-center justify-between border-b-[2px] border-border pb-3">
-        <h3 className="text-sm md:text-base font-black flex items-center gap-2 text-text-primary">
-          <BookOpen size={18} className="text-primary" />
-          WASSCE Practice Session
-        </h3>
-        <Link
-          href="/study"
-          className="p-1.5 border-[2px] border-border rounded-lg hover:bg-surface-muted transition-colors"
-          aria-label="Exit quiz"
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-primary border-[2px] border-border flex items-center justify-center">
+            <BookOpen size={16} className="text-text-primary" />
+          </div>
+          <div>
+            <h3 className="text-sm md:text-base font-black text-text-primary leading-tight">
+              {isJourneyMode ? "Journey Challenge" : "WASSCE Practice Session"}
+            </h3>
+            <span className="text-[10px] font-black uppercase tracking-wider text-text-secondary">
+              {isJourneyMode ? "Level Progression" : "Skill Drill"}
+            </span>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={handleExitSession}
+          className="p-1.5 border-[2px] border-border rounded-lg hover:bg-surface-muted transition-colors cursor-pointer"
+          aria-label="Exit session"
         >
           <X size={16} />
-        </Link>
+        </button>
       </div>
 
       {/* Progress bar */}
@@ -338,9 +468,10 @@ function PracticeQuizContent() {
             style={{ width: `${progressPct}%` }}
           />
         </div>
-        <span className="text-[11px] font-bold text-text-secondary text-right">
-          {currentQuestionIndex + 1} / {questions.length}
-        </span>
+        <div className="flex justify-between items-center text-[11px] font-bold text-text-secondary">
+          <span>Question {currentQuestionIndex + 1} of {questions.length}</span>
+          <span>{Math.round(progressPct)}% Completed</span>
+        </div>
       </div>
 
       {/* Question */}
@@ -358,7 +489,46 @@ function PracticeQuizContent() {
         submittedText={activeAnswer?.submittedText ?? ""}
         onSelectOption={handleSelectOption}
         onChangeText={handleChangeText}
+        feedback={currentFeedback}
+        isFeedbackRevealed={Boolean(currentFeedback)}
       />
+
+      {/* Immediate Pedagogical Feedback Drawer */}
+      {currentFeedback && (
+        <div
+          className={[
+            "p-4 border-[2px] rounded-xl flex flex-col gap-2 transition-all animate-in fade-in slide-in-from-bottom-2 duration-200",
+            currentFeedback.isCorrect
+              ? "bg-emerald-500/10 border-emerald-600 text-emerald-950 dark:text-emerald-200"
+              : "bg-rose-500/10 border-rose-600 text-rose-950 dark:text-rose-200",
+          ].join(" ")}
+        >
+          <div className="flex items-center gap-2 font-black text-xs md:text-sm">
+            {currentFeedback.isCorrect ? (
+              <>
+                <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                <span>Brilliant! That is correct.</span>
+              </>
+            ) : (
+              <>
+                <XCircle className="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0" />
+                <span>
+                  Not quite. {currentFeedback.correctOption ? `Correct answer is Option (${currentFeedback.correctOption}).` : ""}
+                </span>
+              </>
+            )}
+          </div>
+
+          {currentFeedback.explanation && (
+            <div className="text-xs font-medium text-text-secondary bg-surface/90 p-3 rounded-lg border border-border mt-1">
+              <span className="font-black text-text-primary block text-[10px] uppercase tracking-wider mb-0.5">
+                Explanation & Key Insight
+              </span>
+              {currentFeedback.explanation}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Navigation */}
       <div className="flex justify-between items-center pt-4 border-t-[2px] border-border">
@@ -376,27 +546,28 @@ function PracticeQuizContent() {
           <button
             type="button"
             onClick={handleNextQuestion}
-            disabled={isSubmittingFinal}
-            className="px-5 py-2.5 bg-primary text-text-primary border-[2px] border-border rounded-xl font-black text-xs shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 disabled:opacity-50 transition-all cursor-pointer"
+            disabled={!isAnswered || isSubmittingFinal}
+            className="px-5 py-2.5 bg-primary text-text-primary border-[2px] border-border rounded-xl font-black text-xs shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center gap-2 cursor-pointer"
           >
-            NEXT QUESTION
+            <span>NEXT QUESTION</span>
+            <ArrowRight size={14} />
           </button>
         ) : (
           <button
             type="button"
             onClick={handleFinishQuiz}
-            disabled={isSubmittingFinal}
-            className="px-5 py-2.5 bg-primary text-text-primary border-[2px] border-border rounded-xl font-black text-xs shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 disabled:opacity-50 flex items-center gap-2 cursor-pointer transition-all"
+            disabled={!isAnswered || isSubmittingFinal}
+            className="px-5 py-2.5 bg-primary text-text-primary border-[2px] border-border rounded-xl font-black text-xs shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 disabled:opacity-40 disabled:pointer-events-none flex items-center gap-2 cursor-pointer transition-all"
           >
             {isSubmittingFinal ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span>SUBMITTING…</span>
+                <span>EVALUATING & UNLOCKING…</span>
               </>
             ) : (
               <>
                 <Sparkles size={14} />
-                <span>FINISH & SUBMIT</span>
+                <span>COMPLETE CHALLENGE</span>
               </>
             )}
           </button>
@@ -416,7 +587,7 @@ function PracticeQuizContent() {
 
 export default function PracticeQuizPage() {
   return (
-    <Suspense fallback={<LoadingCard label="Loading quiz centre…" />}>
+    <Suspense fallback={<LoadingCard label="Loading challenge session…" />}>
       <PracticeQuizContent />
     </Suspense>
   );

@@ -31,11 +31,16 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   const hasGuestSession = !!guestToken;
   const hasAnySession = isAuthenticated || hasGuestSession;
 
-  // 1. Auth routes check: if logged in with user account, redirect away from /login & /register
+  // 0. Fallback convenience redirects
+  if (pathname === "/signin") {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+  if (pathname === "/signup") {
+    return NextResponse.redirect(new URL("/register", request.url));
+  }
+
+  // 1. Auth routes check: always allow /login and /register so users can log in or switch accounts
   if (AUTH_ROUTES.some((route) => pathname.startsWith(route))) {
-    if (isAuthenticated) {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
-    }
     return NextResponse.next();
   }
 

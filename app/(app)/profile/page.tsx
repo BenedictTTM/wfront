@@ -176,7 +176,7 @@ export default function StudentProfilePage() {
               ) : (
                 <span className="flex items-center gap-1">
                   <User className="w-3.5 h-3.5" />
-                  Temporary Guest Session ({me?.sessionId ? me.sessionId.slice(0, 8) : "Active"})
+                  Temporary Guest Session ({me && isGuestIdentity(me) && me.sessionId ? me.sessionId.slice(0, 8) : "Active"})
                 </span>
               )}
             </div>

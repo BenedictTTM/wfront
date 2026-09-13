@@ -65,6 +65,9 @@ export function useSubmitQuizAttempt() {
       queryClient.invalidateQueries({ queryKey: ["gamification"] });
       queryClient.invalidateQueries({ queryKey: ["quests"] });
       queryClient.invalidateQueries({ queryKey: ["quiz", "history"] });
+      queryClient.invalidateQueries({ queryKey: ["learning-journey"] });
+      queryClient.invalidateQueries({ queryKey: ["journey"] });
+      queryClient.invalidateQueries({ queryKey: ["journey-progress"] });
     },
   });
 }

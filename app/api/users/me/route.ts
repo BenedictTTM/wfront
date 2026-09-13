@@ -60,6 +60,11 @@ export async function GET() {
   }
 
   if (!response.ok) {
+    if (response.status === 401) {
+      cookieStore.delete("accessToken");
+      cookieStore.delete("refreshToken");
+      cookieStore.delete("role");
+    }
     let errorBody: unknown = {};
     try {
       errorBody = await response.json();

@@ -1,4 +1,4 @@
-export type AttemptMode = "PRACTICE" | "EXAM";
+export type AttemptMode = "JOURNEY" | "PRACTICE" | "EXAM";
 export type AttemptStatus = "IN_PROGRESS" | "SUBMITTED" | "ABANDONED";
 
 export type CreateAttemptPayload = {
@@ -6,6 +6,9 @@ export type CreateAttemptPayload = {
   subjectId: string;
   topicId?: string;
   subtopicId?: string;
+  journeyId?: string;
+  levelId?: string;
+  challengeId?: string;
 };
 
 export type QuestionOptionDto = {
@@ -28,6 +31,9 @@ export type AttemptAnswerResponseDto = {
   questionId: string;
   selectedOptionId?: string | null;
   submittedText?: string | null;
+  isCorrect?: boolean;
+  correctOption?: string;
+  explanation?: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -39,6 +45,9 @@ export type QuizAttempt = {
   subjectId: string;
   topicId?: string | null;
   subtopicId?: string | null;
+  journeyId?: string | null;
+  levelId?: string | null;
+  challengeId?: string | null;
   questions: AttemptQuestionDto[];
   answers: AttemptAnswerResponseDto[];
   startedAt: string;
@@ -60,6 +69,18 @@ export type ScoredAnswerDto = {
   questionSnapshot: Record<string, any>;
 };
 
+export type JourneyAttemptOutcome = {
+  levelId: string;
+  isPassed: boolean;
+  masteryStarsEarned: number;
+  xpEarned: number;
+  unlockedNextLevel: boolean;
+  nextLevelId?: string | null;
+  nextLevelTitle?: string | null;
+  nextLevelPrerequisitesMet?: boolean;
+  summaryMessage: string;
+};
+
 export type SubmitAttemptResponseDto = {
   id: string;
   mode: AttemptMode;
@@ -67,12 +88,16 @@ export type SubmitAttemptResponseDto = {
   subjectId: string;
   topicId?: string | null;
   subtopicId?: string | null;
+  journeyId?: string | null;
+  levelId?: string | null;
+  challengeId?: string | null;
   score: number;
   isFirstAttempt: boolean;
   xpAwarded: number;
   scoredAnswers: ScoredAnswerDto[];
   startedAt: string;
   completedAt: string;
+  journeyOutcome?: JourneyAttemptOutcome | null;
 };
 
 export type AttemptSummaryDto = {
