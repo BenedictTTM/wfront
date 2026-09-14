@@ -91,3 +91,12 @@ export async function getLeaderboard(params?: {
     `/leaderboards${queryString ? `?${queryString}` : ""}`
   );
 }
+
+export async function getMyAchievements(): Promise<{ data: Achievement[]; nextCursor: string | null }> {
+  return apiGet<{ data: Achievement[]; nextCursor: string | null }>("/users/me/achievements");
+}
+
+export async function getAchievementCatalog(): Promise<{ data: Achievement[]; nextCursor: string | null }> {
+  return apiGet<{ data: Achievement[]; nextCursor: string | null }>("/achievements");
+}
+

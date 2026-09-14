@@ -7,6 +7,8 @@ import { useQueryClient } from "@tanstack/react-query";
 
 interface StatsContextType {
   xp: number;
+  totalXp: number;
+  levelXp: number;
   gems: number;
   streak: number;
   energy: number;
@@ -25,7 +27,9 @@ export function StatsProvider({ children }: { children: React.ReactNode }) {
   const { data: dashboardData } = useDashboard();
   const queryClient = useQueryClient();
 
-  const xp = dashboardData?.xp?.current ?? 0;
+  const totalXp = dashboardData?.xp?.total ?? dashboardData?.xp?.current ?? 0;
+  const levelXp = dashboardData?.xp?.current ?? 0;
+  const xp = totalXp;
   const gems = dashboardData?.wallet?.gems ?? 0;
   const streak = dashboardData?.streak?.current ?? 0;
   const energy = dashboardData?.energy?.current ?? 30;
@@ -57,6 +61,8 @@ export function StatsProvider({ children }: { children: React.ReactNode }) {
     <StatsContext.Provider
       value={{
         xp,
+        totalXp,
+        levelXp,
         gems,
         streak,
         energy,

@@ -2,8 +2,11 @@
 
 import React from "react";
 import Link from "next/link";
-import { ArrowRight, BookOpen, Sparkles, Star, Trophy, Zap } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ArrowRight, BookOpen, Loader2, Sparkles, Star, Trophy, Zap } from "lucide-react";
 import { Subject, SubjectJourney } from "../types";
+import { useStartJourneyNodeSession } from "../journey-hooks";
+import { useCreateQuizAttempt } from "@/features/quiz/hooks";
 
 interface ContinueJourneyCardProps {
   subject: Subject;
@@ -27,11 +30,66 @@ export function ContinueJourneyCard({ subject, journey }: ContinueJourneyCardPro
   const percentComplete = Math.min(100, Math.round((completedNodes / totalNodes) * 100));
   const xpAvailable = currentNode?.xpReward ?? 50;
 
+  const router = useRouter();
+  const [isStarting, setIsStarting] = React.useState(false);
+  const startNodeSessionMutation = useStartJourneyNodeSession();
+  const createAttemptMutation = useCreateQuizAttempt();
+
   // Link destination: directly launch quiz session for current subtopic or navigate to subject journey map
   const activeSubtopicId = currentNode?.subtopicId || currentNode?.id;
   const continueHref = activeSubtopicId
     ? `/study/quiz?subjectId=${subject.id}&subtopicId=${activeSubtopicId}&mode=quiz`
     : `/study/${subject.slug}`;
+
+  const handleContinueJourney = async () => {
+    if (isStarting) return;
+
+    if (!currentNode?.id && !activeSubtopicId) {
+      router.push(`/study/${subject.slug}`);
+      return;
+    }
+
+    setIsStarting(true);
+    try {
+      let attemptId: string | undefined;
+
+      // 1. Try starting via dedicated journey node session endpoint
+      if (currentNode?.id) {
+        try {
+          const res = await startNodeSessionMutation.mutateAsync(currentNode.id);
+          if (res?.attemptId) {
+            attemptId = res.attemptId;
+          }
+        } catch (nodeErr) {
+          console.warn("startJourneyNodeSession fallback:", nodeErr);
+        }
+      }
+
+      // 2. Fallback to standard quiz attempt creation
+      if (!attemptId) {
+        const attempt = await createAttemptMutation.mutateAsync({
+          mode: "PRACTICE",
+          subjectId: subject.id,
+          subtopicId: currentNode?.subtopicId || activeSubtopicId || undefined,
+        });
+        if (attempt?.id) {
+          attemptId = attempt.id;
+        }
+      }
+
+      if (attemptId) {
+        router.push(`/study/quiz?attemptId=${attemptId}&mode=quiz`);
+      } else {
+        router.push(continueHref);
+      }
+    } catch (err: any) {
+      console.error("Failed to start journey session:", err);
+      // Fallback navigate to quiz with params so quiz page can handle it
+      router.push(continueHref);
+    } finally {
+      setIsStarting(false);
+    }
+  };
 
   return (
     <section aria-labelledby="continue-journey-heading" className="w-full">
@@ -117,13 +175,24 @@ export function ContinueJourneyCard({ subject, journey }: ContinueJourneyCardPro
 
         {/* Primary Action Button */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
-          <Link
-            href={continueHref}
-            className="flex-1 py-3.5 px-6 bg-primary text-text-primary border-[3px] border-border rounded-xl text-xs md:text-sm font-black shadow-[0_4px_0_#141827] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-[0_1px_0_#141827] focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary transition-all flex items-center justify-center gap-2 tracking-wider cursor-pointer"
+          <button
+            type="button"
+            onClick={handleContinueJourney}
+            disabled={isStarting}
+            className="flex-1 py-3.5 px-6 bg-primary text-text-primary border-[3px] border-border rounded-xl text-xs md:text-sm font-black shadow-[0_4px_0_#141827] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-[0_1px_0_#141827] focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary transition-all flex items-center justify-center gap-2 tracking-wider cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
           >
-            <span>CONTINUE JOURNEY</span>
-            <ArrowRight size={16} className="stroke-[3]" />
-          </Link>
+            {isStarting ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                <span>STARTING QUIZ…</span>
+              </>
+            ) : (
+              <>
+                <span>CONTINUE JOURNEY</span>
+                <ArrowRight size={16} className="stroke-[3]" />
+              </>
+            )}
+          </button>
 
           <Link
             href={`/study/${subject.slug}`}

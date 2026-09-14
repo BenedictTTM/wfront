@@ -97,7 +97,8 @@ export function useMultiplayerWs({
   }, []);
 
   const connect = useCallback(() => {
-    if (!token || !mountedRef.current) return;
+    mountedRef.current = true;
+    if (!token) return;
 
     // Clean up any existing connection without triggering reconnect
     const existing = wsRef.current;
@@ -247,8 +248,15 @@ export function useMultiplayerWs({
     [matchId, selectedOptionId, sendRaw]
   );
 
+  const handleReconnect = useCallback(() => {
+    mountedRef.current = true;
+    reconnectAttemptRef.current = 0;
+    connect();
+  }, [connect]);
+
   // Connect when token is available (i.e. when we're on the live game page)
   useEffect(() => {
+    mountedRef.current = true;
     if (token) {
       connect();
     }
@@ -273,6 +281,6 @@ export function useMultiplayerWs({
     roundReveal,
     matchEnd,
     submitAnswer,
-    reconnect: connect,
+    reconnect: handleReconnect,
   };
 }

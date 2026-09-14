@@ -299,6 +299,14 @@ function PracticeQuizContent() {
     router.push("/study");
   };
 
+  const hasAutoStartParams = Boolean(
+    initialSubjectId ||
+    initialLevelId ||
+    initialTopicId ||
+    initialSubtopicId ||
+    queryAttemptId
+  );
+
   const handleContinueNextLevel = (nextLevelId: string) => {
     handleResetQuiz();
     const subjectParam = currentAttempt?.subjectId || initialSubjectId;
@@ -329,6 +337,7 @@ function PracticeQuizContent() {
         topicId: initialTopicId || undefined,
         subtopicId: initialSubtopicId || undefined,
         mode: "PRACTICE",
+        overrideFlashcardReview: initialMode === "quiz" ? false : undefined,
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -347,17 +356,15 @@ function PracticeQuizContent() {
     );
   }
 
-  // ── Selector (if no active session) ───────────────────────────────────────────
-  if (!activeAttemptId && !currentAttempt) {
+  // ── Loading Quiz Attempt ───────────────────────────────────────────────────────
+  if (
+    loadingAttempt ||
+    createAttemptMutation.isPending ||
+    (hasAutoStartParams && !currentAttempt && !attemptError && !createAttemptMutation.isError && !showEnergyWarning)
+  ) {
     return (
       <>
-        <SubjectTopicSelector
-          onStartQuiz={(subjectId, topicId, mode) =>
-            handleStartQuiz({ subjectId, topicId, mode })
-          }
-          isStarting={createAttemptMutation.isPending}
-          userEnergy={userEnergy}
-        />
+        <LoadingCard label="Preparing challenge questions…" />
         <EnergyWarningModal
           isOpen={showEnergyWarning}
           onClose={() => setShowEnergyWarning(false)}
@@ -365,11 +372,6 @@ function PracticeQuizContent() {
         />
       </>
     );
-  }
-
-  // ── Loading Quiz Attempt ───────────────────────────────────────────────────────
-  if (loadingAttempt || createAttemptMutation.isPending) {
-    return <LoadingCard label="Preparing challenge questions…" />;
   }
 
   // ── Loading Flashcards ───────────────────────────────────────────────────────
@@ -390,7 +392,16 @@ function PracticeQuizContent() {
   }
 
   // ── Error / empty state ───────────────────────────────────────────────────────
-  if (attemptError || !currentAttempt || !currentAttempt.questions || currentAttempt.questions.length === 0) {
+  if (
+    attemptError ||
+    createAttemptMutation.isError ||
+    (currentAttempt && (!currentAttempt.questions || currentAttempt.questions.length === 0))
+  ) {
+    const errorMsg =
+      (createAttemptMutation.error as any)?.message ||
+      (attemptError as any)?.message ||
+      "No questions currently configured for this challenge level.";
+
     return (
       <div className="w-full max-w-xl mx-auto bg-surface border-[3px] border-border rounded-2xl shadow-[0_6px_0_rgba(20,24,39,0.9)] p-8 flex flex-col items-center text-center gap-5">
         <div className="w-14 h-14 rounded-2xl bg-surface-muted border-[2px] border-border flex items-center justify-center">
@@ -399,9 +410,7 @@ function PracticeQuizContent() {
         <div className="flex flex-col gap-1">
           <h4 className="text-base font-black text-text-primary">Unable to Load Challenge</h4>
           <p className="text-xs text-text-secondary max-w-sm">
-            {attemptError instanceof Error
-              ? attemptError.message
-              : "No questions currently configured for this challenge level."}
+            {errorMsg}
           </p>
         </div>
         <div className="flex gap-2">
@@ -416,14 +425,38 @@ function PracticeQuizContent() {
             href="/study"
             className="px-4 py-2.5 border-[2px] border-border rounded-xl text-xs font-black hover:bg-surface-muted transition-colors"
           >
-            RETURN TO MAP
+            RETURN TO STUDY
           </Link>
         </div>
       </div>
     );
   }
 
+  // ── Selector (fallback ONLY if no active session and no auto-start params) ───
+  if (!activeAttemptId && !currentAttempt) {
+    return (
+      <>
+        <SubjectTopicSelector
+          onStartQuiz={(subjectId, topicId, mode) =>
+            handleStartQuiz({ subjectId, topicId, mode })
+          }
+          isStarting={createAttemptMutation.isPending}
+          userEnergy={userEnergy}
+        />
+        <EnergyWarningModal
+          isOpen={showEnergyWarning}
+          onClose={() => setShowEnergyWarning(false)}
+          currentEnergy={userEnergy}
+        />
+      </>
+    );
+  }
+
   // ── Active Quiz Session ───────────────────────────────────────────────────────
+  if (!currentAttempt || !currentAttempt.questions) {
+    return <LoadingCard label="Preparing challenge questions…" />;
+  }
+
   const questions = currentAttempt.questions;
   const currentQuestion = questions[currentQuestionIndex];
   const activeAnswer = currentQuestion ? answersMap[currentQuestion.id] : undefined;

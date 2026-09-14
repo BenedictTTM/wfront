@@ -8,12 +8,16 @@ const BASE = "/api";
 
 // ── /me ───────────────────────────────────────────────────────────────────────
 
-/** Fetch the current user (or guest identity) from the secure Next.js proxy. */
-export async function fetchCurrentUser(): Promise<MeResponse> {
+/** Fetch the current user (or guest identity) from the secure Next.js proxy. Returns null when unauthenticated. */
+export async function fetchCurrentUser(): Promise<MeResponse | null> {
   const res = await fetch(`${BASE}/users/me`, {
     method: "GET",
     credentials: "include", // include cookies on same-origin requests
   });
+
+  if (res.status === 401) {
+    return null;
+  }
 
   if (!res.ok) {
     const errorBody = await res.json().catch(() => ({}));

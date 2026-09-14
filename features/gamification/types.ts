@@ -20,6 +20,7 @@ export interface XpDetails {
   level: number;
   current: number;
   next: number;
+  total?: number;
 }
 
 export interface UserDashboard {

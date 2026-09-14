@@ -47,7 +47,9 @@ export default function LeaderboardsPage() {
     subjectId: scope === "subject" ? selectedSubjectId : undefined,
   });
 
-  const isUnlocked = xp >= 30;
+  const userScore = leaderboard?.currentUserEntry?.score ?? 0;
+  const currentTotalXp = Math.max(xp, userScore);
+  const isUnlocked = currentTotalXp >= 30;
 
   return (
     <div className="flex flex-col gap-8 py-2 w-full max-w-4xl mx-auto">
@@ -140,17 +142,17 @@ export default function LeaderboardsPage() {
           <div className="flex flex-col gap-1 max-w-sm">
             <h3 className="text-xl font-black text-text-primary">Leaderboard Locked</h3>
             <p className="text-xs md:text-sm font-extrabold text-text-secondary leading-relaxed">
-              Earn at least <span className="text-text-primary font-black">30 XP</span> to unlock weekly rankings. Currently you have <span className="text-[#FF9E2C] font-black">{xp} XP</span>.
+              Earn at least <span className="text-text-primary font-black">30 XP</span> to unlock weekly rankings. Currently you have <span className="text-[#FF9E2C] font-black">{currentTotalXp} XP</span>.
             </p>
           </div>
           <div className="w-full max-w-xs bg-surface-muted border-2 border-border rounded-full h-3.5 overflow-hidden mt-1">
             <div
               className="h-full bg-primary border-r-2 border-border transition-all duration-300"
-              style={{ width: `${Math.min(100, (xp / 30) * 100)}%` }}
+              style={{ width: `${Math.min(100, (currentTotalXp / 30) * 100)}%` }}
             />
           </div>
           <span className="text-[10px] font-black text-text-secondary uppercase tracking-wider">
-            Progress: {xp} / 30 XP
+            Progress: {currentTotalXp} / 30 XP
           </span>
         </div>
       ) : (

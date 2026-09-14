@@ -9,32 +9,31 @@ import { LiveQuestion } from "@/features/multiplayer/components/LiveQuestion";
 import { RoundReveal } from "@/features/multiplayer/components/RoundReveal";
 import { MatchResults } from "@/features/multiplayer/components/MatchResults";
 
-function getAccessToken(): string | null {
-  if (typeof document === "undefined") return null;
-  const match = document.cookie.match(/(?:^|;\s*)accessToken=([^;]+)/);
-  return match ? decodeURIComponent(match[1]) : null;
-}
-
-function getCurrentUserId(): string | null {
-  if (typeof document === "undefined") return null;
-  // Decode the JWT payload to get the user ID
-  try {
-    const token = getAccessToken();
-    if (!token) return null;
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    return payload.sub ?? payload.id ?? null;
-  } catch {
-    return null;
-  }
-}
 
 export default function LiveMatchPage() {
   const { matchId } = useParams<{ matchId: string }>();
   const router = useRouter();
 
-  const [token] = useState(getAccessToken);
-  const [currentUserId] = useState(getCurrentUserId);
+  const [token, setToken] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [subjectId] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    fetch("/api/auth/token")
+      .then((res) => (res.ok ? res.json() : { token: null }))
+      .then((data) => {
+        if (data.token) {
+          setToken(data.token);
+          try {
+            const payload = JSON.parse(atob(data.token.split(".")[1]));
+            setCurrentUserId(payload.sub ?? payload.id ?? null);
+          } catch {
+            // ignore decode error
+          }
+        }
+      })
+      .catch((err) => console.error("Failed to load WS token", err));
+  }, []);
 
   const {
     status,

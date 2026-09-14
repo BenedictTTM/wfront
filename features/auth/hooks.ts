@@ -29,7 +29,7 @@ export const authKeys = {
  * - 401 responses do NOT retry (token is deterministically absent/expired).
  */
 export function useMe() {
-  return useQuery<MeResponse, Error>({
+  return useQuery<MeResponse | null, Error>({
     queryKey: authKeys.me,
     queryFn: fetchCurrentUser,
     staleTime: 5 * 60 * 1000, // 5 min — user profile rarely changes mid-session
