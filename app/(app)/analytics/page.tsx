@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from "react";
@@ -21,6 +22,7 @@ import { useAnalyticsOverview } from "@/features/analytics/hooks";
 import type { AnalyticsPeriod } from "@/features/analytics/types";
 import {
   PerformanceSnapshotCard,
+  PerformanceTrendCard,
   SubjectPerformanceCard,
   LearningProfileCard,
   TopicMasteryBreakdownCard,
@@ -247,7 +249,17 @@ export default function AnalyticsPage() {
                 <PerformanceSnapshotCard snapshot={data.snapshot} insights={data.insights} />
               </section>
 
-              {/* 2. YOUR LEARNING PROFILE (Weak Areas Needing Attention & Strongest Topics) */}
+              {/* 2. PERFORMANCE TREND ("Am I improving?") */}
+              {data.trend && (
+                <section aria-labelledby="heading-trend" className="flex flex-col gap-2.5">
+                  <h2 id="heading-trend" className="text-xs font-black uppercase tracking-widest text-text-secondary">
+                    PERFORMANCE TREND
+                  </h2>
+                  <PerformanceTrendCard trend={data.trend} />
+                </section>
+              )}
+
+              {/* 3. YOUR LEARNING PROFILE (Weak Areas Needing Attention & Strongest Topics) */}
               <section aria-labelledby="heading-learning-profile" className="flex flex-col gap-2.5">
                 <h2 id="heading-learning-profile" className="text-xs font-black uppercase tracking-widest text-text-secondary">
                   YOUR LEARNING PROFILE

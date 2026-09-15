@@ -18,6 +18,7 @@ export function useAnalyticsOverview(
     queryKey: ['analytics', 'overview', subjectId ?? 'all', period ?? 'default'],
     queryFn: () => getAnalyticsOverview(subjectId, period),
     staleTime: 5 * 60 * 1000,
+    placeholderData: (previousData) => previousData,
     enabled: options?.enabled ?? true,
     retry: (failureCount, error: any) => {
       // Don't retry on 401 or 403
