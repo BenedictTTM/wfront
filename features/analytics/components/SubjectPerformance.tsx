@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { BookOpen, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import type { SubjectPerformanceItem } from "../types";
@@ -28,10 +28,13 @@ export function SubjectPerformanceCard({
     ? subjects.filter((s) => s.id === selectedSubjectId)
     : subjects;
 
-  // Reset pagination if filter changes
-  useEffect(() => {
+  const [prevSelectedSubjectId, setPrevSelectedSubjectId] = useState(selectedSubjectId);
+
+  // Reset pagination if filter changes without cascading effect renders
+  if (prevSelectedSubjectId !== selectedSubjectId) {
+    setPrevSelectedSubjectId(selectedSubjectId);
     setCurrentPage(0);
-  }, [selectedSubjectId]);
+  }
 
   const totalPages = Math.ceil(filteredSubjects.length / ITEMS_PER_PAGE);
   const currentSubjects = filteredSubjects.slice(

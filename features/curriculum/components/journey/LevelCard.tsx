@@ -2,15 +2,12 @@
 
 import React from "react";
 import {
-  AlertCircle,
   ArrowRight,
-  BookOpen,
   CheckCircle2,
   Crown,
   Lock,
   RotateCcw,
   Sparkles,
-  Trophy,
   X,
   Zap,
 } from "lucide-react";

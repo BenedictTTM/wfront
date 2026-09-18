@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, BookOpen, Loader2, Sparkles, Star, Trophy, Zap } from "lucide-react";
+import { ArrowRight, BookOpen, Loader2, Star, Zap } from "lucide-react";
 import { Subject, SubjectJourney } from "../types";
 import { useStartJourneyNodeSession } from "../journey-hooks";
 import { useCreateQuizAttempt } from "@/features/quiz/hooks";
@@ -82,7 +82,7 @@ export function ContinueJourneyCard({ subject, journey }: ContinueJourneyCardPro
       } else {
         router.push(continueHref);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Failed to start journey session:", err);
       // Fallback navigate to quiz with params so quiz page can handle it
       router.push(continueHref);

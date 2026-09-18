@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, BookOpen, Crown, Play, Sparkles, Star, Zap } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpen, Play, Star, Zap } from "lucide-react";
 import { JourneyLevelItem } from "../../types";
 
 interface JourneyProgressProps {
@@ -19,7 +19,6 @@ interface JourneyProgressProps {
 
 export function JourneyProgress({
   subjectName,
-  subjectSlug,
   completedLevels,
   totalLevels,
   masteredLevels,

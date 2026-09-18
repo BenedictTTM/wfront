@@ -2,17 +2,11 @@
 
 import React, { useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
-import {
-  AlertCircle,
-  ArrowLeft,
-  Compass,
-  Loader2,
-  RefreshCw,
-  Sparkles,
-} from "lucide-react";
+import { Compass } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 
+import { EmptyState, ErrorState } from "@/components/shared";
 import { useLearningJourney } from "@/features/curriculum/journey-hooks";
 import {
   JourneyMap,
@@ -64,37 +58,20 @@ function JourneyErrorState({
   onRetry: () => void;
 }) {
   return (
-    <div className="w-full max-w-md mx-auto my-12 bg-surface border-[3px] border-border rounded-3xl p-8 flex flex-col items-center text-center gap-4 shadow-[0_6px_0_rgba(20,24,39,0.9)]">
-      <div className="w-14 h-14 rounded-2xl bg-red-100 border-[2px] border-border flex items-center justify-center text-destructive">
-        <AlertCircle size={28} />
-      </div>
-
-      <div className="flex flex-col gap-1">
-        <h3 className="text-lg font-black text-text-primary">
-          Unable to Load Learning Journey
-        </h3>
-        <p className="text-xs text-text-secondary">
-          {error?.message || "There was a problem retrieving your curriculum map."}
-        </p>
-      </div>
-
-      <div className="flex items-center gap-3 mt-2">
+    <ErrorState
+      title="Unable to Load Learning Journey"
+      message={error?.message || "There was a problem retrieving your curriculum map."}
+      onRetry={onRetry}
+      retryText="Try Again"
+      secondaryAction={
         <Link
           href="/study"
           className="px-4 py-2 bg-surface-muted border-[2px] border-border rounded-xl text-xs font-black hover:bg-border-muted/40 active:translate-y-0.5 transition-all"
         >
           Return to Study
         </Link>
-        <button
-          type="button"
-          onClick={onRetry}
-          className="px-5 py-2 bg-primary text-text-primary border-[2px] border-border rounded-xl text-xs font-black shadow-[0_2px_0_#141827] active:translate-y-0.5 transition-all flex items-center gap-1.5 cursor-pointer"
-        >
-          <RefreshCw size={14} />
-          <span>Try Again</span>
-        </button>
-      </div>
-    </div>
+      }
+    />
   );
 }
 
@@ -102,27 +79,13 @@ function JourneyErrorState({
 
 function JourneyEmptyState() {
   return (
-    <div className="w-full max-w-md mx-auto my-12 bg-surface border-[3px] border-border rounded-3xl p-8 flex flex-col items-center text-center gap-4 shadow-[0_6px_0_rgba(20,24,39,0.9)]">
-      <div className="w-14 h-14 rounded-2xl bg-surface-muted border-[2px] border-border flex items-center justify-center">
-        <Compass size={28} className="text-text-secondary" />
-      </div>
-
-      <div className="flex flex-col gap-1">
-        <h3 className="text-lg font-black text-text-primary">
-          Curriculum Under Construction
-        </h3>
-        <p className="text-xs text-text-secondary">
-          This subject does not have an active structured journey yet. Practice quizzes remain available.
-        </p>
-      </div>
-
-      <Link
-        href="/study"
-        className="px-5 py-2.5 bg-primary text-text-primary border-[2px] border-border rounded-xl text-xs font-black shadow-[0_3px_0_#141827] active:translate-y-0.5 transition-all"
-      >
-        Back to Study Center
-      </Link>
-    </div>
+    <EmptyState
+      icon={<Compass size={28} className="text-text-secondary" />}
+      title="Curriculum Under Construction"
+      description="This subject does not have an active structured journey yet. Practice quizzes remain available."
+      actionText="Back to Study Center"
+      actionHref="/study"
+    />
   );
 }
 
@@ -157,7 +120,7 @@ export default function SubjectJourneyPage() {
       allLevels[0] ||
       null
     );
-  }, [allLevels, journey?.currentLevelId]);
+  }, [allLevels, journey]);
 
   // Navigate to challenge
   const handleStartChallenge = (level: JourneyLevelItem) => {
@@ -181,7 +144,7 @@ export default function SubjectJourneyPage() {
   if (isError || !journey) {
     return (
       <JourneyErrorState
-        error={error as Error}
+        error={error}
         onRetry={() => refetch()}
       />
     );

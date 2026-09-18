@@ -30,5 +30,5 @@ export type GuestIdentity = {
 export type MeResponse = AuthUser | GuestIdentity;
 
 export function isGuestIdentity(me: MeResponse): me is GuestIdentity {
-  return (me as GuestIdentity).isGuest === true;
+  return "isGuest" in me && me.isGuest === true;
 }

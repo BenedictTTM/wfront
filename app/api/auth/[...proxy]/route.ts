@@ -30,17 +30,27 @@ function durationToSeconds(duration: string): number {
 const ACCESS_TOKEN_MAX_AGE = durationToSeconds(process.env.JWT_EXPIRATION || "1d");
 const REFRESH_TOKEN_MAX_AGE = durationToSeconds(process.env.JWT_REFRESH_EXPIRATION || "7d");
 
+interface AuthResponseData {
+  accessToken?: string;
+  refreshToken?: string;
+  user?: {
+    role?: string;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
 async function setCookiesFromResponse(
   cookieStore: Awaited<ReturnType<typeof cookies>>,
-  data: Record<string, any>
+  data: AuthResponseData
 ) {
-  if (data.accessToken) {
+  if (data.accessToken && typeof data.accessToken === "string") {
     cookieStore.set({ name: "accessToken", value: data.accessToken, ...COOKIE_DEFAULTS, maxAge: ACCESS_TOKEN_MAX_AGE });
   }
-  if (data.refreshToken) {
+  if (data.refreshToken && typeof data.refreshToken === "string") {
     cookieStore.set({ name: "refreshToken", value: data.refreshToken, ...COOKIE_DEFAULTS, maxAge: REFRESH_TOKEN_MAX_AGE });
   }
-  if (data.user?.role) {
+  if (data.user?.role && typeof data.user.role === "string") {
     cookieStore.set({ name: "role", value: data.user.role, ...COOKIE_DEFAULTS });
   }
 }
@@ -54,7 +64,7 @@ export async function POST(
   const path = resolvedParams.proxy.join("/");
   const cookieStore = await cookies();
 
-  let body: Record<string, any> = {};
+  let body: Record<string, unknown> = {};
   try {
     body = await request.json();
   } catch {
@@ -94,7 +104,7 @@ export async function POST(
     body: Object.keys(body).length > 0 ? JSON.stringify(body) : undefined,
   });
 
-  let data: Record<string, any> = {};
+  let data: AuthResponseData = {};
   try {
     data = await response.json();
   } catch {
@@ -118,7 +128,9 @@ export async function POST(
   await setCookiesFromResponse(cookieStore, data);
 
   // Strip raw tokens before returning to client
-  const { accessToken: _a, refreshToken: _r, ...safeData } = data;
+  const safeData = { ...data };
+  delete safeData.accessToken;
+  delete safeData.refreshToken;
 
   return NextResponse.json(safeData);
 }

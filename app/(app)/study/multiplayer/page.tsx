@@ -1,57 +1,21 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { AlertCircle, ChevronRight, Clock, Swords, Users } from "lucide-react";
+import React from "react";
+import { AlertCircle, ChevronRight, Swords } from "lucide-react";
 import { useSubjects } from "@/features/curriculum/hooks";
-import { useJoinQueue, useLeaveQueue, useQueueStatus } from "@/features/multiplayer/hooks";
+import { useMatchmaking } from "@/features/multiplayer/hooks";
 import { MatchmakingLobby } from "@/features/multiplayer/components/MatchmakingLobby";
-import { Subject } from "@/features/curriculum/types";
 
 export default function MultiplayerEntryPage() {
-  const router = useRouter();
   const { data: subjects, isLoading, isError } = useSubjects();
-  const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
-  const [isSearching, setIsSearching] = useState(false);
-
-  const joinQueue = useJoinQueue();
-  const leaveQueue = useLeaveQueue();
-
-  // Poll queue status every 2s while searching.
-  // When the server stamps matchId into the entry, we detect it here and navigate.
-  // No WebSocket needed in the lobby — this keeps idle connections to zero.
-  const { data: queueStatus } = useQueueStatus(isSearching);
-
-  useEffect(() => {
-    if (queueStatus?.matchId && isSearching) {
-      // Match found via REST poll → navigate to the live game page.
-      // The WS connection is opened only after navigating to /study/multiplayer/[matchId].
-      router.push(`/study/multiplayer/${queueStatus.matchId}`);
-    }
-  }, [queueStatus?.matchId, isSearching, router]);
-
-  const handleStartSearch = async () => {
-    if (!selectedSubject) return;
-    setIsSearching(true);
-    try {
-      const result = await joinQueue.mutateAsync({ subjectId: selectedSubject.id });
-      // If matchId is already stamped (instant match), navigate immediately
-      if (result?.matchId) {
-        router.push(`/study/multiplayer/${result.matchId}`);
-      }
-    } catch {
-      setIsSearching(false);
-    }
-  };
-
-  const handleCancel = async () => {
-    setIsSearching(false);
-    try {
-      await leaveQueue.mutateAsync();
-    } catch {
-      // best-effort cancel
-    }
-  };
+  const {
+    selectedSubject,
+    setSelectedSubject,
+    isSearching,
+    startSearch,
+    cancelSearch,
+    isJoining,
+  } = useMatchmaking();
 
   if (isLoading) {
     return (
@@ -76,7 +40,7 @@ export default function MultiplayerEntryPage() {
 
   if (isSearching && selectedSubject) {
     return (
-      <MatchmakingLobby subject={selectedSubject} onCancel={handleCancel} />
+      <MatchmakingLobby subject={selectedSubject} onCancel={cancelSearch} />
     );
   }
 
@@ -140,12 +104,12 @@ export default function MultiplayerEntryPage() {
       {/* CTA */}
       <button
         type="button"
-        onClick={handleStartSearch}
-        disabled={!selectedSubject || joinQueue.isPending}
+        onClick={() => startSearch()}
+        disabled={!selectedSubject || isJoining}
         className="w-full py-4 bg-secondary text-text-primary border-[2px] border-border rounded-2xl text-sm font-black shadow-[0_4px_0_rgba(20,24,39,0.9)] active:translate-y-0.5 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <Swords size={16} />
-        {joinQueue.isPending ? "ENTERING QUEUE…" : "FIND OPPONENT"}
+        {isJoining ? "ENTERING QUEUE…" : "FIND OPPONENT"}
         <ChevronRight size={15} className="stroke-[3]" />
       </button>
 

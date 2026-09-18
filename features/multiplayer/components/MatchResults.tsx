@@ -10,7 +10,7 @@ interface MatchResultsProps {
   matchEnd: MatchEndData;
   participants: ParticipantState[];
   currentUserId: string;
-  subjectId: string | null;
+  subjectId?: string | null;
   onPlayAgain: () => void;
 }
 
@@ -23,7 +23,6 @@ export function MatchResults({
   matchEnd,
   participants,
   currentUserId,
-  subjectId,
   onPlayAgain,
 }: MatchResultsProps) {
   const myRanking = matchEnd.rankings.find((r) => r.participantId === currentUserId);

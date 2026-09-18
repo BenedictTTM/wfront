@@ -21,15 +21,9 @@ export function SubjectTopicSelector({
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>("");
   const [selectedTopicId, setSelectedTopicId] = useState<string>("");
 
-  const { data: topics, isLoading: loadingTopics } = useTopics(selectedSubjectId);
-
-  const selectedSubject = subjects?.find((s) => s.id === selectedSubjectId);
-
-  React.useEffect(() => {
-    if (subjects && subjects.length > 0 && !selectedSubjectId) {
-      setSelectedSubjectId(subjects[0].id);
-    }
-  }, [subjects, selectedSubjectId]);
+  const activeSubjectId = selectedSubjectId || (subjects && subjects.length > 0 ? subjects[0].id : "");
+  const { data: topics, isLoading: loadingTopics } = useTopics(activeSubjectId);
+  const selectedSubject = subjects?.find((s) => s.id === activeSubjectId);
 
   const handleSubjectChange = (subjectId: string) => {
     setSelectedSubjectId(subjectId);
@@ -37,8 +31,8 @@ export function SubjectTopicSelector({
   };
 
   const handleStart = () => {
-    if (!selectedSubjectId) return;
-    onStartQuiz(selectedSubjectId, selectedTopicId || undefined, "PRACTICE");
+    if (!activeSubjectId) return;
+    onStartQuiz(activeSubjectId, selectedTopicId || undefined, "PRACTICE");
   };
 
   const insufficientEnergy = userEnergy < 3;
@@ -82,7 +76,7 @@ export function SubjectTopicSelector({
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               {subjects.map((subj) => {
-                const isSelected = selectedSubjectId === subj.id;
+                const isSelected = activeSubjectId === subj.id;
                 return (
                   <button
                     key={subj.id}

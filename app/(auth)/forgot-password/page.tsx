@@ -7,6 +7,7 @@ import * as z from "zod";
 import { toast } from "sonner";
 import { Loader2, ArrowLeft, KeyRound, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
+import { useRequestPasswordResetMutation } from "@/features/auth/hooks";
 
 const forgotPasswordSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
@@ -15,7 +16,8 @@ const forgotPasswordSchema = z.object({
 type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
 
 export default function ForgotPasswordPage() {
-  const [isLoading, setIsLoading] = useState(false);
+  const resetMutation = useRequestPasswordResetMutation();
+  const isLoading = resetMutation.isPending;
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const {
@@ -27,27 +29,14 @@ export default function ForgotPasswordPage() {
   });
 
   const onSubmit = async (data: ForgotPasswordFormValues) => {
-    setIsLoading(true);
     try {
-      const response = await fetch("/api/auth/request-password-reset", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        const result = await response.json().catch(() => ({}));
-        throw new Error(result.message || "Failed to process request");
-      }
-
+      await resetMutation.mutateAsync(data);
       setIsSubmitted(true);
       toast.success("Password reset instructions sent!");
-    } catch (error: any) {
+    } catch {
       // Best effort notification
       toast.info("If an account exists with that email, a password reset link has been sent.");
       setIsSubmitted(true);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -73,7 +62,7 @@ export default function ForgotPasswordPage() {
         {isSubmitted ? (
           <div className="space-y-6">
             <div className="bg-surface border-2 border-border p-4 rounded-lg text-sm text-muted-foreground leading-relaxed text-center">
-              If an account is associated with your email, you will receive a reset link shortly. Please check your spam folder if it doesn't arrive within 2 minutes.
+              If an account is associated with your email, you will receive a reset link shortly. Please check your spam folder if it doesn&apos;t arrive within 2 minutes.
             </div>
             <Link
               href="/login"

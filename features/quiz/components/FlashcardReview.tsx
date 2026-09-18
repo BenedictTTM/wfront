@@ -50,8 +50,6 @@ function getTopicLabel(card: FlashcardDto): string {
 export function FlashcardReview({
   flashcards,
   onStartQuiz,
-  onSkip,
-  title = "Quick Review",
 }: FlashcardReviewProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
@@ -63,31 +61,25 @@ export function FlashcardReview({
   const touchEndX = useRef<number | null>(null);
   const minSwipeDistance = 40;
 
-  if (!flashcards || flashcards.length === 0) {
-    return null;
-  }
-
-  const currentCard = flashcards[currentIndex];
-  const reviewedCount = reviewedSet.size;
-  const allReviewed = reviewedCount >= flashcards.length && flashcards.length > 0;
+  const count = flashcards?.length ?? 0;
 
   const handleNext = useCallback(() => {
-    if (flashcards.length === 0) return;
+    if (count === 0) return;
     setIsFlipped(false);
-    setCurrentIndex((prev) => (prev + 1) % flashcards.length);
-  }, [flashcards.length]);
+    setCurrentIndex((prev) => (prev + 1) % count);
+  }, [count]);
 
   const handlePrev = useCallback(() => {
-    if (flashcards.length === 0) return;
+    if (count === 0) return;
     setIsFlipped(false);
-    setCurrentIndex((prev) => (prev - 1 + flashcards.length) % flashcards.length);
-  }, [flashcards.length]);
+    setCurrentIndex((prev) => (prev - 1 + count) % count);
+  }, [count]);
 
   const toggleFlip = useCallback(() => {
     setIsFlipped((prev) => !prev);
   }, []);
 
-  const handleAssessment = (level: AssessmentLevel) => {
+  const handleAssessment = (_level: AssessmentLevel) => {
     setReviewedSet((prev) => new Set([...prev, currentIndex]));
     setTimeout(() => {
       handleNext();
@@ -115,6 +107,14 @@ export function FlashcardReview({
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleNext, handlePrev, toggleFlip]);
+
+  if (!flashcards || flashcards.length === 0) {
+    return null;
+  }
+
+  const currentCard = flashcards[currentIndex];
+  const reviewedCount = reviewedSet.size;
+  const allReviewed = reviewedCount >= flashcards.length && flashcards.length > 0;
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchEndX.current = null;

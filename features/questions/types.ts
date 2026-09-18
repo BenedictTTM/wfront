@@ -1,8 +1,26 @@
 // features/questions — question authoring (Teacher) and review workflow (Admin)
-// TODO: implement
+
+import type { QuestionOption } from "@/features/quiz/types";
+
+export type QuestionStatus = "draft" | "pending_review" | "published" | "rejected";
+
 export type Question = {
   id: string;
-  status: "draft" | "pending_review" | "published" | "rejected";
+  status: QuestionStatus;
   authorId: string;
-  // TODO: confirm full shape (options, correct answer format, etc.)
+  text?: string;
+  topicId?: string;
+  difficulty?: string;
+  options?: QuestionOption[];
 };
+
+export type CreateQuestionPayload = {
+  text: string;
+  topicId: string;
+  difficulty: string;
+  options: QuestionOption[];
+  correctOption: string;
+  explanation?: string;
+};
+
+export type UpdateQuestionPayload = Partial<CreateQuestionPayload>;

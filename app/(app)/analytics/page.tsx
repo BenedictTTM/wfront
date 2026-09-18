@@ -9,11 +9,7 @@ import {
   BarChart3,
   Sparkles,
   Target,
-  ArrowRight,
   BookOpen,
-  UserPlus,
-  ShieldCheck,
-  TrendingUp,
   Zap,
 } from "lucide-react";
 import { useMe } from "@/features/auth/hooks";

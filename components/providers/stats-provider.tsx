@@ -1,9 +1,10 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import { useDashboard } from "@/features/gamification/hooks";
 import { useQueryClient } from "@tanstack/react-query";
+import { safeStorage } from "@/lib/storage";
 
 interface StatsContextType {
   xp: number;
@@ -15,10 +16,8 @@ interface StatsContextType {
   maxEnergy: number;
   completedQuizzes: number;
   addXp: (amount: number, reason: string) => void;
-  addGems: (amount: number) => void;
-  deductEnergy: (amount?: number) => void;
+  addGems: (amount?: number) => void;
   incrementCompletedQuizzes: () => void;
-  setStreak: (streak: number) => void;
 }
 
 const StatsContext = createContext<StatsContextType | undefined>(undefined);
@@ -27,54 +26,84 @@ export function StatsProvider({ children }: { children: React.ReactNode }) {
   const { data: dashboardData } = useDashboard();
   const queryClient = useQueryClient();
 
-  const totalXp = dashboardData?.xp?.total ?? dashboardData?.xp?.current ?? 0;
+  const cachedXp = safeStorage.getItem<number>("wassce_user_xp", 0);
+  const cachedGems = safeStorage.getItem<number>("wassce_user_gems", 0);
+  const cachedStreak = safeStorage.getItem<number>("wassce_user_streak", 0);
+  const cachedEnergy = safeStorage.getItem<number>("wassce_user_energy", 30);
+
+  const totalXp = dashboardData?.xp?.total ?? dashboardData?.xp?.current ?? cachedXp;
   const levelXp = dashboardData?.xp?.current ?? 0;
   const xp = totalXp;
-  const gems = dashboardData?.wallet?.gems ?? 0;
-  const streak = dashboardData?.streak?.current ?? 0;
-  const energy = dashboardData?.energy?.current ?? 30;
+  const gems = dashboardData?.wallet?.gems ?? cachedGems;
+  const streak = dashboardData?.streak?.current ?? cachedStreak;
+  const energy = dashboardData?.energy?.current ?? cachedEnergy;
   const maxEnergy = dashboardData?.energy?.max ?? 30;
+
+  // Persist fresh stats to storage whenever received from server
+  React.useEffect(() => {
+    if (dashboardData) {
+      if (dashboardData.xp) {
+        const freshXp = dashboardData.xp.total ?? dashboardData.xp.current ?? 0;
+        safeStorage.setItem("wassce_user_xp", freshXp);
+      }
+      if (dashboardData.wallet) {
+        safeStorage.setItem("wassce_user_gems", dashboardData.wallet.gems);
+      }
+      if (dashboardData.streak) {
+        safeStorage.setItem("wassce_user_streak", dashboardData.streak.current);
+      }
+      if (dashboardData.energy) {
+        safeStorage.setItem("wassce_user_energy", dashboardData.energy.current);
+      }
+    }
+  }, [dashboardData]);
+
   const [completedQuizzes, setCompletedQuizzes] = useState(0);
 
-  const addXp = (amount: number, reason: string) => {
+  const addXp = useCallback((amount: number, reason: string) => {
     toast.success(`+${amount} XP: ${reason}!`);
     queryClient.invalidateQueries({ queryKey: ["gamification"] });
-  };
+  }, [queryClient]);
 
-  const addGems = (_amount: number) => {
+  const addGems = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ["gamification"] });
-  };
+  }, [queryClient]);
 
-  const deductEnergy = () => {
-    queryClient.invalidateQueries({ queryKey: ["gamification"] });
-  };
-
-  const incrementCompletedQuizzes = () => {
+  const incrementCompletedQuizzes = useCallback(() => {
     setCompletedQuizzes((prev) => prev + 1);
-  };
+  }, []);
 
-  const setStreak = (_newStreak: number) => {
-    queryClient.invalidateQueries({ queryKey: ["gamification"] });
-  };
+  const value = useMemo<StatsContextType>(
+    () => ({
+      xp,
+      totalXp,
+      levelXp,
+      gems,
+      streak,
+      energy,
+      maxEnergy,
+      completedQuizzes,
+      addXp,
+      addGems,
+      incrementCompletedQuizzes,
+    }),
+    [
+      xp,
+      totalXp,
+      levelXp,
+      gems,
+      streak,
+      energy,
+      maxEnergy,
+      completedQuizzes,
+      addXp,
+      addGems,
+      incrementCompletedQuizzes,
+    ]
+  );
 
   return (
-    <StatsContext.Provider
-      value={{
-        xp,
-        totalXp,
-        levelXp,
-        gems,
-        streak,
-        energy,
-        maxEnergy,
-        completedQuizzes,
-        addXp,
-        addGems,
-        deductEnergy,
-        incrementCompletedQuizzes,
-        setStreak,
-      }}
-    >
+    <StatsContext.Provider value={value}>
       {children}
     </StatsContext.Provider>
   );

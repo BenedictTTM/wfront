@@ -39,12 +39,15 @@ export interface Achievement {
   createdAt?: string;
 }
 
+export type GamificationChallengeType = "DAILY" | "WEEKLY" | "SPECIAL" | string;
+export type QuestType = "DAILY" | "WEEKLY" | "ACHIEVEMENT" | "SPECIAL" | string;
+
 export interface Challenge {
   id: string;
   title: string;
   description: string;
   xpAward: number;
-  type: string; // "DAILY" | "WEEKLY" | "SPECIAL"
+  type: GamificationChallengeType;
   targetCount: number;
   currentCount: number;
   completed: boolean;
@@ -57,7 +60,7 @@ export interface UserQuest {
   slug: string;
   title: string;
   description: string;
-  type: "DAILY" | "WEEKLY" | "ACHIEVEMENT" | string;
+  type: QuestType;
   metric: string;
   xpAward: number;
   targetCount: number;
@@ -90,6 +93,8 @@ export interface LeaderboardEntry {
   name: string;
   score: number;
   rank: number;
+  school?: string;
+  avatarUrl?: string;
 }
 
 export interface LeaderboardResponse {

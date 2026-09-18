@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   Home, 
   BookOpen, 
-  ClipboardList, 
   Trophy, 
   Compass, 
   Medal,
@@ -20,9 +19,7 @@ import {
 import { toast } from "sonner";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useMe } from "@/features/auth/hooks";
-import { useLogoutMutation } from "@/features/auth/hooks";
-import { isGuestIdentity } from "@/features/auth/types";
+import { useCurrentUser, useLogoutMutation } from "@/features/auth/hooks";
 
 interface SidebarProps {
   mobileMenuOpen: boolean;
@@ -35,11 +32,16 @@ export function Sidebar({
 }: SidebarProps) {
   const [language, setLanguage] = useState("English");
   const [showLangDropdown, setShowLangDropdown] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
 
-  const { data: meData } = useMe();
-  const isGuest = !meData || isGuestIdentity(meData);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const user = useCurrentUser();
+  const isGuest = !user;
   const logoutMutation = useLogoutMutation();
 
   const handleLogout = () => {
@@ -225,7 +227,9 @@ export function Sidebar({
         </a>
 
         {/* Logout / Sign In */}
-        {isGuest ? (
+        {!mounted ? (
+          <div className="h-10 w-full" />
+        ) : isGuest ? (
           <Link
             href="/login"
             className="flex items-center gap-2 px-3 py-2.5 bg-primary text-text-primary border-2 border-border rounded-xl text-xs font-black hover:bg-[#ebd060] shadow-[0_2px_0_#141827] active:translate-y-0.5 active:shadow-none hover:-translate-y-0.5 transition-all"

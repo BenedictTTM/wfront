@@ -1,8 +1,8 @@
 // features/analytics/components/PerformanceTrend.tsx
 
 import React, { useState } from "react";
-import { TrendingUp, TrendingDown, Minus, HelpCircle, Activity, Calendar } from "lucide-react";
-import type { PerformanceTrend, PerformanceTrendPoint } from "../types";
+import { TrendingUp, TrendingDown, Minus, HelpCircle, Calendar } from "lucide-react";
+import type { PerformanceTrend } from "../types";
 
 interface PerformanceTrendProps {
   trend: PerformanceTrend;

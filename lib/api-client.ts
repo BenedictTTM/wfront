@@ -43,6 +43,10 @@ async function getHeaders(init?: RequestInit): Promise<Headers> {
     try {
       const { cookies } = await import("next/headers");
       const cookieStore = await cookies();
+      const cookieHeader = cookieStore.toString();
+      if (cookieHeader && !headers.has("Cookie")) {
+        headers.set("Cookie", cookieHeader);
+      }
       const accessToken = cookieStore.get("accessToken")?.value;
       if (accessToken) {
         headers.set("Authorization", `Bearer ${accessToken}`);
@@ -52,17 +56,25 @@ async function getHeaders(init?: RequestInit): Promise<Headers> {
           headers.set("X-Guest-Token", guestToken);
         }
       }
-    } catch (e) {
+    } catch {
       // In case cookies() is called outside of a server context
     }
   }
   return headers;
 }
 
+interface RawErrorPayload {
+  error?: { code?: string; message?: string; details?: unknown };
+  code?: string;
+  statusCode?: number;
+  message?: string | string[];
+  details?: unknown;
+}
+
 async function parseError(response: Response): Promise<ApiError> {
-  let errorPayload: any;
+  let errorPayload: RawErrorPayload | null = null;
   try {
-    errorPayload = await response.json();
+    errorPayload = (await response.json()) as RawErrorPayload;
   } catch {
     return new ApiError(
       "UNKNOWN_ERROR",
@@ -72,17 +84,28 @@ async function parseError(response: Response): Promise<ApiError> {
     );
   }
   const code =
-    errorPayload.error?.code ||
-    errorPayload.code ||
-    String(errorPayload.statusCode ?? "UNKNOWN_ERROR");
+    errorPayload?.error?.code ||
+    errorPayload?.code ||
+    String(errorPayload?.statusCode ?? "UNKNOWN_ERROR");
   const message =
-    errorPayload.error?.message ||
-    (Array.isArray(errorPayload.message)
+    errorPayload?.error?.message ||
+    (Array.isArray(errorPayload?.message)
       ? errorPayload.message.join(", ")
-      : errorPayload.message) ||
+      : errorPayload?.message) ||
     "An error occurred";
-  const details = errorPayload.error?.details || errorPayload.details;
+  const details = errorPayload?.error?.details || errorPayload?.details;
   return new ApiError(code, message, details, response.status);
+}
+
+function getRequestUrl(path: string): string {
+  if (path.startsWith("/api/")) {
+    if (typeof window === "undefined") {
+      const base = process.env.NEXTAUTH_URL || "http://localhost:3000";
+      return `${base}${path}`;
+    }
+    return path;
+  }
+  return `${API_URL}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
 /** Calls the Next.js refresh proxy to silently rotate tokens. */
@@ -93,7 +116,10 @@ async function silentRefresh(): Promise<boolean> {
       typeof window === "undefined"
         ? process.env.NEXTAUTH_URL || "http://localhost:3000"
         : "";
-    const res = await fetch(`${base}/api/auth/refresh`, { method: "POST" });
+    const res = await fetch(`${base}/api/auth/refresh`, {
+      method: "POST",
+      credentials: "include",
+    });
     return res.ok;
   } catch {
     return false;
@@ -106,13 +132,14 @@ async function request<T>(
   /** Internal — prevents infinite refresh loops. */
   _isRetry = false
 ): Promise<T> {
-  const url = `${API_URL}${path.startsWith("/") ? path : `/${path}`}`;
+  const url = getRequestUrl(path);
   const headers = await getHeaders(init);
 
   const response = await fetch(url, { credentials: "include", ...init, headers });
 
-  // On 401, attempt one silent token refresh then retry.
-  if (response.status === 401 && !_isRetry) {
+  // On 401, attempt one silent token refresh then retry (except for auth routes to prevent loops).
+  const isAuthOrProxy = path.startsWith("/api/auth/") || path === "/api/users/me";
+  if (response.status === 401 && !_isRetry && !isAuthOrProxy) {
     const refreshed = await silentRefresh();
     if (refreshed) {
       return request<T>(path, init, true);
@@ -127,7 +154,16 @@ async function request<T>(
     return {} as T;
   }
 
-  return response.json() as Promise<T>;
+  const text = await response.text();
+  if (!text) {
+    return {} as T;
+  }
+
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    return text as unknown as T;
+  }
 }
 
 export async function apiGet<T>(path: string, init?: RequestInit): Promise<T> {

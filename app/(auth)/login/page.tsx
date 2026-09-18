@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -8,6 +7,8 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
+
+import { useLoginMutation } from "@/features/auth/hooks";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
@@ -18,7 +19,8 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
+  const loginMutation = useLoginMutation();
+  const isLoading = loginMutation.isPending;
 
   const {
     register,
@@ -29,26 +31,12 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (data: LoginFormValues) => {
-    setIsLoading(true);
     try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      
-      const result = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(result.message || "Failed to log in");
-      }
-      
+      await loginMutation.mutateAsync(data);
       toast.success("Welcome back!");
       router.push("/dashboard");
-    } catch (error: any) {
-      toast.error(error.message || "An error occurred during login.");
-    } finally {
-      setIsLoading(false);
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "An error occurred during login.");
     }
   };
 
@@ -110,7 +98,7 @@ export default function LoginPage() {
         </form>
 
         <div className="mt-8 text-center text-sm font-medium text-muted-foreground">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <Link href="/register" className="text-foreground hover:underline decoration-2 underline-offset-4">
             Sign Up
           </Link>

@@ -3,8 +3,8 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { BookOpen, CheckCircle2, ChevronDown, Compass, Flag, Sparkles, Trophy } from "lucide-react";
-import { JourneyLevelItem, JourneyStageItem, LearningJourney } from "../../types";
+import { CheckCircle2, Flag } from "lucide-react";
+import { JourneyLevelItem, LearningJourney } from "../../types";
 import { JourneyNode } from "./JourneyNode";
 import { JourneyConnector } from "./JourneyConnector";
 import { LevelCard } from "./LevelCard";
@@ -124,7 +124,7 @@ export function JourneyMap({
 
                 {/* Stage Progress Bar Dots */}
                 <div className="flex gap-1 pt-1">
-                  {stage.levels.map((lvl, idx) => {
+                  {stage.levels.map((lvl) => {
                     const done =
                       lvl.state === "COMPLETED" ||
                       lvl.state === "MASTERED" ||

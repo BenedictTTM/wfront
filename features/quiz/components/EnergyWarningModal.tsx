@@ -48,7 +48,7 @@ export function EnergyWarningModal({
           onClose();
         }, 600);
       },
-      onError: (err: any) => {
+      onError: (err: Error) => {
         toast.error(err.message || "Failed to convert diamonds to energy");
       },
     });

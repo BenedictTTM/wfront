@@ -1,21 +1,9 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { Suspense } from "react";
 import { BookOpen, X, Loader2, Sparkles, ChevronLeft, CheckCircle2, XCircle, ArrowRight } from "lucide-react";
-import { toast } from "sonner";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-
-import { useEnergy } from "@/features/gamification/hooks";
-import { generateIdempotencyKey } from "@/lib/idempotency";
-import {
-  useCreateQuizAttempt,
-  useFlashcards,
-  useQuizAttempt,
-  useSubmitQuizAnswer,
-  useSubmitQuizAttempt,
-} from "@/features/quiz/hooks";
-import { abandonQuizAttempt } from "@/features/quiz/api";
+import { useQuizSession } from "@/features/quiz/use-quiz-session";
 import {
   SubjectTopicSelector,
   QuestionCard,
@@ -24,8 +12,6 @@ import {
   EnergyWarningModal,
   FlashcardReview,
 } from "@/features/quiz/components";
-import { AttemptMode, QuizAttempt, SubmitAttemptResponseDto } from "@/features/quiz/types";
-
 
 // ─── Loading skeleton ─────────────────────────────────────────────────────────
 
@@ -41,307 +27,35 @@ function LoadingCard({ label }: { label: string }) {
 // ─── Main content ─────────────────────────────────────────────────────────────
 
 function PracticeQuizContent() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const initialSubjectId = searchParams.get("subjectId") || "";
-  const initialTopicId = searchParams.get("topicId") || "";
-  const initialSubtopicId = searchParams.get("subtopicId") || "";
-  const initialLevelId = searchParams.get("levelId") || "";
-  const initialChallengeId = searchParams.get("challengeId") || "";
-  const initialJourneyId = searchParams.get("journeyId") || "";
-  const queryAttemptId = searchParams.get("attemptId") || "";
-  const initialMode = searchParams.get("mode") || "";
-
-  const { data: energyData } = useEnergy();
-  const userEnergy = energyData?.current ?? 30;
-
-  const [activeAttemptId, setActiveAttemptId] = useState<string>(queryAttemptId);
-  const [currentAttempt, setCurrentAttempt] = useState<QuizAttempt | null>(null);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
-  const [answersMap, setAnswersMap] = useState<
-    Record<string, { selectedOptionId?: string; submittedText?: string }>
-  >({});
-  const [feedbackMap, setFeedbackMap] = useState<
-    Record<string, { isCorrect?: boolean; correctOption?: string; explanation?: string | null }>
-  >({});
-  const [submissionResults, setSubmissionResults] = useState<SubmitAttemptResponseDto | null>(null);
-  const [showEnergyWarning, setShowEnergyWarning] = useState<boolean>(false);
-  const [isSubmittingFinal, setIsSubmittingFinal] = useState<boolean>(false);
-  const [inFlashcardReview, setInFlashcardReview] = useState<boolean>(initialMode !== "quiz" && !initialLevelId);
-
-  const createAttemptMutation = useCreateQuizAttempt();
-  const submitAnswerMutation = useSubmitQuizAnswer();
-  const submitQuizMutation = useSubmitQuizAttempt();
-
   const {
-    data: fetchedAttempt,
-    isLoading: loadingAttempt,
-    error: attemptError,
-  } = useQuizAttempt(activeAttemptId);
-
-  const {
-    data: flashcardsData,
-    isLoading: loadingFlashcards,
-  } = useFlashcards(activeAttemptId);
-
-  // Rehydrate state from fetched attempt (resilient to browser refresh)
-  useEffect(() => {
-    if (fetchedAttempt) {
-      setCurrentAttempt(fetchedAttempt);
-      if (fetchedAttempt.answers && fetchedAttempt.answers.length > 0) {
-        setAnswersMap((prev) => {
-          const updated = { ...prev };
-          fetchedAttempt.answers?.forEach((a) => {
-            if (a.questionId) {
-              updated[a.questionId] = {
-                selectedOptionId: a.selectedOptionId ?? undefined,
-                submittedText: a.submittedText ?? undefined,
-              };
-            }
-          });
-          return updated;
-        });
-
-        setFeedbackMap((prev) => {
-          const updated = { ...prev };
-          fetchedAttempt.answers?.forEach((a) => {
-            if (a.questionId && (a.selectedOptionId || a.submittedText)) {
-              updated[a.questionId] = {
-                isCorrect: a.isCorrect,
-                correctOption: a.correctOption,
-                explanation: a.explanation,
-              };
-            }
-          });
-          return updated;
-        });
-      }
-
-      // If attempt is already submitted, fetch scored outcome idempotently
-      if (fetchedAttempt.status === "SUBMITTED" && !submissionResults && !submitQuizMutation.isPending) {
-        submitQuizMutation.mutateAsync(fetchedAttempt.id).then((res) => {
-          setSubmissionResults(res);
-        }).catch(console.error);
-      }
-    }
-  }, [fetchedAttempt]);
-
-  const handleStartQuiz = async (params: {
-    subjectId: string;
-    topicId?: string;
-    subtopicId?: string;
-    levelId?: string;
-    challengeId?: string;
-    journeyId?: string;
-    mode?: AttemptMode;
-    overrideFlashcardReview?: boolean;
-  }) => {
-    const mode = params.mode ?? (params.levelId ? "JOURNEY" : "PRACTICE");
-    if (userEnergy < 3) {
-      setShowEnergyWarning(true);
-      return;
-    }
-    try {
-      const newAttempt = await createAttemptMutation.mutateAsync({
-        mode,
-        subjectId: params.subjectId,
-        topicId: params.topicId,
-        subtopicId: params.subtopicId,
-        levelId: params.levelId,
-        challengeId: params.challengeId,
-        journeyId: params.journeyId,
-      });
-      setCurrentAttempt(newAttempt);
-      setActiveAttemptId(newAttempt.id);
-      setCurrentQuestionIndex(0);
-      setAnswersMap({});
-      setFeedbackMap({});
-      setSubmissionResults(null);
-      setInFlashcardReview(params.overrideFlashcardReview ?? (initialMode !== "quiz" && !params.levelId));
-
-      // Update URL with attemptId so page refresh keeps active session
-      if (typeof window !== "undefined") {
-        const url = new URL(window.location.href);
-        url.searchParams.set("attemptId", newAttempt.id);
-        window.history.replaceState({}, "", url.toString());
-      }
-
-      toast.success(mode === "JOURNEY" ? "Challenge session ready!" : "Practice quiz started!");
-    } catch (err: any) {
-      const message = err?.message || "Failed to start quiz attempt";
-      if (message.toLowerCase().includes("energy")) {
-        setShowEnergyWarning(true);
-      } else {
-        toast.error(message);
-      }
-    }
-  };
-
-  const saveAnswerToBackend = async (
-    questionId: string,
-    selectedOptionId?: string,
-    submittedText?: string,
-    rethrowError = false,
-  ) => {
-    if (!activeAttemptId || (!selectedOptionId && !submittedText?.trim())) return null;
-    const key = generateIdempotencyKey();
-    try {
-      const res = await submitAnswerMutation.mutateAsync({
-        attemptId: activeAttemptId,
-        answer: {
-          questionId,
-          selectedOptionId: selectedOptionId || undefined,
-          submittedText: submittedText?.trim() || undefined,
-        },
-        idempotencyKey: key,
-      });
-      return res;
-    } catch (err: any) {
-      console.error("Failed to save answer:", err);
-      if (rethrowError) throw err;
-      return null;
-    }
-  };
-
-  const handleSelectOption = async (optionKey: string) => {
-    if (!currentAttempt?.questions) return;
-    const q = currentAttempt.questions[currentQuestionIndex];
-    if (!q) return;
-
-    // Prevent changing answer if already answered and feedback revealed
-    if (feedbackMap[q.id]) return;
-
-    const updated = { ...answersMap[q.id], selectedOptionId: optionKey };
-    setAnswersMap((prev) => ({ ...prev, [q.id]: updated }));
-
-    // Immediate authoritative pedagogical feedback
-    try {
-      const res = await saveAnswerToBackend(q.id, optionKey, updated.submittedText);
-      if (res) {
-        setFeedbackMap((prev) => ({
-          ...prev,
-          [q.id]: {
-            isCorrect: res.isCorrect,
-            correctOption: res.correctOption,
-            explanation: res.explanation || q.explanation,
-          },
-        }));
-      }
-    } catch (err: any) {
-      toast.error("Network issue saving answer. Please retry.");
-    }
-  };
-
-  const handleChangeText = (text: string) => {
-    if (!currentAttempt?.questions) return;
-    const q = currentAttempt.questions[currentQuestionIndex];
-    if (!q) return;
-    if (feedbackMap[q.id]) return;
-    setAnswersMap((prev) => ({ ...prev, [q.id]: { ...prev[q.id], submittedText: text } }));
-  };
-
-  const handleNextQuestion = () => {
-    if (!currentAttempt?.questions) return;
-    if (currentQuestionIndex + 1 < currentAttempt.questions.length) {
-      setCurrentQuestionIndex((p) => p + 1);
-    }
-  };
-
-  const handlePreviousQuestion = () => {
-    if (!currentAttempt?.questions || currentQuestionIndex === 0) return;
-    setCurrentQuestionIndex((p) => p - 1);
-  };
-
-  const handleFinishQuiz = async () => {
-    if (!currentAttempt || !activeAttemptId) return;
-    setIsSubmittingFinal(true);
-    try {
-      const results = await submitQuizMutation.mutateAsync(activeAttemptId);
-      setSubmissionResults(results);
-      toast.success("Quiz submitted successfully!");
-    } catch (err: any) {
-      toast.error(err?.message || "Failed to submit quiz");
-    } finally {
-      setIsSubmittingFinal(false);
-    }
-  };
-
-  const handleResetQuiz = () => {
-    setActiveAttemptId("");
-    setCurrentAttempt(null);
-    setCurrentQuestionIndex(0);
-    setAnswersMap({});
-    setFeedbackMap({});
-    setSubmissionResults(null);
-    setInFlashcardReview(true);
-    if (typeof window !== "undefined") {
-      const url = new URL(window.location.href);
-      url.searchParams.delete("attemptId");
-      window.history.replaceState({}, "", url.toString());
-    }
-  };
-
-  const handleExitSession = async () => {
-    if (!activeAttemptId) {
-      router.push("/study");
-      return;
-    }
-    const confirmExit = window.confirm("Are you sure you want to exit? Your attempt will be abandoned.");
-    if (!confirmExit) return;
-
-    try {
-      await abandonQuizAttempt(activeAttemptId);
-      toast.info("Session exited");
-    } catch (e) {
-      // ignore
-    }
-    router.push("/study");
-  };
-
-  const hasAutoStartParams = Boolean(
-    initialSubjectId ||
-    initialLevelId ||
-    initialTopicId ||
-    initialSubtopicId ||
-    queryAttemptId
-  );
-
-  const handleContinueNextLevel = (nextLevelId: string) => {
-    handleResetQuiz();
-    const subjectParam = currentAttempt?.subjectId || initialSubjectId;
-    router.push(`/study/quiz?levelId=${nextLevelId}&subjectId=${subjectParam}&mode=quiz`);
-  };
-
-  // Launch Journey challenge or practice quiz when params are present in URL
-  useEffect(() => {
-    if (initialLevelId && !activeAttemptId && !currentAttempt && !createAttemptMutation.isPending) {
-      handleStartQuiz({
-        subjectId: initialSubjectId,
-        levelId: initialLevelId,
-        challengeId: initialChallengeId || undefined,
-        journeyId: initialJourneyId || undefined,
-        subtopicId: initialSubtopicId || undefined,
-        mode: "JOURNEY",
-        overrideFlashcardReview: false,
-      });
-    } else if (
-      initialSubjectId &&
-      !initialLevelId &&
-      !activeAttemptId &&
-      !currentAttempt &&
-      !createAttemptMutation.isPending
-    ) {
-      handleStartQuiz({
-        subjectId: initialSubjectId,
-        topicId: initialTopicId || undefined,
-        subtopicId: initialSubtopicId || undefined,
-        mode: "PRACTICE",
-        overrideFlashcardReview: initialMode === "quiz" ? false : undefined,
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialLevelId, initialSubjectId, initialTopicId, initialSubtopicId]);
+    currentAttempt,
+    activeAttemptId,
+    currentQuestionIndex,
+    answersMap,
+    feedbackMap,
+    submissionResults,
+    showEnergyWarning,
+    setShowEnergyWarning,
+    isSubmittingFinal,
+    inFlashcardReview,
+    setInFlashcardReview,
+    loadingAttempt,
+    createAttemptPending,
+    loadingFlashcards,
+    flashcardsData,
+    attemptError,
+    hasAutoStartParams,
+    userEnergy,
+    handleStartQuiz,
+    handleSelectOption,
+    handleChangeText,
+    handleNextQuestion,
+    handlePreviousQuestion,
+    handleFinishQuiz,
+    handleResetQuiz,
+    handleExitSession,
+    handleContinueNextLevel,
+  } = useQuizSession();
 
   // ── Results Screen ───────────────────────────────────────────────────────────
   if (submissionResults) {
@@ -356,15 +70,22 @@ function PracticeQuizContent() {
     );
   }
 
-  // ── Loading Quiz Attempt ───────────────────────────────────────────────────────
+  // ── Loading Quiz Attempt or Results ───────────────────────────────────────────
   if (
     loadingAttempt ||
-    createAttemptMutation.isPending ||
-    (hasAutoStartParams && !currentAttempt && !attemptError && !createAttemptMutation.isError && !showEnergyWarning)
+    createAttemptPending ||
+    (currentAttempt?.status === "SUBMITTED" && !submissionResults) ||
+    (hasAutoStartParams && !currentAttempt && !attemptError && !showEnergyWarning)
   ) {
     return (
       <>
-        <LoadingCard label="Preparing challenge questions…" />
+        <LoadingCard
+          label={
+            currentAttempt?.status === "SUBMITTED"
+              ? "Loading your quiz results…"
+              : "Preparing challenge questions…"
+          }
+        />
         <EnergyWarningModal
           isOpen={showEnergyWarning}
           onClose={() => setShowEnergyWarning(false)}
@@ -394,13 +115,12 @@ function PracticeQuizContent() {
   // ── Error / empty state ───────────────────────────────────────────────────────
   if (
     attemptError ||
-    createAttemptMutation.isError ||
     (currentAttempt && (!currentAttempt.questions || currentAttempt.questions.length === 0))
   ) {
     const errorMsg =
-      (createAttemptMutation.error as any)?.message ||
-      (attemptError as any)?.message ||
-      "No questions currently configured for this challenge level.";
+      attemptError instanceof Error
+        ? attemptError.message
+        : "No questions currently configured for this challenge level.";
 
     return (
       <div className="w-full max-w-xl mx-auto bg-surface border-[3px] border-border rounded-2xl shadow-[0_6px_0_rgba(20,24,39,0.9)] p-8 flex flex-col items-center text-center gap-5">
@@ -440,7 +160,7 @@ function PracticeQuizContent() {
           onStartQuiz={(subjectId, topicId, mode) =>
             handleStartQuiz({ subjectId, topicId, mode })
           }
-          isStarting={createAttemptMutation.isPending}
+          isStarting={createAttemptPending}
           userEnergy={userEnergy}
         />
         <EnergyWarningModal

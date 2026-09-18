@@ -4,7 +4,7 @@
 
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
-import { Award, ChevronDown, ChevronUp, ArrowRight, Sparkles, AlertCircle, RefreshCw, BookOpen } from "lucide-react";
+import { Award, ChevronDown, ChevronUp, ArrowRight, AlertCircle, RefreshCw, BookOpen } from "lucide-react";
 import type { TopicMasterySummary, TopicMasteryBreakdownItem } from "../types";
 
 export interface TopicMasteryBreakdownProps {
@@ -26,6 +26,24 @@ export function TopicMasteryBreakdownCard({
 }: TopicMasteryBreakdownProps) {
   const [activeTab, setActiveTab] = useState<FilterTab>("ALL");
   const [isExpanded, setIsExpanded] = useState(false);
+
+  const breakdown = useMemo(() => mastery?.breakdown ?? [], [mastery?.breakdown]);
+
+  // Filter topics based on active tab — called unconditionally at top level
+  const filteredTopics = useMemo(() => {
+    if (activeTab === "NEEDS_PRACTICE") {
+      return breakdown.filter((item) => item.status === "NEEDS_PRACTICE");
+    }
+    if (activeTab === "DEVELOPING") {
+      return breakdown.filter((item) => item.status === "DEVELOPING");
+    }
+    if (activeTab === "MASTERED") {
+      return breakdown.filter(
+        (item) => item.status === "MASTERED" || item.status === "PROFICIENT"
+      );
+    }
+    return breakdown;
+  }, [breakdown, activeTab]);
 
   // ── 1. LOADING STATE ──
   if (isLoading) {
@@ -82,7 +100,7 @@ export function TopicMasteryBreakdownCard({
     );
   }
 
-  const { mastered, proficient, developing, needsPractice, total, breakdown } = mastery;
+  const { mastered, proficient, developing, needsPractice, total } = mastery;
 
   // Calculate percentages for the stacked distribution bar
   const safeTotal = Math.max(1, total);
@@ -90,22 +108,6 @@ export function TopicMasteryBreakdownCard({
   const proficientPct = (proficient / safeTotal) * 100;
   const developingPct = (developing / safeTotal) * 100;
   const needsPracticePct = (needsPractice / safeTotal) * 100;
-
-  // Filter topics based on active tab
-  const filteredTopics = useMemo(() => {
-    if (activeTab === "NEEDS_PRACTICE") {
-      return breakdown.filter((item) => item.status === "NEEDS_PRACTICE");
-    }
-    if (activeTab === "DEVELOPING") {
-      return breakdown.filter((item) => item.status === "DEVELOPING");
-    }
-    if (activeTab === "MASTERED") {
-      return breakdown.filter(
-        (item) => item.status === "MASTERED" || item.status === "PROFICIENT"
-      );
-    }
-    return breakdown;
-  }, [breakdown, activeTab]);
 
   const visibleTopics = isExpanded
     ? filteredTopics
@@ -296,22 +298,17 @@ export function TopicMasteryBreakdownCard({
 // ── Subcomponent: Topic Card ──
 function TopicMasteryItemCard({ item }: { item: TopicMasteryBreakdownItem }) {
   let badgeStyle = "bg-gray-100 text-gray-800 border-gray-300";
-  let statusLabel = "Needs Practice";
   let isActionUrgent = false;
 
   if (item.status === "MASTERED") {
     badgeStyle = "bg-emerald-100 text-emerald-900 border-emerald-300";
-    statusLabel = "Mastered";
   } else if (item.status === "PROFICIENT") {
     badgeStyle = "bg-blue-100 text-blue-900 border-blue-300";
-    statusLabel = "Proficient";
   } else if (item.status === "DEVELOPING") {
     badgeStyle = "bg-amber-100 text-amber-900 border-amber-300";
-    statusLabel = "Developing";
     isActionUrgent = true;
   } else {
     badgeStyle = "bg-rose-100 text-rose-900 border-rose-300";
-    statusLabel = "Needs Attention";
     isActionUrgent = true;
   }
 

@@ -2,13 +2,10 @@
 
 import React from "react";
 import {
-  BookOpen,
   CheckCircle2,
   Crown,
   Lock,
   Play,
-  Sparkles,
-  Star,
   Target,
   Trophy,
 } from "lucide-react";

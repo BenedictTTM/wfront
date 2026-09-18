@@ -11,10 +11,12 @@ export type CreateAttemptPayload = {
   challengeId?: string;
 };
 
-export type QuestionOptionDto = {
+export type QuestionOption = {
   key: string;
   text: string;
 };
+
+export type QuestionOptionDto = QuestionOption;
 
 export type AttemptQuestionDto = {
   id: string;
@@ -66,7 +68,7 @@ export type ScoredAnswerDto = {
   submittedText?: string | null;
   isCorrect: boolean;
   correctOption: string;
-  questionSnapshot: Record<string, any>;
+  questionSnapshot: Partial<AttemptQuestionDto> & Record<string, unknown>;
 };
 
 export type JourneyAttemptOutcome = {

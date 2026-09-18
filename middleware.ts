@@ -17,6 +17,19 @@ const AUTH_ONLY_ROUTES = [
   "/history",
 ];
 
+// Routes requiring Admin role
+const ADMIN_ROUTES = [
+  "/questions/review",
+  "/audit-logs",
+  "/schools",
+  "/users",
+];
+
+// Routes requiring Teacher or Admin role
+const TEACHER_ROUTES = [
+  "/questions",
+];
+
 // Auth routes (redirect to /dashboard if already logged in)
 const AUTH_ROUTES = ["/login", "/register"];
 
@@ -31,6 +44,10 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   const hasGuestSession = !!guestToken;
   const hasAnySession = isAuthenticated || hasGuestSession;
 
+  const normalizedRole = role?.toUpperCase();
+  const isAdmin = normalizedRole === "ADMIN";
+  const isTeacherOrAdmin = normalizedRole === "TEACHER" || isAdmin;
+
   // 0. Fallback convenience redirects
   if (pathname === "/signin") {
     return NextResponse.redirect(new URL("/login", request.url));
@@ -44,7 +61,33 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     return NextResponse.next();
   }
 
-  // 2. Auth-only routes check (e.g. /profile, /history): require full account
+  // 2. Admin routes check (highest privilege required)
+  if (ADMIN_ROUTES.some((route) => pathname.startsWith(route))) {
+    if (!isAuthenticated) {
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("from", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+    if (!isAdmin) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+    return NextResponse.next();
+  }
+
+  // 3. Teacher routes check (excluding /questions/review which is already caught above)
+  if (TEACHER_ROUTES.some((route) => pathname.startsWith(route))) {
+    if (!isAuthenticated) {
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("from", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+    if (!isTeacherOrAdmin) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+    return NextResponse.next();
+  }
+
+  // 4. Auth-only routes check (e.g. /profile, /history): require full account
   if (AUTH_ONLY_ROUTES.some((route) => pathname.startsWith(route))) {
     if (!isAuthenticated) {
       const loginUrl = new URL("/login", request.url);
@@ -53,25 +96,12 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     }
   }
 
-  // 3. General protected routes check: require either user auth or guest session
+  // 5. General protected routes check: require either user auth or guest session
   if (PROTECTED_ROUTES.some((route) => pathname.startsWith(route))) {
     if (!hasAnySession) {
       const loginUrl = new URL("/login", request.url);
       loginUrl.searchParams.set("from", pathname);
       return NextResponse.redirect(loginUrl);
-    }
-  }
-
-  // 4. Role-based checks
-  if (pathname.startsWith("/teacher")) {
-    if (!isAuthenticated || (role !== "Teacher" && role !== "Admin")) {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
-    }
-  }
-
-  if (pathname.startsWith("/admin")) {
-    if (!isAuthenticated || role !== "Admin") {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
     }
   }
 

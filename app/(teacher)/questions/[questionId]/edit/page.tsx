@@ -2,7 +2,7 @@
 // Role guard: Teacher role required; content:create permission
 // Feature logic lives in features/questions/
 export default function QuestionEditPage({
-  params,
+  params: _params,
 }: {
   params: Promise<{ questionId: string }>;
 }) {

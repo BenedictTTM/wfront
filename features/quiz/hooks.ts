@@ -19,6 +19,9 @@ export function useQuizAttempt(attemptId: string) {
   });
 }
 
+/** Canonical alias for useQuizAttempt */
+export const useQuiz = useQuizAttempt;
+
 export function useFlashcards(attemptId: string) {
   return useQuery({
     queryKey: ["quiz", "flashcards", attemptId],
@@ -68,6 +71,12 @@ export function useSubmitQuizAttempt() {
       queryClient.invalidateQueries({ queryKey: ["learning-journey"] });
       queryClient.invalidateQueries({ queryKey: ["journey"] });
       queryClient.invalidateQueries({ queryKey: ["journey-progress"] });
+
+      // Re-invalidate quests after short delay to sync background BullMQ quest processing
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ["quests"] });
+        queryClient.invalidateQueries({ queryKey: ["gamification"] });
+      }, 750);
     },
   });
 }

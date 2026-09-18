@@ -1,7 +1,7 @@
 // features/curriculum/components/journey/MasteryIndicator.tsx
 
 import React from "react";
-import { Star, Trophy } from "lucide-react";
+import { Star } from "lucide-react";
 
 interface MasteryIndicatorProps {
   stars: number; // 0 to 3

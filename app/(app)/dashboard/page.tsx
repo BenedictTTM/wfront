@@ -8,7 +8,6 @@ import {
   Search,
   ArrowRight,
   Play,
-  FileText,
   Target,
   LogIn,
   Zap,
@@ -17,7 +16,6 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useCurrentUser, useMe } from "@/features/auth/hooks";
 import { isGuestIdentity } from "@/features/auth/types";
-import { useStats } from "@/components/providers/stats-provider";
 import {
   useDashboard,
   useRefillEnergy,
@@ -30,8 +28,8 @@ export default function Dashboard() {
   const user = useCurrentUser();
   const { data: meData } = useMe();
   const isGuest = !meData || isGuestIdentity(meData);
-  const { energy: currentEnergy, deductEnergy } = useStats();
   const { data: dashboard } = useDashboard();
+  const currentEnergy = dashboard?.energy?.current ?? 30;
   const refillMutation = useRefillEnergy();
 
   // For guests, cap energy at GUEST_MAX_ENERGY
@@ -66,16 +64,14 @@ export default function Dashboard() {
       onSuccess: (data) => {
         toast.success(`⚡ Refilled +15 Energy! (Current: ${data.current}/${data.max})`);
       },
-      onError: (err: any) => {
+      onError: (err: Error) => {
         toast.error(err.message || "Failed to refill energy");
       },
     });
   };
 
   const handleStartQuiz = (targetPath: string) => {
-    const availableEnergy = isGuest
-      ? guestEnergy
-      : (dashboard?.energy?.current ?? currentEnergy);
+    const availableEnergy = isGuest ? guestEnergy : currentEnergy;
     if (availableEnergy < 3) {
       if (isGuest) {
         toast.warning("⚡ You've used up your guest energy! Sign in to get full access.", {

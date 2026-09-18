@@ -1,4 +1,5 @@
-// Shared components placeholder — will house:
-// PageHeader, EmptyState, ErrorState, Skeletons, etc.
-// See architecture doc §8 for usage conventions
-export {};
+// components/shared/index.ts
+export * from "./sidebar";
+export * from "./PageHeader";
+export * from "./EmptyState";
+export * from "./ErrorState";

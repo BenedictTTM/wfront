@@ -11,16 +11,25 @@ import {
   Zap,
   Loader2,
   Sparkles,
-  UserCheck,
+  School,
 } from "lucide-react";
 import { useStats } from "@/components/providers/stats-provider";
 import { useLeaderboard } from "@/features/gamification/hooks";
 import { useSubjects } from "@/features/curriculum/hooks";
 import { useCurrentUser } from "@/features/auth/hooks";
+import { safeStorage } from "@/lib/storage";
+import type { CustomProfileState } from "@/features/auth/constants";
+import { EmptyState, ErrorState, PageHeader } from "@/components/shared";
 
 export default function LeaderboardsPage() {
   const { xp } = useStats();
   const currentUser = useCurrentUser();
+  const userProfile = currentUser?.id
+    ? safeStorage.getItem<CustomProfileState | null>(
+        `wassce_student_profile_${currentUser.id}`,
+        null
+      )
+    : null;
 
   // Tab & Filter States
   const [scope, setScope] = useState<"global" | "subject">("global");
@@ -29,12 +38,7 @@ export default function LeaderboardsPage() {
   // Subjects for subject-scoped leaderboard
   const { data: subjects, isLoading: loadingSubjects } = useSubjects();
 
-  // Set default subject when switching to subject scope
-  React.useEffect(() => {
-    if (scope === "subject" && subjects && subjects.length > 0 && !selectedSubjectId) {
-      setSelectedSubjectId(subjects[0].id);
-    }
-  }, [scope, subjects, selectedSubjectId]);
+  const activeSubjectId = selectedSubjectId || (subjects && subjects.length > 0 ? subjects[0].id : "");
 
   // Fetch live backend leaderboard data
   const {
@@ -44,7 +48,7 @@ export default function LeaderboardsPage() {
     refetch,
   } = useLeaderboard({
     scope,
-    subjectId: scope === "subject" ? selectedSubjectId : undefined,
+    subjectId: scope === "subject" ? activeSubjectId : undefined,
   });
 
   const userScore = leaderboard?.currentUserEntry?.score ?? 0;
@@ -54,23 +58,12 @@ export default function LeaderboardsPage() {
   return (
     <div className="flex flex-col gap-8 py-2 w-full max-w-4xl mx-auto">
       {/* ── Page Header ── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b-2.5 border-border pb-6">
-        <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-primary border-2.5 border-border flex items-center justify-center shadow-[0_3px_0_#141827]">
-            <Trophy className="w-6 h-6 text-text-primary" />
-          </div>
-          <div>
-            <h1 className="text-2xl md:text-3xl font-black text-text-primary tracking-tight">
-              Weekly Leaderboards
-            </h1>
-            <p className="text-xs md:text-sm font-extrabold text-text-secondary">
-              Compete weekly with fellow WASSCE scholars across West Africa.
-            </p>
-          </div>
-        </div>
-
-        {/* Scope Tabs: Global vs Subject */}
-        <div className="flex items-center bg-bg-secondary p-1 border-2.5 border-border rounded-2xl shadow-sm self-start md:self-auto">
+      <PageHeader
+        title="Weekly Leaderboards"
+        description="Compete weekly with fellow WASSCE scholars across West Africa."
+        icon={<Trophy className="w-6 h-6 text-text-primary" />}
+        actions={
+          <div className="flex items-center bg-bg-secondary p-1 border-2.5 border-border rounded-2xl shadow-sm self-start md:self-auto">
           <button
             type="button"
             onClick={() => setScope("global")}
@@ -96,7 +89,8 @@ export default function LeaderboardsPage() {
             <span>BY SUBJECT</span>
           </button>
         </div>
-      </div>
+      }
+    />
 
       {/* ── Subject Filter Bar (When Scope is Subject) ── */}
       {scope === "subject" && (
@@ -133,8 +127,21 @@ export default function LeaderboardsPage() {
         </div>
       )}
 
-      {/* ── Locked State Banner (<30 XP) ── */}
-      {!isUnlocked ? (
+      {/* ── 1. Initial Loading Skeleton (while fetching and no leaderboard exists yet) ── */}
+      {loadingLeaderboard && !leaderboard ? (
+        <div className="flex flex-col gap-6 animate-pulse">
+          {/* Standing Card Skeleton */}
+          <div className="h-24 bg-surface border-2.5 border-border rounded-2xl shadow-offset" />
+          {/* Standings Table Skeleton */}
+          <div className="border-2.5 border-border bg-surface rounded-2xl shadow-offset p-6 flex flex-col gap-4">
+            <div className="h-6 w-44 bg-surface-muted rounded-lg" />
+            <div className="h-14 bg-surface-muted rounded-xl" />
+            <div className="h-14 bg-surface-muted rounded-xl" />
+            <div className="h-14 bg-surface-muted rounded-xl" />
+          </div>
+        </div>
+      ) : !isUnlocked ? (
+        /* ── 2. Truly Locked State (<30 XP) ── */
         <div className="p-8 border-3 border-dashed border-border rounded-2xl text-center bg-surface flex flex-col items-center gap-4 shadow-offset animate-in fade-in duration-300">
           <div className="w-16 h-16 rounded-full bg-surface-muted border-2 border-border flex items-center justify-center text-text-secondary">
             <Lock size={32} />
@@ -156,30 +163,64 @@ export default function LeaderboardsPage() {
           </span>
         </div>
       ) : (
-        /* ── Live Leaderboard View ── */
+        /* ── 3. Live Leaderboard View ── */
         <div className="flex flex-col gap-6">
           {/* Current User Standings Card */}
-          {leaderboard?.currentUserEntry && (
-            <div className="bg-primary/20 border-2.5 border-border p-4 rounded-2xl shadow-offset flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-primary border-2 border-border flex items-center justify-center text-text-primary font-black text-sm shadow-[0_2px_0_#141827]">
-                  #{leaderboard.currentUserEntry.rank}
-                </div>
-                <div>
-                  <span className="text-xs font-black text-text-secondary uppercase tracking-wider block">Your Standing</span>
-                  <span className="text-base font-black text-text-primary flex items-center gap-1.5">
-                    <span>{currentUser?.name || leaderboard.currentUserEntry.name}</span>
-                    <span className="text-[10px] font-black px-2 py-0.5 bg-primary border border-border rounded-full uppercase">YOU</span>
-                  </span>
-                </div>
-              </div>
+          {leaderboard?.currentUserEntry && (() => {
+            const userSchool = userProfile?.school || leaderboard.currentUserEntry.school;
+            const myAvatar = userProfile?.avatarUrl || leaderboard.currentUserEntry.avatarUrl || `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(currentUser?.name || leaderboard.currentUserEntry.name)}&backgroundColor=f6d86b`;
+            const myInitial = ((currentUser?.name || leaderboard.currentUserEntry.name)?.[0] || "U").toUpperCase();
 
-              <div className="flex items-center gap-1.5 font-black text-base text-[#FF9E2C]">
-                <Zap size={18} className="fill-[#FF9E2C]" />
-                <span>{leaderboard.currentUserEntry.score} XP</span>
+            return (
+              <div className="bg-primary/20 border-2.5 border-border p-4 rounded-2xl shadow-offset flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3.5 min-w-0">
+                  <div className="w-10 h-10 rounded-xl bg-primary border-2 border-border flex items-center justify-center text-text-primary font-black text-sm shadow-[0_2px_0_#141827] shrink-0">
+                    #{leaderboard.currentUserEntry.rank}
+                  </div>
+
+                  {/* User Avatar Circle */}
+                  <div className="w-10 h-10 rounded-full bg-primary border-2 border-border flex items-center justify-center font-black text-sm text-text-primary shrink-0 shadow-sm overflow-hidden select-none relative">
+                    <span className="absolute inset-0 flex items-center justify-center font-black text-sm text-text-primary">
+                      {myInitial}
+                    </span>
+                    {myAvatar && (
+                      <img
+                        src={myAvatar}
+                        alt="Your Avatar"
+                        className="absolute inset-0 w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.style.display = "none";
+                        }}
+                      />
+                    )}
+                  </div>
+
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-xs font-black text-text-secondary uppercase tracking-wider block">Your Standing</span>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-base font-black text-text-primary">
+                        {currentUser?.name || leaderboard.currentUserEntry.name}
+                      </span>
+                      <span className="text-[10px] font-black px-2 py-0.5 bg-primary border border-border rounded-full uppercase shrink-0">
+                        YOU
+                      </span>
+                    </div>
+                    {userSchool && (
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-text-secondary mt-0.5">
+                        <School size={13} className="shrink-0 text-text-secondary/80" />
+                        <span className="truncate">{userSchool}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1.5 font-black text-base text-[#FF9E2C] shrink-0">
+                  <Zap size={18} className="fill-[#FF9E2C]" />
+                  <span>{leaderboard.currentUserEntry.score} XP</span>
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* Leaderboard Table Container */}
           <div className="border-2.5 border-border bg-surface rounded-2xl shadow-offset overflow-hidden animate-in fade-in duration-300">
@@ -199,31 +240,34 @@ export default function LeaderboardsPage() {
                 <span className="text-xs font-black">Fetching live rankings...</span>
               </div>
             ) : isError ? (
-              <div className="p-8 text-center flex flex-col items-center gap-3">
-                <span className="text-xs font-bold text-red-500">Failed to load leaderboard rankings.</span>
-                <button
-                  type="button"
-                  onClick={() => refetch()}
-                  className="px-4 py-2 bg-primary border-2 border-border rounded-xl font-extrabold text-xs shadow-sm cursor-pointer"
-                >
-                  Try Again
-                </button>
-              </div>
+              <ErrorState
+                title="Failed to load leaderboard rankings"
+                message="Please try again to view weekly standings."
+                onRetry={() => refetch()}
+                retryText="Try Again"
+              />
             ) : !leaderboard?.entries || leaderboard.entries.length === 0 ? (
-              <div className="p-12 text-center flex flex-col items-center gap-2">
-                <Trophy size={32} className="text-text-secondary opacity-40" />
-                <span className="text-sm font-black text-text-primary">No Rankings Registered This Week Yet!</span>
-                <span className="text-xs text-text-secondary font-extrabold">Complete quizzes to earn XP and take the #1 spot!</span>
-              </div>
+              <EmptyState
+                icon={<Trophy size={32} className="text-text-secondary opacity-40" />}
+                title="No Rankings Registered This Week Yet!"
+                description="Complete quizzes to earn XP and take the #1 spot!"
+              />
             ) : (
               <div className="divide-y-2 divide-border/20">
                 {leaderboard.entries.map((entry, idx) => {
                   const isCurrent = currentUser?.id === entry.userId || entry.rank === leaderboard.currentUserEntry?.rank;
                   const rank = entry.rank || idx + 1;
+                  const school = isCurrent
+                    ? (userProfile?.school || entry.school)
+                    : entry.school;
+                  const avatarSrc = isCurrent
+                    ? (userProfile?.avatarUrl || entry.avatarUrl || `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(entry.name)}&backgroundColor=f6d86b`)
+                    : (entry.avatarUrl || `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(entry.name)}&backgroundColor=f6d86b`);
+                  const initial = (entry.name?.[0] || "S").toUpperCase();
 
                   // Podium styling
                   let rankBadge = null;
-                  let bgHighlight = isCurrent ? "bg-primary/20" : "hover:bg-bg-primary/50";
+                  const bgHighlight = isCurrent ? "bg-primary/20" : "hover:bg-bg-primary/50";
 
                   if (rank === 1) {
                     rankBadge = <Crown size={18} className="text-amber-500 fill-amber-400" />;
@@ -244,20 +288,40 @@ export default function LeaderboardsPage() {
                           {rankBadge || `#${rank}`}
                         </div>
 
-                        {/* User Avatar Initial */}
-                        <div className="w-9 h-9 rounded-full bg-primary border-2 border-border flex items-center justify-center font-black text-xs text-text-primary shrink-0 shadow-sm">
-                          {(entry.name?.[0] || "S").toUpperCase()}
+                        {/* User Avatar Circle with Image */}
+                        <div className="w-9 h-9 rounded-full bg-primary border-2 border-border flex items-center justify-center font-black text-xs text-text-primary shrink-0 shadow-sm overflow-hidden select-none relative">
+                          <span className="absolute inset-0 flex items-center justify-center font-black text-xs text-text-primary">
+                            {initial}
+                          </span>
+                          {avatarSrc && (
+                            <img
+                              src={avatarSrc}
+                              alt={entry.name}
+                              className="absolute inset-0 w-full h-full object-cover"
+                              onError={(e) => {
+                                e.currentTarget.style.display = "none";
+                              }}
+                            />
+                          )}
                         </div>
 
-                        {/* User Name */}
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className={`text-sm md:text-base truncate ${isCurrent ? "font-black text-text-primary" : "font-bold text-text-primary"}`}>
-                            {entry.name}
-                          </span>
-                          {isCurrent && (
-                            <span className="text-[10px] font-black px-2 py-0.5 bg-primary border border-border rounded-full uppercase shrink-0">
-                              YOU
+                        {/* User Name & School */}
+                        <div className="flex flex-col min-w-0">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className={`text-sm md:text-base truncate ${isCurrent ? "font-black text-text-primary" : "font-bold text-text-primary"}`}>
+                              {entry.name}
                             </span>
+                            {isCurrent && (
+                              <span className="text-[10px] font-black px-2 py-0.5 bg-primary border border-border rounded-full uppercase shrink-0">
+                                YOU
+                              </span>
+                            )}
+                          </div>
+                          {school && (
+                            <div className="flex items-center gap-1 text-xs font-bold text-text-secondary truncate mt-0.5">
+                              <School size={12} className="shrink-0 text-text-secondary/70" />
+                              <span className="truncate">{school}</span>
+                            </div>
                           )}
                         </div>
                       </div>

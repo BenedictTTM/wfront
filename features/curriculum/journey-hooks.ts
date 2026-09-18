@@ -1,5 +1,3 @@
-// features/curriculum/journey-hooks.ts
-
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getJourneyProgress,
@@ -16,10 +14,6 @@ export function useSubjectJourney(subjectSlug: string) {
     queryFn: () => getSubjectJourney(subjectSlug),
     enabled: !!subjectSlug,
     staleTime: 60 * 1000,
-    retry: (failureCount, error: any) => {
-      if (error?.status === 401 || error?.code === "UNAUTHORIZED") return false;
-      return failureCount < 2;
-    },
   });
 }
 
@@ -43,10 +37,6 @@ export function useLearningJourney(subjectSlug: string) {
     queryFn: () => getLearningJourney(subjectSlug),
     enabled: !!subjectSlug,
     staleTime: 30 * 1000,
-    retry: (failureCount, error: any) => {
-      if (error?.status === 401 || error?.code === "UNAUTHORIZED") return false;
-      return failureCount < 2;
-    },
   });
 }
 
@@ -58,6 +48,9 @@ export function useJourneyProgress(journeyId: string | undefined) {
     staleTime: 30 * 1000,
   });
 }
+
+/** Canonical alias for useJourneyProgress */
+export const useProgress = useJourneyProgress;
 
 export function useNextChallenge(levelId: string | null) {
   return useQuery({

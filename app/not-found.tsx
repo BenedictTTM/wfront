@@ -13,7 +13,7 @@ export default function NotFound() {
         <h2 className="text-xl font-bold text-foreground mb-4">Page Not Found</h2>
         
         <p className="text-muted-foreground mb-8 text-sm sm:text-base leading-relaxed">
-          The page or learning module you are looking for doesn't exist or has been moved.
+          The page or learning module you are looking for doesn&apos;t exist or has been moved.
         </p>
 
         <div className="flex flex-col gap-3">

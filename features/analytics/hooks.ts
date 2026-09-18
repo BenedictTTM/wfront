@@ -20,14 +20,12 @@ export function useAnalyticsOverview(
     staleTime: 5 * 60 * 1000,
     placeholderData: (previousData) => previousData,
     enabled: options?.enabled ?? true,
-    retry: (failureCount, error: any) => {
-      // Don't retry on 401 or 403
-      if (error?.status === 401 || error?.status === 403 || error?.code === 'FORBIDDEN') return false;
-      return failureCount < 2;
-    },
     retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10_000),
   });
 }
+
+/** Canonical alias for useAnalyticsOverview */
+export const useAnalytics = useAnalyticsOverview;
 
 export function useAnalyticsSummary(
   params?: { subjectId?: string; topicId?: string },
@@ -38,10 +36,6 @@ export function useAnalyticsSummary(
     queryFn: () => getAnalyticsSummary(params),
     staleTime: 5 * 60 * 1000,
     enabled: options?.enabled ?? true,
-    retry: (failureCount, error: any) => {
-      if (error?.status === 401 || error?.status === 403) return false;
-      return failureCount < 2;
-    },
   });
 }
 
@@ -51,10 +45,6 @@ export function useWeakTopics(options?: { enabled?: boolean }) {
     queryFn: getWeakTopics,
     staleTime: 5 * 60 * 1000,
     enabled: options?.enabled ?? true,
-    retry: (failureCount, error: any) => {
-      if (error?.status === 401 || error?.status === 403) return false;
-      return failureCount < 2;
-    },
   });
 }
 
@@ -64,9 +54,5 @@ export function useStrongTopics(options?: { enabled?: boolean }) {
     queryFn: getStrongTopics,
     staleTime: 5 * 60 * 1000,
     enabled: options?.enabled ?? true,
-    retry: (failureCount, error: any) => {
-      if (error?.status === 401 || error?.status === 403) return false;
-      return failureCount < 2;
-    },
   });
 }

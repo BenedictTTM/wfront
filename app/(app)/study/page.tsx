@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import { AlertCircle, BookOpen, RefreshCw } from "lucide-react";
 import { useSubjects } from "@/features/curriculum/hooks";
@@ -12,6 +12,7 @@ import {
   StudyCenterSkeleton,
 } from "@/features/curriculum/components";
 import { Subject } from "@/features/curriculum/types";
+import { safeStorage } from "@/lib/storage";
 
 export default function StudyCenterPage() {
   const {
@@ -22,36 +23,28 @@ export default function StudyCenterPage() {
     refetch: refetchSubjects,
   } = useSubjects();
 
-  const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null);
 
-  // Initialize selected subject once subjects load
-  useEffect(() => {
-    if (subjects && subjects.length > 0 && !selectedSubject) {
-      try {
-        const savedSlug = localStorage.getItem("panda_active_subject_slug");
-        const found = subjects.find((s) => s.slug === savedSlug);
-        setSelectedSubject(found || subjects[0]);
-      } catch {
-        setSelectedSubject(subjects[0]);
-      }
+  const selectedSubject = useMemo(() => {
+    if (!subjects || subjects.length === 0) return null;
+    if (selectedSubjectId) {
+      const found = subjects.find((s) => s.id === selectedSubjectId || s.slug === selectedSubjectId);
+      if (found) return found;
     }
-  }, [subjects, selectedSubject]);
+    const savedSlug = safeStorage.getItemString("panda_active_subject_slug");
+    const found = subjects.find((s) => s.slug === savedSlug);
+    return found || subjects[0];
+  }, [subjects, selectedSubjectId]);
 
   const activeSlug = selectedSubject?.slug ?? "";
   const {
     data: journey,
     isLoading: isLoadingJourney,
-    isError: isJourneyError,
-    refetch: refetchJourney,
   } = useSubjectJourney(activeSlug);
 
   const handleSelectSubject = (subj: Subject) => {
-    setSelectedSubject(subj);
-    try {
-      localStorage.setItem("panda_active_subject_slug", subj.slug);
-    } catch {
-      // Ignore localStorage restrictions
-    }
+    setSelectedSubjectId(subj.id);
+    safeStorage.setItem("panda_active_subject_slug", subj.slug);
   };
 
   // ─── Loading State ──────────────────────────────────────────────────────────

@@ -7,6 +7,7 @@
 // TODO: finalize retry predicate once ApiError is implemented in lib/api-client.ts
 
 import { QueryClient } from "@tanstack/react-query";
+import { ApiError } from "./api-client";
 
 export function makeQueryClient(): QueryClient {
   return new QueryClient({
@@ -15,7 +16,10 @@ export function makeQueryClient(): QueryClient {
         staleTime: 60 * 1000, // 1 min default; override per-feature
         gcTime: 5 * 60 * 1000,
         retry: (failureCount, error) => {
-          // TODO: never retry ApiError (4xx); retry up to 2x on network errors
+          // Never retry 4xx ApiErrors; retry up to 2x on network or transient 5xx errors
+          if (error instanceof ApiError && error.status && error.status < 500) {
+            return false;
+          }
           if (error instanceof Error && error.name === "ApiError") return false;
           return failureCount < 2;
         },

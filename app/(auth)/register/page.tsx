@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -8,6 +7,8 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
+
+import { useRegisterMutation } from "@/features/auth/hooks";
 
 const registerSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
@@ -22,7 +23,8 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
+  const registerMutation = useRegisterMutation();
+  const isLoading = registerMutation.isPending;
 
   const {
     register,
@@ -33,27 +35,12 @@ export default function RegisterPage() {
   });
 
   const onSubmit = async (data: RegisterFormValues) => {
-    setIsLoading(true);
     try {
-      // The Next.js auth proxy forwards /api/auth/register to NestJS and sets cookies
-      const response = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: data.email, password: data.password }),
-      });
-      
-      const result = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(result.message || "Failed to register account");
-      }
-      
+      await registerMutation.mutateAsync({ email: data.email, password: data.password });
       toast.success("Account created successfully!");
       router.push("/dashboard");
-    } catch (error: any) {
-      toast.error(error.message || "An error occurred during registration.");
-    } finally {
-      setIsLoading(false);
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "An error occurred during registration.");
     }
   };
 

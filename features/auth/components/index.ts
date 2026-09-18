@@ -1,2 +1,2 @@
-// features/auth/components — auth-specific UI components (LoginForm, RegisterForm, etc.)
-export {};
+// features/auth/components — auth-specific UI components
+export * from "./profile";

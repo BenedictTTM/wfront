@@ -1,7 +1,7 @@
 "use client";
 // features/multiplayer/components/LiveQuestion.tsx
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { WsQuestionStartEvent } from "../types";
 
 interface LiveQuestionProps {
@@ -21,18 +21,25 @@ export function LiveQuestion({ questionData, selectedOptionId, onSelect }: LiveQ
   const { question, questionIndex, totalQuestions } = questionData;
   const timeLimitMs = question.timeLimitMs;
 
-  const startedAtRef = useRef(Date.now());
+  const startedAtRef = useRef<number | null>(null);
+  const [prevQuestionId, setPrevQuestionId] = useState(question.id);
   const [timeLeftMs, setTimeLeftMs] = useState(timeLimitMs);
   const [isTimeUp, setIsTimeUp] = useState(false);
 
-  // Reset timer when question changes
-  useEffect(() => {
-    startedAtRef.current = Date.now();
+  // Synchronize timer state during render when question changes
+  if (prevQuestionId !== question.id) {
+    setPrevQuestionId(question.id);
     setTimeLeftMs(timeLimitMs);
     setIsTimeUp(false);
+  }
+
+  // Timer interval effect
+  useEffect(() => {
+    startedAtRef.current = Date.now();
 
     const interval = setInterval(() => {
-      const elapsed = Date.now() - startedAtRef.current;
+      const start = startedAtRef.current ?? Date.now();
+      const elapsed = Date.now() - start;
       const remaining = Math.max(0, timeLimitMs - elapsed);
       setTimeLeftMs(remaining);
       if (remaining === 0) {
@@ -44,11 +51,15 @@ export function LiveQuestion({ questionData, selectedOptionId, onSelect }: LiveQ
     return () => clearInterval(interval);
   }, [question.id, timeLimitMs]);
 
-  const handleSelect = (optionId: string) => {
-    if (selectedOptionId || isTimeUp) return;
-    const timeTakenMs = Date.now() - startedAtRef.current;
-    onSelect(question.id, optionId, timeTakenMs);
-  };
+  const handleSelect = useCallback(
+    (optionId: string) => {
+      if (selectedOptionId || isTimeUp) return;
+      const start = startedAtRef.current ?? Date.now();
+      const timeTakenMs = Date.now() - start;
+      onSelect(question.id, optionId, timeTakenMs);
+    },
+    [selectedOptionId, isTimeUp, question.id, onSelect]
+  );
 
   const progressPercent = (timeLeftMs / timeLimitMs) * 100;
   const timeLeftSeconds = Math.ceil(timeLeftMs / 1000);
@@ -121,7 +132,7 @@ export function LiveQuestion({ questionData, selectedOptionId, onSelect }: LiveQ
       )}
       {isTimeUp && !selectedOptionId && (
         <p className="text-center text-xs font-black text-rose-500">
-          Time's up!
+          Time&apos;s up!
         </p>
       )}
     </div>

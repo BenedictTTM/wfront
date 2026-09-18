@@ -1,5 +1,7 @@
 // features/curriculum/types.ts — subjects, topics, subtopics types
 
+import type { QuestionOption } from "@/features/quiz/types";
+
 export type Subject = {
   id: string;
   name: string;
@@ -196,7 +198,7 @@ export type NextChallenge = {
   questions: Array<{
     id: string;
     text: string;
-    options: any;
+    options: QuestionOption[];
     difficulty: string;
     type: string;
   }>;

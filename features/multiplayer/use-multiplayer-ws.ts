@@ -15,6 +15,8 @@ import {
   MatchState,
   ParticipantState,
   RoundRevealData,
+  WsErrorEvent,
+  WsMatchCountdownEvent,
   WsMatchEndEvent,
   WsQuestionStartEvent,
   WsRoomStateEvent,
@@ -62,6 +64,7 @@ export function useMultiplayerWs({
   const reconnectAttemptRef = useRef(0);
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mountedRef = useRef(true);
+  const connectRef = useRef<() => void>(() => {});
 
   /** Outbound message queue — flushed once connection is authenticated. */
   const messageQueueRef = useRef<Array<{ event: string; data: unknown }>>([]);
@@ -148,13 +151,13 @@ export function useMultiplayerWs({
 
         case "room_state": {
           const d = data as WsRoomStateEvent;
-          setMatchState(d.state as MatchState);
+          setMatchState(d.state);
           setParticipants(d.participants);
           break;
         }
 
         case "match_countdown": {
-          const d = data as { seconds: number };
+          const d = data as WsMatchCountdownEvent;
           setMatchState("STARTING");
           let remaining = d.seconds;
           setCountdown(remaining);
@@ -199,7 +202,7 @@ export function useMultiplayerWs({
         }
 
         case "error": {
-          const d = data as { code: string; message: string };
+          const d = data as WsErrorEvent;
           console.error(`[MultiplayerWS] ${d.code}: ${d.message}`);
           break;
         }
@@ -228,11 +231,15 @@ export function useMultiplayerWs({
       reconnectAttemptRef.current = attempt + 1;
 
       reconnectTimerRef.current = setTimeout(() => {
-        if (mountedRef.current) connect();
+        if (mountedRef.current) connectRef.current();
       }, delayMs);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, matchId, flushQueue]);
+
+  useEffect(() => {
+    connectRef.current = connect;
+  }, [connect]);
 
   const submitAnswer = useCallback(
     (questionId: string, optionId: string, timeTakenMs: number) => {

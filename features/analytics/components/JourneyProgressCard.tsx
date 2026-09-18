@@ -65,7 +65,6 @@ export function JourneyProgressCard({
     nextRecommendedLevel,
   } = journeyProgress;
 
-  const isNewUser = totalLevels === 0 || completedLevels === 0;
   const isCompletedAll = totalLevels > 0 && completedLevels >= totalLevels;
 
   return (

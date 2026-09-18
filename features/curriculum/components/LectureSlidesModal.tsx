@@ -119,11 +119,13 @@ export function LectureSlidesModal({
     setCurrentSlideIndex((prev) => Math.max(prev - 1, 0));
   }, []);
 
-  useEffect(() => {
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  if (prevIsOpen !== isOpen) {
+    setPrevIsOpen(isOpen);
     if (isOpen) {
       setCurrentSlideIndex(0);
     }
-  }, [isOpen]);
+  }
 
   useEffect(() => {
     if (!isOpen) return;

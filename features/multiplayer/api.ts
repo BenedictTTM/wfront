@@ -1,6 +1,7 @@
 // features/multiplayer/api.ts
 
 import { apiDelete, apiGet, apiPost, API_URL } from "@/lib/api-client";
+import { fetchAuthToken } from "@/features/auth/api";
 import { JoinQueuePayload, MatchResult, QueueStatus } from "./types";
 
 export async function joinMatchmakingQueue(
@@ -19,6 +20,10 @@ export async function getQueueStatus(): Promise<QueueStatus> {
 
 export async function getMatchResult(matchId: string): Promise<MatchResult> {
   return apiGet<MatchResult>(`/multiplayer/matches/${matchId}`);
+}
+
+export async function fetchMultiplayerToken(): Promise<string> {
+  return fetchAuthToken();
 }
 
 /**
