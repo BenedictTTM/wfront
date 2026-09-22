@@ -84,7 +84,7 @@ export function useQuizSession(): UseQuizSessionReturn {
   const [submissionResults, setSubmissionResults] = useState<SubmitAttemptResponseDto | null>(null);
   const [showEnergyWarning, setShowEnergyWarning] = useState<boolean>(false);
   const [isSubmittingFinal, setIsSubmittingFinal] = useState<boolean>(false);
-  const [inFlashcardReview, setInFlashcardReview] = useState<boolean>(initialMode !== "quiz" && !initialLevelId);
+  const [inFlashcardReview, setInFlashcardReview] = useState<boolean>(true);
 
   const createAttemptMutation = useCreateQuizAttempt();
   const submitAnswerMutation = useSubmitQuizAnswer();

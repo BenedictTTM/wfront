@@ -48,7 +48,7 @@ function JourneyLoadingSkeleton() {
   );
 }
 
-// ── Error State ───────────────────────────────────────────────────────────────
+// ── Error State ──────────────────────────────────────────────────────────────
 
 function JourneyErrorState({
   error,

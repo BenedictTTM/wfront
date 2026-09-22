@@ -1,19 +1,113 @@
 // features/curriculum/components/journey/JourneyNode.tsx
 
 import React from "react";
+import Image from "next/image";
 import {
-  CheckCircle2,
+  Atom,
+  Binary,
+  BookOpen,
+  Brain,
+  Calculator,
+  Check,
+  Compass,
   Crown,
+  Dna,
+  Dumbbell,
+  FileText,
+  Flame,
+  FlaskConical,
+  Globe,
+  GraduationCap,
+  HeartPulse,
+  Landmark,
+  Leaf,
+  Lightbulb,
   Lock,
-  Play,
+  Microscope,
+  PenTool,
+  PieChart,
+  RotateCcw,
+  Scale,
+  Sparkles,
+  Star,
+  Swords,
   Target,
+  TrendingUp,
   Trophy,
+  Zap,
 } from "lucide-react";
 import { JourneyLevelItem, LevelProgressState } from "../../types";
 import { MasteryIndicator } from "./MasteryIndicator";
 
+interface StrategicIconConfig {
+  Icon: React.ComponentType<{ size?: number; className?: string; strokeWidth?: number }>;
+  size?: number;
+  strokeWidth?: number;
+  className?: string;
+}
+
+// Curated pool of 30 distinct, recognizable educational and gaming icons
+const JOURNEY_ICONS: StrategicIconConfig[] = [
+  { Icon: Calculator, strokeWidth: 2.2 },
+  { Icon: Brain, strokeWidth: 2.2 },
+  { Icon: Zap, strokeWidth: 2.2 },
+  { Icon: BookOpen, strokeWidth: 2.2 },
+  { Icon: Atom, strokeWidth: 2.2 },
+  { Icon: Target, strokeWidth: 2.2 },
+  { Icon: FlaskConical, strokeWidth: 2.2 },
+  { Icon: Lightbulb, strokeWidth: 2.2 },
+  { Icon: Compass, strokeWidth: 2.2 },
+  { Icon: Dna, strokeWidth: 2.2 },
+  { Icon: Flame, strokeWidth: 2.2 },
+  { Icon: Trophy, strokeWidth: 2.2 },
+  { Icon: PenTool, strokeWidth: 2.2 },
+  { Icon: PieChart, strokeWidth: 2.2 },
+  { Icon: Sparkles, strokeWidth: 2.2 },
+  { Icon: Globe, strokeWidth: 2.2 },
+  { Icon: Dumbbell, strokeWidth: 2.2 },
+  { Icon: Binary, strokeWidth: 2.2 },
+  { Icon: GraduationCap, strokeWidth: 2.2 },
+  { Icon: HeartPulse, strokeWidth: 2.2 },
+  { Icon: Crown, strokeWidth: 2.2 },
+  { Icon: Scale, strokeWidth: 2.2 },
+  { Icon: Leaf, strokeWidth: 2.2 },
+  { Icon: Swords, strokeWidth: 2.2 },
+  { Icon: TrendingUp, strokeWidth: 2.2 },
+  { Icon: Microscope, strokeWidth: 2.2 },
+  { Icon: Star, strokeWidth: 2.2 },
+  { Icon: Landmark, strokeWidth: 2.2 },
+  { Icon: RotateCcw, strokeWidth: 2.2 },
+  { Icon: FileText, strokeWidth: 2.2 },
+];
+
+/**
+ * Resolves a guaranteed unique icon for each button along the path.
+ * Every consecutive button gets a different icon based on its journey index.
+ */
+function getStrategicNodeIcon(level: JourneyLevelItem, nodeIndex: number): StrategicIconConfig {
+  const text = `${level.title} ${level.description ?? ""}`.toLowerCase();
+
+  // Milestone boss battle or checkpoint
+  if (text.includes("boss") || text.includes("showdown") || text.includes("battle")) {
+    return { Icon: Swords, size: 24, strokeWidth: 2.2 };
+  }
+  if (text.includes("final exam") || text.includes("checkpoint finale")) {
+    return { Icon: Trophy, size: 24, strokeWidth: 2.2 };
+  }
+
+  // Guaranteed distinct icon per button
+  const config = JOURNEY_ICONS[Math.abs(nodeIndex) % JOURNEY_ICONS.length];
+  return {
+    Icon: config.Icon,
+    size: 24,
+    strokeWidth: config.strokeWidth ?? 2.2,
+    className: config.className ?? "",
+  };
+}
+
 interface JourneyNodeProps {
   level: JourneyLevelItem;
+  index?: number;
   isCurrent: boolean;
   onSelect: (level: JourneyLevelItem) => void;
   offsetPosition?: "left" | "center" | "right";
@@ -21,6 +115,7 @@ interface JourneyNodeProps {
 
 export function JourneyNode({
   level,
+  index,
   isCurrent,
   onSelect,
   offsetPosition = "center",
@@ -28,10 +123,13 @@ export function JourneyNode({
   // Determine effective visual state
   const state: LevelProgressState = isCurrent ? "ACTIVE" : level.state;
   const isLocked = state === "LOCKED";
-  const isCompleted = state === "COMPLETED";
   const isMastered = state === "MASTERED" || level.isMastered;
+  const isCompleted = state === "COMPLETED" || isMastered || level.isCompleted;
   const isAvailable = state === "AVAILABLE";
   const isActive = isCurrent || state === "ACTIVE";
+
+  // Use global journey index or orderIndex so every button has a different icon
+  const nodeIndex = typeof index === "number" ? index : level.orderIndex ?? 0;
 
   // Alignment classes for winding serpentine path
   const alignmentClass =
@@ -41,93 +139,113 @@ export function JourneyNode({
       ? "justify-end pr-6 sm:pr-10"
       : "justify-center";
 
+  // State-specific visual styling for the 3D isometric node
+  const stateFilterClass = isLocked
+    ? "grayscale-[100%] opacity-55 hover:opacity-75"
+    : "hover:brightness-95";
+
+  // Strategically resolve distinct hero icon for this specific button
+  const {
+    Icon: HeroIcon,
+    size: iconSize = 24,
+    strokeWidth: iconStrokeWidth = 2.2,
+    className: iconExtraClass = "",
+  } = getStrategicNodeIcon(level, nodeIndex);
+
+  // Asset selection based on completion state
+  const baseImgSrc = isCompleted
+    ? "/images/journey/buttom-completed.png"
+    : "/images/journey/buttom.png";
+
+  const topImgSrc = isCompleted
+    ? "/images/journey/top-completed.png"
+    : "/images/journey/top.png";
+
   return (
     <div
       className={`w-full max-w-[280px] sm:max-w-[320px] mx-auto flex items-center relative z-10 py-1 ${alignmentClass}`}
     >
       <div className="flex flex-col items-center group relative">
-        {/* "YOU ARE HERE" Beacon Tag for the current active level */}
+        {/* "START HERE" Beacon Tag for the current active level */}
         {isActive && (
-          <div className="absolute -top-7 z-20 flex items-center gap-1 px-2.5 py-0.5 bg-primary border-[2px] border-border rounded-full text-[10px] font-black tracking-widest text-text-primary uppercase shadow-[0_2px_0_#141827] animate-bounce">
-            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" />
+          <div className="absolute -top-7 z-30 flex items-center gap-1.5 px-2.5 py-0.5 bg-primary border-[2px] border-border rounded-full text-[10px] font-black tracking-wider text-text-primary uppercase shadow-[0_2px_0_#141827] pointer-events-none">
+            <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
             <span>START HERE</span>
           </div>
         )}
 
         {/* Mastered Crown Beacon */}
         {isMastered && (
-          <div className="absolute -top-5 z-20 text-amber-500 drop-shadow-[0_2px_0_#141827]">
+          <div className="absolute -top-6 z-30 text-amber-500 pointer-events-none">
             <Crown size={20} className="fill-amber-400 stroke-[2] text-border" />
           </div>
         )}
 
-        {/* Outer pulsating ring for active current node */}
-        {isActive && (
-          <div className="absolute inset-0 -m-2 rounded-full border-[3px] border-primary/60 animate-ping pointer-events-none" />
-        )}
-
-        {/* Interactive Node Button */}
+        {/* Interactive 3D Hexagonal Node Button */}
         <button
           type="button"
           onClick={() => onSelect(level)}
           aria-label={`${level.title} - Status: ${state}`}
           className={[
-            "relative flex items-center justify-center transition-all duration-200 outline-none select-none",
-            "w-20 h-20 rounded-3xl border-[3.5px] border-border",
-            // 3D Hard drop-shadow
-            isActive
-              ? "bg-primary shadow-[0_8px_0_#141827] scale-105 hover:-translate-y-1 active:translate-y-1 active:shadow-[0_2px_0_#141827] ring-4 ring-primary/40 cursor-pointer"
-              : isMastered
-              ? "bg-gradient-to-b from-amber-200 to-amber-400 shadow-[0_6px_0_#141827] hover:-translate-y-1 active:translate-y-1 active:shadow-[0_2px_0_#141827] cursor-pointer"
-              : isCompleted
-              ? "bg-secondary shadow-[0_5px_0_#141827] hover:-translate-y-0.5 active:translate-y-1 active:shadow-[0_2px_0_#141827] cursor-pointer"
-              : isAvailable
-              ? "bg-surface shadow-[0_6px_0_#141827] hover:-translate-y-1 active:translate-y-1 active:shadow-[0_2px_0_#141827] cursor-pointer"
-              : "bg-surface-muted/80 opacity-60 shadow-[0_4px_0_#D8D8D8] cursor-pointer hover:opacity-75",
+            "relative flex items-center justify-center outline-none select-none transition-transform duration-150 cursor-pointer",
+            "w-[84px] h-[80px]",
+            "hover:-translate-y-0.5 active:translate-y-1",
+            stateFilterClass,
           ].join(" ")}
         >
-          {/* Level Order Number Badge */}
-          <span className="absolute top-1 left-2 text-[10px] font-black text-text-primary/70">
-            {level.orderIndex + 1}
-          </span>
+          {/* 3D Base Platform Image */}
+          <Image
+            src={baseImgSrc}
+            alt=""
+            width={84}
+            height={80}
+            priority={isActive || level.orderIndex < 3}
+            className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none"
+          />
 
-          {/* Node Central Icon */}
-          <div className="flex flex-col items-center justify-center">
-            {isActive && (
-              <Play
-                size={28}
-                className="text-text-primary fill-text-primary stroke-[2] ml-0.5 drop-shadow-[0_1px_0_rgba(255,255,255,0.5)]"
-              />
-            )}
-            {isMastered && (
-              <Trophy
-                size={26}
-                className="text-text-primary fill-amber-300 stroke-[2]"
-              />
-            )}
-            {isCompleted && !isMastered && (
-              <CheckCircle2
-                size={28}
-                className="text-text-primary stroke-[2.5]"
-              />
-            )}
-            {isAvailable && !isActive && (
-              <Target
-                size={26}
-                className="text-text-primary stroke-[2.5]"
-              />
-            )}
-            {isLocked && (
-              <Lock
-                size={24}
-                className="text-text-secondary stroke-[2]"
-              />
-            )}
+          {/* 3D Raised Hexagon Cap Image */}
+          <Image
+            src={topImgSrc}
+            alt=""
+            width={72}
+            height={51}
+            priority={isActive || level.orderIndex < 3}
+            className="absolute top-[5px] left-[6px] w-[72px] h-[51px] object-contain pointer-events-none select-none transition-transform duration-150 group-active:translate-y-1"
+          />
+
+          {/* Status Corner Indicator Badge (Top-Right) */}
+          {isCompleted && !isMastered && (
+            <span
+              className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-secondary border-[1.5px] border-border flex items-center justify-center text-text-primary shadow-[0_1.5px_0_#141827] z-20"
+              title="Completed"
+            >
+              <Check size={11} strokeWidth={3} />
+            </span>
+          )}
+          {isLocked && (
+            <span
+              className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-surface border-[1.5px] border-border flex items-center justify-center text-text-secondary shadow-[0_1px_0_#141827] z-20"
+              title="Locked"
+            >
+              <Lock size={10} strokeWidth={2.5} />
+            </span>
+          )}
+
+          {/* Node Central Hero Icon positioned over the cap */}
+          <div className="absolute top-[5px] left-[6px] w-[72px] h-[51px] flex items-center justify-center pointer-events-none z-10 transition-transform duration-150 group-active:translate-y-1">
+            <HeroIcon
+              size={iconSize}
+              strokeWidth={iconStrokeWidth}
+              className={[
+                isLocked ? "text-text-secondary/60" : "text-text-primary",
+                iconExtraClass,
+              ].join(" ")}
+            />
           </div>
 
           {/* XP badge on node corner if available */}
           {!isCompleted && !isLocked && (
-            <span className="absolute -bottom-2 -right-1 px-1.5 py-0.5 bg-surface border-[1.5px] border-border rounded-md text-[9px] font-black text-text-primary shadow-[0_1px_0_#141827]">
+            <span className="absolute -bottom-1 -right-1 px-1.5 py-0.5 bg-surface border-[1.5px] border-border rounded-md text-[9px] font-black text-text-primary shadow-[0_2px_0_#141827] z-20">
               +{level.xpReward} XP
             </span>
           )}

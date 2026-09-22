@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   AlertTriangle,
   Bell,
@@ -29,8 +29,13 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   const claimRewardMutation = useClaimQuestReward();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
   const [prevPathname, setPrevPathname] = useState(pathname);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Close mobile menu on page transition without cascading effect renders
   if (prevPathname !== pathname) {
@@ -104,11 +109,11 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1 font-bold text-sm text-[#E28743]" title="XP Pool">
               <Zap size={16} fill="#E28743" />
-              <span>{xp}</span>
+              <span suppressHydrationWarning>{xp}</span>
             </div>
             <div className="flex items-center gap-1 font-bold text-sm text-red-500" title="Streak">
               <Flame size={16} fill="currentColor" />
-              <span>{streak}</span>
+              <span suppressHydrationWarning>{streak}</span>
             </div>
             <Link
               href="/profile"
@@ -134,19 +139,19 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
             {/* Battery / Energy */}
             <div className="flex items-center gap-1.5 font-extrabold text-sm text-[#FF9E2C]" title="Energy">
               <span className="text-lg">🔋</span>
-              <span>{energy}</span>
+              <span suppressHydrationWarning>{energy}</span>
             </div>
 
             {/* Streak */}
             <div className="flex items-center gap-1.5 font-extrabold text-sm text-red-500" title="Streak count">
               <Flame size={16} fill="currentColor" />
-              <span>{streak}</span>
+              <span suppressHydrationWarning>{streak}</span>
             </div>
 
             {/* Gems / Diamonds */}
             <div className="flex items-center gap-1.5 font-extrabold text-sm text-blue-500" title="Gems / Diamonds">
               <Gem size={15} fill="currentColor" />
-              <span>{gems}</span>
+              <span suppressHydrationWarning>{gems}</span>
             </div>
           </div>
 
@@ -197,7 +202,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
           <h3 className="font-extrabold text-xs text-text-secondary tracking-widest uppercase">Unlock Leaderboards</h3>
 
           <div className="flex flex-col items-center gap-3 py-2 text-center">
-            {xp >= 30 ? (
+            {mounted && xp >= 30 ? (
               <>
                 <div className="w-12 h-12 rounded-full bg-[#FFFDF6] border-2 border-border flex items-center justify-center text-green-600">
                   <CheckCircle2 size={24} />
@@ -231,7 +236,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
           <h3 className="font-extrabold text-xs text-text-secondary tracking-widest uppercase">Active Quests</h3>
 
           <div className="flex flex-col gap-4">
-            {isQuestsLoading && displayQuests.length === 0 ? (
+            {!mounted || (isQuestsLoading && displayQuests.length === 0) ? (
               <div className="flex flex-col gap-3 animate-pulse">
                 <div className="h-14 bg-bg-primary rounded-xl" />
                 <div className="h-14 bg-bg-primary rounded-xl" />

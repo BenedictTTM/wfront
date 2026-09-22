@@ -165,6 +165,7 @@ export function JourneyMap({
                       >
                         <JourneyNode
                           level={level}
+                          index={globalIdx}
                           isCurrent={isLevelCurrent}
                           onSelect={(lvl) => setSelectedLevel(lvl)}
                           offsetPosition={currentOffset}

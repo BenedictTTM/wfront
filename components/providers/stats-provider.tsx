@@ -26,17 +26,28 @@ export function StatsProvider({ children }: { children: React.ReactNode }) {
   const { data: dashboardData } = useDashboard();
   const queryClient = useQueryClient();
 
-  const cachedXp = safeStorage.getItem<number>("wassce_user_xp", 0);
-  const cachedGems = safeStorage.getItem<number>("wassce_user_gems", 0);
-  const cachedStreak = safeStorage.getItem<number>("wassce_user_streak", 0);
-  const cachedEnergy = safeStorage.getItem<number>("wassce_user_energy", 30);
+  const [cachedStats, setCachedStats] = useState({
+    xp: 0,
+    gems: 0,
+    streak: 0,
+    energy: 30,
+  });
 
-  const totalXp = dashboardData?.xp?.total ?? dashboardData?.xp?.current ?? cachedXp;
+  React.useEffect(() => {
+    setCachedStats({
+      xp: safeStorage.getItem<number>("wassce_user_xp", 0),
+      gems: safeStorage.getItem<number>("wassce_user_gems", 0),
+      streak: safeStorage.getItem<number>("wassce_user_streak", 0),
+      energy: safeStorage.getItem<number>("wassce_user_energy", 30),
+    });
+  }, []);
+
+  const totalXp = dashboardData?.xp?.total ?? dashboardData?.xp?.current ?? cachedStats.xp;
   const levelXp = dashboardData?.xp?.current ?? 0;
   const xp = totalXp;
-  const gems = dashboardData?.wallet?.gems ?? cachedGems;
-  const streak = dashboardData?.streak?.current ?? cachedStreak;
-  const energy = dashboardData?.energy?.current ?? cachedEnergy;
+  const gems = dashboardData?.wallet?.gems ?? cachedStats.gems;
+  const streak = dashboardData?.streak?.current ?? cachedStats.streak;
+  const energy = dashboardData?.energy?.current ?? cachedStats.energy;
   const maxEnergy = dashboardData?.energy?.max ?? 30;
 
   // Persist fresh stats to storage whenever received from server
