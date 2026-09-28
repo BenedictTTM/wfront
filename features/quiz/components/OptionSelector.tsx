@@ -47,33 +47,33 @@ export function OptionSelector({
   }
 
   return (
-    <div className="flex flex-col gap-2.5">
+    <div className="flex flex-col gap-3">
       {options.map((option, idx) => {
         const optionKey = option.key || String.fromCharCode(65 + idx);
         const isSelected = selectedOptionId === optionKey;
         const isCorrectTarget = feedback?.correctOption === optionKey;
 
         // Styling logic when immediate feedback is revealed
-        let buttonStyles = "bg-surface border-border hover:bg-bg-secondary text-text-primary cursor-pointer";
-        let badgeStyles = "border-border-muted bg-surface-muted text-text-secondary";
+        let buttonStyles = "bg-surface border-border hover:bg-bg-primary shadow-[0_3px_0_rgba(20,24,39,0.9)] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-[0_1px_0_rgba(20,24,39,0.9)] text-text-primary cursor-pointer";
+        let badgeStyles = "border-border bg-bg-primary text-text-primary shadow-[0_1px_0_#141827]";
         let icon = null;
 
         if (isFeedbackRevealed) {
           if (isCorrectTarget) {
-            buttonStyles = "bg-emerald-500/15 border-emerald-600 text-emerald-950 dark:text-emerald-200 font-extrabold shadow-[0_3px_0_rgba(16,185,129,0.5)]";
-            badgeStyles = "border-emerald-600 bg-emerald-500 text-white font-black";
-            icon = <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />;
+            buttonStyles = "bg-emerald-500/20 border-emerald-700 text-emerald-950 dark:text-emerald-200 font-black shadow-[0_3px_0_rgba(4,120,87,0.7)]";
+            badgeStyles = "border-border bg-emerald-500 text-white font-black shadow-[0_1px_0_#141827]";
+            icon = <CheckCircle2 className="w-5 h-5 text-emerald-700 dark:text-emerald-400 shrink-0 stroke-[2.5]" />;
           } else if (isSelected && !feedback?.isCorrect) {
-            buttonStyles = "bg-rose-500/15 border-rose-600 text-rose-950 dark:text-rose-200 font-extrabold line-through decoration-rose-500/60";
-            badgeStyles = "border-rose-600 bg-rose-500 text-white font-black";
-            icon = <XCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />;
+            buttonStyles = "bg-rose-500/20 border-rose-700 text-rose-950 dark:text-rose-200 font-black line-through decoration-rose-700/70 shadow-[0_3px_0_rgba(190,18,60,0.7)]";
+            badgeStyles = "border-border bg-rose-500 text-white font-black shadow-[0_1px_0_#141827]";
+            icon = <XCircle className="w-5 h-5 text-rose-700 dark:text-rose-400 shrink-0 stroke-[2.5]" />;
           } else {
-            buttonStyles = "bg-surface/60 border-border/60 opacity-50 text-text-muted";
-            badgeStyles = "border-border/60 bg-surface-muted text-text-muted";
+            buttonStyles = "bg-surface/50 border-border/40 opacity-40 text-text-muted";
+            badgeStyles = "border-border/40 bg-surface-muted text-text-muted";
           }
         } else if (isSelected) {
-          buttonStyles = "bg-primary/15 border-border shadow-[0_2.5px_0_rgba(20,24,39,0.9)] text-text-primary cursor-pointer";
-          badgeStyles = "border-border bg-primary text-text-primary";
+          buttonStyles = "bg-[#fdf6d8] border-border shadow-[0_4px_0_rgba(20,24,39,0.9)] ring-2 ring-primary -translate-y-0.5 text-text-primary cursor-pointer";
+          badgeStyles = "border-border bg-primary text-text-primary shadow-[0_1.5px_0_#141827]";
         }
 
         return (
@@ -83,17 +83,17 @@ export function OptionSelector({
             disabled={isFeedbackRevealed}
             onClick={() => !isFeedbackRevealed && onSelectOption(optionKey)}
             className={[
-              "w-full text-left p-3.5 border-[2px] rounded-xl text-xs md:text-sm font-bold transition-all flex items-center justify-between gap-3",
+              "w-full text-left p-4 border-[2.5px] rounded-2xl text-xs md:text-sm font-extrabold transition-all flex items-center justify-between gap-3",
               buttonStyles,
             ].join(" ")}
           >
-            <span className="leading-normal pr-2 flex items-center gap-2">
+            <span className="leading-normal pr-2 flex items-center gap-2.5">
               {icon}
               {option.text}
             </span>
             <span
               className={[
-                "w-7 h-7 rounded-full border-[2px] flex items-center justify-center text-xs font-black shrink-0 transition-colors",
+                "w-8 h-8 rounded-xl border-[2px] flex items-center justify-center text-xs font-black shrink-0 transition-all",
                 badgeStyles,
               ].join(" ")}
             >

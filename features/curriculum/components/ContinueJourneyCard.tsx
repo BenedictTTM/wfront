@@ -133,16 +133,16 @@ export function ContinueJourneyCard({ subject, journey }: ContinueJourneyCardPro
         </div>
 
         {/* Progress & Mastery Metrics */}
-        <div className="flex flex-col gap-2 bg-surface-muted/60 p-4 border-[2px] border-border rounded-xl">
-          <div className="flex justify-between items-center text-xs font-extrabold text-text-primary">
+        <div className="flex flex-col gap-2.5 bg-surface-muted/80 p-4 border-[2.5px] border-border rounded-xl shadow-inner">
+          <div className="flex justify-between items-center text-xs font-black text-text-primary">
             <span>Journey Progress</span>
-            <span className="text-text-secondary">
+            <span className="text-text-secondary font-bold">
               {completedNodes} / {totalNodes} Steps ({percentComplete}%)
             </span>
           </div>
 
           <div
-            className="w-full h-3 border-[2px] border-border rounded-full bg-surface overflow-hidden"
+            className="w-full h-3.5 border-[2px] border-border rounded-full bg-surface overflow-hidden p-0.5"
             role="progressbar"
             aria-valuenow={percentComplete}
             aria-valuemin={0}
@@ -150,15 +150,15 @@ export function ContinueJourneyCard({ subject, journey }: ContinueJourneyCardPro
             aria-label="Subject journey completion percentage"
           >
             <div
-              className="h-full bg-primary border-r-[2px] border-border transition-all duration-500"
-              style={{ width: `${percentComplete}%` }}
+              className="h-full bg-primary border-[1.5px] border-border rounded-full transition-all duration-500 shadow-sm"
+              style={{ width: `${Math.max(percentComplete, 4)}%` }}
             />
           </div>
 
           {/* Badges: Mastery & XP */}
-          <div className="flex flex-wrap items-center gap-3 pt-2">
-            <div className="flex items-center gap-1.5 text-xs font-black text-text-primary bg-surface px-2.5 py-1 border-[2px] border-border rounded-lg shadow-sm">
-              <Star size={14} className="fill-primary text-primary" />
+          <div className="flex flex-wrap items-center gap-3 pt-1">
+            <div className="flex items-center gap-1.5 text-xs font-black text-text-primary bg-surface px-3 py-1.5 border-[2px] border-border rounded-xl shadow-[0_2px_0_#141827]">
+              <Star size={14} className="fill-[#F6D86B] text-[#141827] stroke-[2.5]" />
               <span>
                 {journey.overallMasteryPercent > 0
                   ? `${journey.overallMasteryPercent}% Mastery`
@@ -166,8 +166,8 @@ export function ContinueJourneyCard({ subject, journey }: ContinueJourneyCardPro
               </span>
             </div>
 
-            <div className="flex items-center gap-1.5 text-xs font-black text-text-primary bg-surface px-2.5 py-1 border-[2px] border-border rounded-lg shadow-sm">
-              <Zap size={14} className="fill-text-primary text-text-primary" />
+            <div className="flex items-center gap-1.5 text-xs font-black text-text-primary bg-surface px-3 py-1.5 border-[2px] border-border rounded-xl shadow-[0_2px_0_#141827]">
+              <Zap size={14} className="fill-text-primary text-text-primary stroke-[2]" />
               <span>+{xpAvailable} XP Reward</span>
             </div>
           </div>
@@ -183,7 +183,7 @@ export function ContinueJourneyCard({ subject, journey }: ContinueJourneyCardPro
           >
             {isStarting ? (
               <>
-                <Loader2 size={16} className="animate-spin" />
+                <Loader2 size={16} className="animate-spin stroke-[3]" />
                 <span>STARTING QUIZ…</span>
               </>
             ) : (
@@ -196,7 +196,7 @@ export function ContinueJourneyCard({ subject, journey }: ContinueJourneyCardPro
 
           <Link
             href={`/study/${subject.slug}`}
-            className="py-3.5 px-5 bg-surface text-text-primary border-[2px] border-border rounded-xl text-xs font-extrabold hover:bg-surface-muted shadow-[0_2px_0_rgba(20,24,39,0.9)] active:translate-y-0.5 active:shadow-[0_1px_0_rgba(20,24,39,0.9)] transition-all text-center tracking-wide"
+            className="py-3.5 px-5 bg-surface hover:bg-bg-primary text-text-primary border-[2.5px] border-border rounded-xl text-xs font-black shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 transition-all text-center tracking-wider"
           >
             VIEW FULL MAP
           </Link>

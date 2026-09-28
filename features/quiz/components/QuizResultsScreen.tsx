@@ -44,14 +44,14 @@ export function QuizResultsScreen({ results, onReset, onContinueNextLevel }: Qui
       <div className="relative">
         <div
           className={[
-            "w-20 h-20 rounded-full flex items-center justify-center border-[3px] shadow-[0_4px_0_rgba(20,24,39,0.9)]",
+            "w-24 h-24 rounded-3xl flex items-center justify-center border-[3.5px] shadow-[0_6px_0_rgba(20,24,39,0.9)]",
             isPassed ? "bg-primary border-border" : "bg-surface-muted border-border",
           ].join(" ")}
         >
-          <Trophy className="w-10 h-10 text-text-primary" />
+          <Trophy className="w-12 h-12 text-text-primary stroke-[2.5]" />
         </div>
         {results.isFirstAttempt && (
-          <span className="absolute -bottom-2 -right-2 px-2.5 py-0.5 bg-primary border-[2px] border-border text-[10px] font-black rounded-full shadow-sm uppercase text-text-primary">
+          <span className="absolute -bottom-2 -right-2 px-3 py-1 bg-primary border-[2px] border-border text-[10px] font-black rounded-full shadow-[0_2px_0_#141827] uppercase text-text-primary">
             1st Try!
           </span>
         )}
@@ -75,17 +75,17 @@ export function QuizResultsScreen({ results, onReset, onContinueNextLevel }: Qui
         </p>
 
         {journeyOutcome && (
-          <div className="flex items-center gap-1.5 mt-1 bg-surface-muted border-[2px] border-border px-4 py-1.5 rounded-full">
+          <div className="flex items-center gap-2 mt-1 bg-surface border-[2.5px] border-border px-5 py-2.5 rounded-2xl shadow-[0_3px_0_#141827]">
             {[1, 2, 3].map((starIndex) => {
               const isEarned = starIndex <= journeyOutcome.masteryStarsEarned;
               return (
                 <Star
                   key={starIndex}
-                  size={20}
+                  size={22}
                   className={
                     isEarned
-                      ? "fill-primary text-text-primary stroke-[2px]"
-                      : "text-text-muted/30 stroke-[2px]"
+                      ? "fill-[#F6D86B] text-[#141827] stroke-[2.5px]"
+                      : "fill-transparent text-[#141827]/25 stroke-[2px]"
                   }
                 />
               );
@@ -105,8 +105,8 @@ export function QuizResultsScreen({ results, onReset, onContinueNextLevel }: Qui
       {journeyOutcome?.unlockedNextLevel && (
         <div className="w-full p-4 bg-primary/20 border-[3px] border-border rounded-2xl flex items-center justify-between gap-3 shadow-[0_4px_0_rgba(20,24,39,0.9)] text-left">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary border-[2px] border-border flex items-center justify-center shrink-0">
-              <Unlock size={20} className="text-text-primary" />
+            <div className="w-11 h-11 rounded-xl bg-primary border-[2px] border-border flex items-center justify-center shrink-0 shadow-[0_2px_0_#141827]">
+              <Unlock size={22} className="text-text-primary stroke-[2.5]" />
             </div>
             <div>
               <span className="text-[10px] font-black uppercase text-text-secondary tracking-widest block">
@@ -117,18 +117,18 @@ export function QuizResultsScreen({ results, onReset, onContinueNextLevel }: Qui
               </span>
             </div>
           </div>
-          <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 bg-surface border-[2px] border-border rounded-lg text-text-primary shrink-0">
+          <span className="text-[10px] font-black uppercase tracking-wider px-3 py-1 bg-surface border-[2px] border-border rounded-xl text-text-primary shrink-0 shadow-[0_1.5px_0_#141827]">
             Unlocked
           </span>
         </div>
       )}
 
       {/* Reward card */}
-      <div className="bg-surface border-[2px] border-border p-5 rounded-2xl w-full flex flex-col gap-4 shadow-[0_4px_0_rgba(20,24,39,0.9)] text-left">
+      <div className="bg-surface border-[3px] border-border p-6 rounded-2xl w-full flex flex-col gap-4 shadow-[0_6px_0_rgba(20,24,39,0.9)] text-left">
         <div className="flex justify-between items-center border-b-[2px] border-border pb-3">
-          <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl bg-primary border-[2px] border-border flex items-center justify-center shadow-[0_2px_0_rgba(20,24,39,0.9)]">
-              <Zap size={18} className="fill-text-primary text-text-primary" />
+          <div className="flex items-center gap-2.5">
+            <div className="w-10 h-10 rounded-xl bg-primary border-[2px] border-border flex items-center justify-center shadow-[0_2px_0_#141827]">
+              <Zap size={20} className="fill-text-primary text-text-primary stroke-[2]" />
             </div>
             <div>
               <span className="text-[10px] font-black uppercase text-text-secondary tracking-widest block">
@@ -139,25 +139,25 @@ export function QuizResultsScreen({ results, onReset, onContinueNextLevel }: Qui
               </span>
             </div>
           </div>
-          <span className="text-lg font-black text-text-primary px-3 py-1 bg-primary/20 border-[2px] border-border rounded-xl">
+          <span className="text-lg font-black text-text-primary px-3.5 py-1 bg-primary border-[2px] border-border rounded-xl shadow-[0_2px_0_#141827]">
             +{results.xpAwarded} XP
           </span>
         </div>
 
         {/* Level progress */}
         {dashboard?.xp && (
-          <div className="flex flex-col gap-1.5">
-            <div className="flex justify-between items-center text-xs font-extrabold">
+          <div className="flex flex-col gap-2">
+            <div className="flex justify-between items-center text-xs font-black">
               <span className="text-text-primary">Level {dashboard.xp.level}</span>
-              <span className="text-text-secondary">
+              <span className="text-text-secondary font-bold">
                 {dashboard.xp.current} / {dashboard.xp.next} XP
               </span>
             </div>
-            <div className="w-full h-3.5 border-[2px] border-border rounded-full bg-surface-muted overflow-hidden">
+            <div className="w-full h-3.5 border-[2px] border-border rounded-full bg-surface-muted overflow-hidden p-0.5 shadow-inner">
               <div
-                className="h-full bg-primary border-r-[2px] border-border transition-all duration-500"
+                className="h-full bg-primary border-[1.5px] border-border rounded-full transition-all duration-500 shadow-sm"
                 style={{
-                  width: `${Math.min(100, Math.max(0, (dashboard.xp.current / dashboard.xp.next) * 100))}%`,
+                  width: `${Math.min(100, Math.max(4, (dashboard.xp.current / dashboard.xp.next) * 100))}%`,
                 }}
               />
             </div>
@@ -168,7 +168,7 @@ export function QuizResultsScreen({ results, onReset, onContinueNextLevel }: Qui
         {completedUnclaimedQuests.length > 0 && (
           <div className="flex flex-col gap-3 p-3.5 bg-primary/10 border-[2px] border-border rounded-xl">
             <div className="flex items-center gap-2">
-              <Award size={18} className="text-text-primary shrink-0" />
+              <Award size={18} className="text-text-primary shrink-0 stroke-[2.5]" />
               <span className="text-xs font-black text-text-primary">
                 Quest Completed! Claim your reward:
               </span>
@@ -179,11 +179,11 @@ export function QuizResultsScreen({ results, onReset, onContinueNextLevel }: Qui
               return (
                 <div
                   key={q.periodId}
-                  className="flex justify-between items-center gap-2 bg-surface p-2.5 rounded-lg border-[2px] border-border"
+                  className="flex justify-between items-center gap-2 bg-surface p-3 rounded-xl border-[2px] border-border shadow-[0_2px_0_#141827]"
                 >
                   <div className="flex items-center gap-2 min-w-0">
-                    <Star size={14} fill="currentColor" className="text-primary shrink-0" />
-                    <span className="text-xs font-extrabold text-text-primary truncate">
+                    <Star size={16} className="fill-[#F6D86B] text-[#141827] stroke-[2px] shrink-0" />
+                    <span className="text-xs font-black text-text-primary truncate">
                       {q.title}
                     </span>
                   </div>
@@ -197,7 +197,7 @@ export function QuizResultsScreen({ results, onReset, onContinueNextLevel }: Qui
                       });
                     }}
                     disabled={claimRewardMutation.isPending}
-                    className="px-3 py-1.5 bg-primary text-text-primary border-[2px] border-border rounded-lg text-xs font-black shadow-[0_2px_0_#141827] active:translate-y-0.5 transition-all cursor-pointer whitespace-nowrap disabled:opacity-75"
+                    className="px-3.5 py-1.5 bg-primary text-text-primary border-[2px] border-border rounded-xl text-xs font-black shadow-[0_2px_0_#141827] active:translate-y-0.5 transition-all cursor-pointer whitespace-nowrap disabled:opacity-75"
                   >
                     {isClaiming ? "CLAIMING…" : `CLAIM +${q.xpAward} XP`}
                   </button>
@@ -209,7 +209,7 @@ export function QuizResultsScreen({ results, onReset, onContinueNextLevel }: Qui
       </div>
 
       {/* Action buttons — Prioritizing Next Meaningful Action */}
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full max-w-md">
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full max-w-md pt-2">
         {journeyOutcome ? (
           journeyOutcome.isPassed ? (
             <>
@@ -223,18 +223,18 @@ export function QuizResultsScreen({ results, onReset, onContinueNextLevel }: Qui
                       window.location.href = `/study/quiz?levelId=${journeyOutcome.nextLevelId}&subjectId=${results.subjectId}&mode=quiz`;
                     }
                   }}
-                  className="w-full sm:w-auto flex-1 px-6 py-3 bg-primary text-text-primary border-[2px] border-border rounded-xl text-xs md:text-sm font-black shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full sm:w-auto flex-1 px-6 py-3.5 bg-primary text-text-primary border-[2.5px] border-border rounded-xl text-xs md:text-sm font-black shadow-[0_4px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer tracking-wider"
                 >
-                  CONTINUE TO NEXT LEVEL
-                  <ArrowRight size={16} />
+                  <span>CONTINUE TO NEXT LEVEL</span>
+                  <ArrowRight size={16} className="stroke-[3]" />
                 </button>
               ) : (
                 <Link
                   href="/study"
-                  className="w-full sm:w-auto flex-1 px-6 py-3 bg-primary text-text-primary border-[2px] border-border rounded-xl text-xs md:text-sm font-black shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
+                  className="w-full sm:w-auto flex-1 px-6 py-3.5 bg-primary text-text-primary border-[2.5px] border-border rounded-xl text-xs md:text-sm font-black shadow-[0_4px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 tracking-wider"
                 >
-                  RETURN TO JOURNEY MAP
-                  <ArrowRight size={16} />
+                  <span>RETURN TO JOURNEY MAP</span>
+                  <ArrowRight size={16} className="stroke-[3]" />
                 </Link>
               )}
 
@@ -242,10 +242,10 @@ export function QuizResultsScreen({ results, onReset, onContinueNextLevel }: Qui
                 <button
                   type="button"
                   onClick={onReset}
-                  className="w-full sm:w-auto px-4 py-3 border-[2px] border-border bg-surface rounded-xl text-xs font-black hover:bg-surface-muted shadow-[0_2px_0_rgba(20,24,39,0.9)] transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full sm:w-auto px-5 py-3.5 border-[2.5px] border-border bg-surface hover:bg-bg-primary rounded-xl text-xs font-black shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer tracking-wider"
                 >
-                  <RotateCcw size={14} />
-                  RETRY FOR 3 STARS
+                  <RotateCcw size={15} className="stroke-[2.5]" />
+                  <span>RETRY FOR 3 STARS</span>
                 </button>
               )}
             </>
@@ -254,17 +254,17 @@ export function QuizResultsScreen({ results, onReset, onContinueNextLevel }: Qui
               <button
                 type="button"
                 onClick={onReset}
-                className="w-full sm:w-auto flex-1 px-6 py-3 bg-primary text-text-primary border-[2px] border-border rounded-xl text-xs md:text-sm font-black shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full sm:w-auto flex-1 px-6 py-3.5 bg-primary text-text-primary border-[2.5px] border-border rounded-xl text-xs md:text-sm font-black shadow-[0_4px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer tracking-wider"
               >
-                <RotateCcw size={15} />
-                RETRY CHALLENGE
+                <RotateCcw size={16} className="stroke-[2.5]" />
+                <span>RETRY CHALLENGE</span>
               </button>
               <Link
                 href="/study"
-                className="w-full sm:w-auto px-4 py-3 border-[2px] border-border bg-surface rounded-xl text-xs font-black hover:bg-surface-muted shadow-[0_2px_0_rgba(20,24,39,0.9)] transition-all flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-5 py-3.5 border-[2.5px] border-border bg-surface hover:bg-bg-primary rounded-xl text-xs font-black shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 tracking-wider"
               >
-                <ArrowLeft size={14} />
-                RETURN TO MAP
+                <ArrowLeft size={16} className="stroke-[2.5]" />
+                <span>RETURN TO MAP</span>
               </Link>
             </>
           )
@@ -273,17 +273,17 @@ export function QuizResultsScreen({ results, onReset, onContinueNextLevel }: Qui
             <button
               type="button"
               onClick={onReset}
-              className="w-full sm:w-auto px-5 py-2.5 border-[2px] border-border bg-surface rounded-xl text-xs font-black hover:bg-surface-muted shadow-[0_2px_0_rgba(20,24,39,0.9)] transition-all flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full sm:w-auto px-5 py-3.5 border-[2.5px] border-border bg-surface hover:bg-bg-primary rounded-xl text-xs font-black shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer tracking-wider"
             >
-              <RotateCcw size={14} />
-              TAKE ANOTHER QUIZ
+              <RotateCcw size={15} className="stroke-[2.5]" />
+              <span>TAKE ANOTHER QUIZ</span>
             </button>
             <Link
               href="/study"
-              className="w-full sm:w-auto px-5 py-2.5 bg-primary text-text-primary border-[2px] border-border rounded-xl text-xs font-black shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-5 py-3.5 bg-primary text-text-primary border-[2.5px] border-border rounded-xl text-xs font-black shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 tracking-wider"
             >
-              <ArrowLeft size={14} />
-              RETURN TO STUDY
+              <ArrowLeft size={16} className="stroke-[2.5]" />
+              <span>RETURN TO STUDY</span>
             </Link>
           </>
         )}

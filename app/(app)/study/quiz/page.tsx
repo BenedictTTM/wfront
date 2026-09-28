@@ -187,12 +187,12 @@ function PracticeQuizContent() {
   const isJourneyMode = currentAttempt.mode === "JOURNEY";
 
   return (
-    <div className="w-full max-w-xl mx-auto bg-surface border-[3px] border-border rounded-2xl shadow-[0_6px_0_rgba(20,24,39,0.9)] p-6 flex flex-col gap-5 animate-in fade-in zoom-in-95 duration-150">
-      {/* Header */}
-      <div className="flex items-center justify-between border-b-[2px] border-border pb-3">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-primary border-[2px] border-border flex items-center justify-center">
-            <BookOpen size={16} className="text-text-primary" />
+    <div className="w-full max-w-xl mx-auto bg-surface border-[3px] border-border rounded-3xl shadow-[0_8px_0_rgba(20,24,39,0.9)] p-6 md:p-8 flex flex-col gap-6 animate-in fade-in zoom-in-95 duration-150">
+      {/* Header HUD */}
+      <div className="flex items-center justify-between border-b-[2.5px] border-border pb-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-primary border-[2.5px] border-border flex items-center justify-center shadow-[0_2px_0_#141827] shrink-0">
+            <BookOpen size={18} className="text-text-primary stroke-[2.5]" />
           </div>
           <div>
             <h3 className="text-sm md:text-base font-black text-text-primary leading-tight">
@@ -206,24 +206,28 @@ function PracticeQuizContent() {
         <button
           type="button"
           onClick={handleExitSession}
-          className="p-1.5 border-[2px] border-border rounded-lg hover:bg-surface-muted transition-colors cursor-pointer"
+          className="p-2 border-[2px] border-border rounded-xl bg-surface hover:bg-bg-primary shadow-[0_2px_0_#141827] active:translate-y-0.5 transition-all cursor-pointer"
           aria-label="Exit session"
         >
-          <X size={16} />
+          <X size={16} className="text-text-primary stroke-[2.5]" />
         </button>
       </div>
 
       {/* Progress bar */}
-      <div className="flex flex-col gap-1.5">
-        <div className="w-full h-3 border-[2px] border-border rounded-full bg-surface-muted overflow-hidden">
+      <div className="flex flex-col gap-2">
+        <div className="w-full h-3.5 border-[2.5px] border-border rounded-full bg-surface-muted overflow-hidden p-0.5 shadow-inner">
           <div
-            className="h-full bg-primary transition-all duration-300 rounded-full"
-            style={{ width: `${progressPct}%` }}
+            className="h-full bg-primary border-[1.5px] border-border transition-all duration-300 rounded-full shadow-sm"
+            style={{ width: `${Math.max(progressPct, 4)}%` }}
           />
         </div>
-        <div className="flex justify-between items-center text-[11px] font-bold text-text-secondary">
-          <span>Question {currentQuestionIndex + 1} of {questions.length}</span>
-          <span>{Math.round(progressPct)}% Completed</span>
+        <div className="flex justify-between items-center text-[11px] font-black text-text-secondary">
+          <span className="bg-bg-primary px-2.5 py-0.5 border border-border rounded-md shadow-xs">
+            Question {currentQuestionIndex + 1} of {questions.length}
+          </span>
+          <span className="bg-bg-primary px-2.5 py-0.5 border border-border rounded-md shadow-xs">
+            {Math.round(progressPct)}% Completed
+          </span>
         </div>
       </div>
 
@@ -250,21 +254,21 @@ function PracticeQuizContent() {
       {currentFeedback && (
         <div
           className={[
-            "p-4 border-[2px] rounded-xl flex flex-col gap-2 transition-all animate-in fade-in slide-in-from-bottom-2 duration-200",
+            "p-5 border-[2.5px] rounded-2xl flex flex-col gap-3 transition-all animate-in fade-in slide-in-from-bottom-2 duration-200 shadow-[0_4px_0_rgba(20,24,39,0.9)]",
             currentFeedback.isCorrect
-              ? "bg-emerald-500/10 border-emerald-600 text-emerald-950 dark:text-emerald-200"
-              : "bg-rose-500/10 border-rose-600 text-rose-950 dark:text-rose-200",
+              ? "bg-emerald-500/15 border-emerald-700 text-emerald-950 dark:text-emerald-200"
+              : "bg-rose-500/15 border-rose-700 text-rose-950 dark:text-rose-200",
           ].join(" ")}
         >
-          <div className="flex items-center gap-2 font-black text-xs md:text-sm">
+          <div className="flex items-center gap-2.5 font-black text-xs md:text-sm">
             {currentFeedback.isCorrect ? (
               <>
-                <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                <CheckCircle2 className="w-5 h-5 text-emerald-700 dark:text-emerald-400 shrink-0 stroke-[2.5]" />
                 <span>Brilliant! That is correct.</span>
               </>
             ) : (
               <>
-                <XCircle className="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0" />
+                <XCircle className="w-5 h-5 text-rose-700 dark:text-rose-400 shrink-0 stroke-[2.5]" />
                 <span>
                   Not quite. {currentFeedback.correctOption ? `Correct answer is Option (${currentFeedback.correctOption}).` : ""}
                 </span>
@@ -273,26 +277,28 @@ function PracticeQuizContent() {
           </div>
 
           {currentFeedback.explanation && (
-            <div className="text-xs font-medium text-text-secondary bg-surface/90 p-3 rounded-lg border border-border mt-1">
-              <span className="font-black text-text-primary block text-[10px] uppercase tracking-wider mb-0.5">
-                Explanation & Key Insight
+            <div className="text-xs font-bold text-text-secondary bg-surface p-3.5 rounded-xl border-[2px] border-border mt-1 shadow-[0_1.5px_0_#141827]">
+              <span className="font-black text-text-primary block text-[10px] uppercase tracking-wider mb-1">
+                💡 Explanation &amp; Key Insight
               </span>
-              {currentFeedback.explanation}
+              <p className="leading-relaxed text-text-primary font-medium">
+                {currentFeedback.explanation}
+              </p>
             </div>
           )}
         </div>
       )}
 
       {/* Navigation */}
-      <div className="flex justify-between items-center pt-4 border-t-[2px] border-border">
+      <div className="flex justify-between items-center pt-4 border-t-[2.5px] border-border">
         <button
           type="button"
           onClick={handlePreviousQuestion}
           disabled={currentQuestionIndex === 0 || isSubmittingFinal}
-          className="flex items-center gap-1.5 px-4 py-2.5 border-[2px] border-border rounded-xl font-black text-xs hover:bg-surface-muted disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer"
+          className="flex items-center gap-1.5 px-4 py-2.5 border-[2px] border-border bg-surface hover:bg-bg-primary rounded-xl font-black text-xs shadow-[0_2px_0_#141827] active:translate-y-0.5 disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer"
         >
-          <ChevronLeft size={14} />
-          PREVIOUS
+          <ChevronLeft size={16} className="stroke-[2.5]" />
+          <span>PREVIOUS</span>
         </button>
 
         {!isLastQuestion ? (
@@ -300,26 +306,26 @@ function PracticeQuizContent() {
             type="button"
             onClick={handleNextQuestion}
             disabled={!isAnswered || isSubmittingFinal}
-            className="px-5 py-2.5 bg-primary text-text-primary border-[2px] border-border rounded-xl font-black text-xs shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center gap-2 cursor-pointer"
+            className="px-5 py-2.5 bg-primary text-text-primary border-[2.5px] border-border rounded-xl font-black text-xs shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center gap-2 cursor-pointer"
           >
             <span>NEXT QUESTION</span>
-            <ArrowRight size={14} />
+            <ArrowRight size={16} className="stroke-[3]" />
           </button>
         ) : (
           <button
             type="button"
             onClick={handleFinishQuiz}
             disabled={!isAnswered || isSubmittingFinal}
-            className="px-5 py-2.5 bg-primary text-text-primary border-[2px] border-border rounded-xl font-black text-xs shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 disabled:opacity-40 disabled:pointer-events-none flex items-center gap-2 cursor-pointer transition-all"
+            className="px-5 py-2.5 bg-primary text-text-primary border-[2.5px] border-border rounded-xl font-black text-xs shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 disabled:opacity-40 disabled:pointer-events-none flex items-center gap-2 cursor-pointer transition-all"
           >
             {isSubmittingFinal ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>EVALUATING & UNLOCKING…</span>
+                <Loader2 className="w-4 h-4 animate-spin stroke-[3]" />
+                <span>EVALUATING…</span>
               </>
             ) : (
               <>
-                <Sparkles size={14} />
+                <Sparkles size={16} className="stroke-[2.5]" />
                 <span>COMPLETE CHALLENGE</span>
               </>
             )}

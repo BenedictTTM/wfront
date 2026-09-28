@@ -162,6 +162,15 @@ async function request<T>(
   try {
     return JSON.parse(text) as T;
   } catch {
+    const contentType = response.headers.get("content-type") || "";
+    if (contentType.includes("text/html") || text.trim().startsWith("<")) {
+      throw new ApiError(
+        "INVALID_RESPONSE",
+        `Expected JSON response from ${path} but received HTML. Verify NEXT_PUBLIC_API_URL points to the backend server.`,
+        text.slice(0, 300),
+        response.status
+      );
+    }
     return text as unknown as T;
   }
 }

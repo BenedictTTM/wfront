@@ -42,7 +42,7 @@ export function SubjectJourneysList({
         </span>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {subjects.map((subj) => {
           const isActive = subj.slug === activeSubjectSlug;
 
@@ -50,20 +50,20 @@ export function SubjectJourneysList({
             <div
               key={subj.id}
               className={[
-                "flex items-center justify-between p-4 bg-surface border-[2px] rounded-xl transition-all",
+                "flex items-center justify-between p-4 bg-surface rounded-2xl transition-all",
                 isActive
-                  ? "border-border shadow-[0_4px_0_rgba(20,24,39,0.9)] ring-1 ring-primary/40"
-                  : "border-border/60 hover:border-border shadow-[0_2px_0_rgba(20,24,39,0.9)] hover:-translate-y-0.5",
+                  ? "border-[3px] border-border shadow-[0_5px_0_rgba(20,24,39,0.9)] ring-2 ring-primary/60"
+                  : "border-[2.5px] border-border shadow-[0_3px_0_rgba(20,24,39,0.9)] hover:-translate-y-0.5 hover:shadow-[0_4px_0_rgba(20,24,39,0.9)]",
               ].join(" ")}
             >
               <div className="flex items-center gap-3.5 min-w-0">
                 <div
                   className={[
-                    "w-10 h-10 rounded-xl border-[2px] border-border flex items-center justify-center shrink-0 shadow-xs",
-                    isActive ? "bg-primary" : "bg-primary/15",
+                    "w-11 h-11 rounded-xl border-[2.5px] border-border flex items-center justify-center shrink-0 shadow-[0_2px_0_#141827]",
+                    isActive ? "bg-primary" : "bg-secondary/40",
                   ].join(" ")}
                 >
-                  <BookOpen size={18} className="text-text-primary" />
+                  <BookOpen size={20} className="text-text-primary stroke-[2.5]" />
                 </div>
 
                 <div className="flex flex-col min-w-0">
@@ -72,12 +72,12 @@ export function SubjectJourneysList({
                       {subj.name}
                     </span>
                     {isActive && (
-                      <span className="px-1.5 py-0.5 bg-primary/20 border border-border text-[9px] font-black rounded text-text-primary uppercase tracking-wider flex items-center gap-0.5">
+                      <span className="px-2 py-0.5 bg-primary border-[1.5px] border-border text-[9px] font-black rounded-md text-text-primary uppercase tracking-wider flex items-center gap-0.5 shadow-[0_1px_0_#141827]">
                         <Check size={10} className="stroke-[3]" /> Active
                       </span>
                     )}
                   </div>
-                  <span className="text-[10px] font-black text-text-secondary uppercase tracking-wide">
+                  <span className="text-[10px] font-black text-text-secondary uppercase tracking-wider">
                     {subj.code}
                   </span>
                 </div>
@@ -88,16 +88,16 @@ export function SubjectJourneysList({
                   <button
                     type="button"
                     onClick={() => onSelectSubject(subj)}
-                    className="px-2.5 py-1 text-[11px] font-bold border border-border rounded-lg bg-surface hover:bg-surface-muted transition-colors text-text-secondary hover:text-text-primary cursor-pointer"
+                    className="px-2.5 py-1.5 text-[11px] font-black border-[2px] border-border rounded-xl bg-surface hover:bg-bg-primary shadow-[0_1.5px_0_#141827] active:translate-y-0.5 transition-all text-text-secondary hover:text-text-primary cursor-pointer"
                     aria-label={`Set ${subj.name} as active focus`}
                   >
-                    Set Focus
+                    Focus
                   </button>
                 )}
 
                 <Link
                   href={`/study/${subj.slug}`}
-                  className="p-2 bg-surface hover:bg-surface-muted border-[2px] border-border rounded-lg text-text-primary transition-all active:translate-y-0.5 flex items-center gap-1 text-xs font-black"
+                  className="px-3 py-1.5 bg-surface hover:bg-primary border-[2px] border-border rounded-xl text-text-primary shadow-[0_2px_0_#141827] active:translate-y-0.5 active:shadow-[0_0.5px_0_#141827] transition-all flex items-center gap-1 text-xs font-black cursor-pointer"
                   aria-label={`View ${subj.name} full learning path`}
                 >
                   <span className="hidden sm:inline">PATH</span>

@@ -23,11 +23,11 @@ export function PlayModesSection() {
         {/* Quick Practice Card */}
         <Link
           href="/study/quiz"
-          className="p-5 bg-surface border-[2px] border-border rounded-2xl shadow-[0_4px_0_rgba(20,24,39,0.9)] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-[0_1px_0_rgba(20,24,39,0.9)] focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 transition-all flex flex-col justify-between gap-4 cursor-pointer group"
+          className="p-5 bg-surface border-[3px] border-border rounded-2xl shadow-[0_5px_0_rgba(20,24,39,0.9)] hover:-translate-y-1 active:translate-y-0.5 active:shadow-[0_1px_0_rgba(20,24,39,0.9)] focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 transition-all flex flex-col justify-between gap-4 cursor-pointer group"
         >
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-primary border-[2px] border-border flex items-center justify-center shadow-[0_2px_0_rgba(20,24,39,0.9)] shrink-0 group-hover:scale-105 transition-transform">
+              <div className="w-12 h-12 rounded-xl bg-primary border-[2.5px] border-border flex items-center justify-center shadow-[0_2px_0_#141827] shrink-0 group-hover:scale-105 transition-transform">
                 <Zap size={22} className="fill-text-primary text-text-primary" />
               </div>
               <div>
@@ -40,34 +40,35 @@ export function PlayModesSection() {
               </div>
             </div>
 
-            <span className="px-2 py-0.5 bg-primary/20 border border-border text-[10px] font-black rounded-md text-text-primary uppercase tracking-wide">
+            <span className="px-2.5 py-1 bg-primary/30 border-[1.5px] border-border text-[10px] font-black rounded-lg text-text-primary uppercase tracking-wide shadow-[0_1px_0_#141827]">
               Instant
             </span>
           </div>
 
-          <p className="text-xs text-text-secondary font-medium leading-relaxed">
+          <p className="text-xs text-text-secondary font-bold leading-relaxed">
             Jump into 5–10 random questions across any topic to test your recall without altering your linear journey checkpoints.
           </p>
 
-          <div className="pt-2 border-t-[2px] border-border/20 flex items-center justify-between text-xs font-black text-text-primary">
-            <span className="flex items-center gap-1 text-text-secondary text-[11px]">
-              <Clock size={13} /> 3 min session
+          <div className="pt-3 border-t-[2px] border-border/20 flex items-center justify-between text-xs font-black text-text-primary">
+            <span className="flex items-center gap-1.5 text-text-secondary text-[11px] font-bold">
+              <Clock size={13} className="text-text-primary stroke-[2.5]" /> 3 min session
             </span>
-            <span className="flex items-center gap-1 text-primary group-hover:translate-x-0.5 transition-transform">
-              START PRACTICE <ChevronRight size={14} className="stroke-[3]" />
+            <span className="px-3 py-1.5 bg-primary text-text-primary border-[2px] border-border rounded-xl font-black shadow-[0_2px_0_#141827] group-hover:shadow-[0_3px_0_#141827] transition-all flex items-center gap-1">
+              <span>PRACTICE</span>
+              <ChevronRight size={14} className="stroke-[3]" />
             </span>
           </div>
         </Link>
 
-        {/* Multiplayer Arena Card — navigates directly */}
+        {/* Multiplayer Arena Card */}
         <Link
           href="/study/multiplayer"
-          className="p-5 bg-surface border-[2px] border-border rounded-2xl shadow-[0_4px_0_rgba(20,24,39,0.9)] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-[0_1px_0_rgba(20,24,39,0.9)] focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 transition-all flex flex-col justify-between gap-4 cursor-pointer text-left group"
+          className="p-5 bg-surface border-[3px] border-border rounded-2xl shadow-[0_5px_0_rgba(20,24,39,0.9)] hover:-translate-y-1 active:translate-y-0.5 active:shadow-[0_1px_0_rgba(20,24,39,0.9)] focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 transition-all flex flex-col justify-between gap-4 cursor-pointer text-left group"
         >
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-secondary border-[2px] border-border flex items-center justify-center shadow-[0_2px_0_rgba(20,24,39,0.9)] shrink-0 group-hover:scale-105 transition-transform">
-                <Swords size={22} className="text-text-primary" />
+              <div className="w-12 h-12 rounded-xl bg-secondary border-[2.5px] border-border flex items-center justify-center shadow-[0_2px_0_#141827] shrink-0 group-hover:scale-105 transition-transform">
+                <Swords size={22} className="text-text-primary stroke-[2.5]" />
               </div>
               <div>
                 <span className="text-[10px] font-black uppercase tracking-widest text-text-secondary block">
@@ -79,21 +80,22 @@ export function PlayModesSection() {
               </div>
             </div>
 
-            <span className="px-2 py-0.5 bg-emerald-500/20 border border-emerald-500/30 text-[10px] font-black rounded-md text-emerald-400 uppercase tracking-wide">
+            <span className="px-2.5 py-1 bg-emerald-400/20 border-[1.5px] border-border text-[10px] font-black rounded-lg text-emerald-800 uppercase tracking-wide shadow-[0_1px_0_#141827]">
               Live
             </span>
           </div>
 
-          <p className="text-xs text-text-secondary font-medium leading-relaxed">
+          <p className="text-xs text-text-secondary font-bold leading-relaxed">
             Go head-to-head with fellow candidates in real-time speed rounds. Speed, accuracy, and streaks decide the winner.
           </p>
 
-          <div className="pt-2 border-t-[2px] border-border/20 flex items-center justify-between text-xs font-black text-text-primary">
-            <span className="flex items-center gap-1 text-text-secondary text-[11px]">
-              <Users size={13} /> Live Matchmaking
+          <div className="pt-3 border-t-[2px] border-border/20 flex items-center justify-between text-xs font-black text-text-primary">
+            <span className="flex items-center gap-1.5 text-text-secondary text-[11px] font-bold">
+              <Users size={13} className="text-text-primary stroke-[2.5]" /> Live Matchmaking
             </span>
-            <span className="flex items-center gap-1 text-text-primary group-hover:translate-x-0.5 transition-transform">
-              ENTER ARENA <ChevronRight size={14} className="stroke-[3]" />
+            <span className="px-3 py-1.5 bg-secondary text-text-primary border-[2px] border-border rounded-xl font-black shadow-[0_2px_0_#141827] group-hover:shadow-[0_3px_0_#141827] transition-all flex items-center gap-1">
+              <span>ENTER ARENA</span>
+              <ChevronRight size={14} className="stroke-[3]" />
             </span>
           </div>
         </Link>

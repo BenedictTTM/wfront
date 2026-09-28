@@ -38,7 +38,8 @@ export default function LeaderboardsPage() {
   // Subjects for subject-scoped leaderboard
   const { data: subjects, isLoading: loadingSubjects } = useSubjects();
 
-  const activeSubjectId = selectedSubjectId || (subjects && subjects.length > 0 ? subjects[0].id : "");
+  const subjectsList = Array.isArray(subjects) ? subjects : [];
+  const activeSubjectId = selectedSubjectId || (subjectsList.length > 0 ? subjectsList[0].id : "");
 
   // Fetch live backend leaderboard data
   const {

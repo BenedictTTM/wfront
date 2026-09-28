@@ -93,23 +93,37 @@ export default function Dashboard() {
     router.push(targetPath);
   };
 
+  const QUICK_SUBJECTS = [
+    { name: "Core Mathematics", slug: "core-mathematics", icon: "📐" },
+    { name: "English Language", slug: "english-language", icon: "📖" },
+    { name: "Integrated Science", slug: "integrated-science", icon: "🔬" },
+    { name: "Social Studies", slug: "social-studies", icon: "🌍" },
+    { name: "Economics", slug: "economics", icon: "📊" },
+  ];
+
   return (
-    <div className="flex flex-col gap-8 md:gap-10 pb-12 w-full max-w-6xl mx-auto">
+    <div className="flex flex-col gap-8 md:gap-10 pb-16 w-full max-w-5xl mx-auto">
       {/* ── Top Action Row (Study Mode Switcher) ── */}
-      <div className="flex justify-end items-center">
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-2">
+          <span className="px-3 py-1 bg-primary/20 border-2 border-border rounded-full text-[10px] font-black uppercase tracking-widest text-text-primary shadow-[0_1.5px_0_#141827]">
+            WASSCE Scholar Portal
+          </span>
+        </div>
+
         <div className="relative">
           <button
             onClick={() => setShowStudyModeDropdown(!showStudyModeDropdown)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-surface border-2.5 border-border rounded-xl text-sm font-extrabold shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 transition-all cursor-pointer"
+            className="flex items-center gap-2 px-4 py-2 bg-surface border-[2.5px] border-border rounded-xl text-xs font-black shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 transition-all cursor-pointer text-text-primary"
           >
-            <BookOpen size={16} className="text-[#E28743]" />
+            <BookOpen size={15} className="text-text-primary" />
             <span>{studyMode}</span>
-            <ChevronDown size={14} />
+            <ChevronDown size={14} className="stroke-[2.5]" />
           </button>
 
           {showStudyModeDropdown && (
-            <div className="absolute right-0 mt-2 w-48 bg-surface border-2.5 border-border rounded-xl shadow-offset py-1.5 z-30">
-              {["Light Mode", "Dark Mode"].map((mode) => (
+            <div className="absolute right-0 mt-2 w-48 bg-surface border-[2.5px] border-border rounded-xl shadow-[0_6px_0_rgba(20,24,39,0.9)] py-1.5 z-30 animate-in fade-in zoom-in-95 duration-100">
+              {["Study Mode", "Exam Prep Mode", "Flashcard Drill"].map((mode) => (
                 <button
                   key={mode}
                   onClick={() => {
@@ -117,10 +131,10 @@ export default function Dashboard() {
                     setShowStudyModeDropdown(false);
                     toast.info(`Active Mode: ${mode}`);
                   }}
-                  className="w-full text-left px-4 py-2.5 text-xs font-bold hover:bg-bg-primary transition-colors text-text-primary flex items-center justify-between cursor-pointer"
+                  className="w-full text-left px-4 py-2.5 text-xs font-black hover:bg-bg-primary transition-colors text-text-primary flex items-center justify-between cursor-pointer"
                 >
                   <span>{mode}</span>
-                  {studyMode === mode && <span className="w-2 h-2 rounded-full bg-primary" />}
+                  {studyMode === mode && <span className="w-2.5 h-2.5 rounded-full bg-primary border border-border" />}
                 </button>
               ))}
             </div>
@@ -130,185 +144,238 @@ export default function Dashboard() {
 
       {/* ── Guest Mode Banner ── */}
       {isGuest && (
-        <div className="w-full bg-surface border-2.5 border-border rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between ">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary border-2 border-border flex items-center justify-center shadow-[0_2px_0_#141827] shrink-0">
-              <Zap size={18} className="text-text-primary" fill="currentColor" />
+        <div className="w-full bg-surface border-[3px] border-border rounded-2xl p-5 shadow-[0_4px_0_rgba(20,24,39,0.9)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-xl bg-primary border-[2px] border-border flex items-center justify-center shadow-[0_2px_0_#141827] shrink-0">
+              <Zap size={20} className="text-text-primary fill-text-primary" />
             </div>
             <div className="text-left">
               <p className="text-sm font-black text-text-primary">
-                You are currently in Guest Mode
+                Exploring in Guest Scholar Mode
               </p>
-              <p className="text-xs font-bold text-text-secondary leading-relaxed">
-                You have <span className="text-text-primary font-black">{guestEnergy} / {GUEST_MAX_ENERGY} ⚡</span> energy. Sign in to unlock full access, save progress &amp; compete on leaderboards.
+              <p className="text-xs font-extrabold text-text-secondary leading-relaxed">
+                You have <span className="text-text-primary font-black">{guestEnergy} / {GUEST_MAX_ENERGY} ⚡</span> guest energy. Sign in to unlock unlimited sessions, save progress &amp; compete on leaderboards.
               </p>
             </div>
           </div>
           <button
             onClick={() => router.push("/login")}
-            className="shrink-0 flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-[#ebd060] text-text-primary border-2.5 border-border rounded-xl text-sm font-black shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 transition-all cursor-pointer whitespace-nowrap"
+            className="shrink-0 flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-[#ebd060] text-text-primary border-[2.5px] border-border rounded-xl text-xs font-black shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 transition-all cursor-pointer whitespace-nowrap"
           >
-            <LogIn size={16} strokeWidth={2.5} />
-            <span>SIGN IN</span>
+            <LogIn size={15} strokeWidth={2.5} />
+            <span>SIGN IN TO SAVE</span>
           </button>
         </div>
       )}
 
-      {/* ── Mascot & Welcome Banner ── */}
-      <div className="flex flex-col items-center text-center gap-4 py-2">
-        <div className="w-32 h-32 md:w-36 md:h-36 flex items-center justify-center animate-capy-bob select-none">
-          <svg viewBox="0 0 160 160" className="w-full h-full drop-shadow-sm">
-            <ellipse cx="55" cy="55" rx="7" ry="10" fill="#b06e33" stroke="#141827" strokeWidth="3" transform="rotate(-15 55 55)" />
-            <ellipse cx="55" cy="55" rx="3.5" ry="6" fill="#eed2bc" />
-            <ellipse cx="105" cy="55" rx="7" ry="10" fill="#b06e33" stroke="#141827" strokeWidth="3" transform="rotate(15 105 55)" />
-            <ellipse cx="105" cy="55" rx="3.5" ry="6" fill="#eed2bc" />
+      {/* ── Mascot & Hero Welcome Banner ── */}
+      <div className="relative bg-surface border-[3px] border-border rounded-3xl p-6 md:p-8 shadow-[0_6px_0_rgba(20,24,39,0.9)] overflow-hidden">
+        {/* Decorative corner accent */}
+        <div className="absolute top-0 right-0 w-44 h-44 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
 
-            <ellipse cx="80" cy="115" rx="42" ry="34" fill="#c37d43" stroke="#141827" strokeWidth="3" />
-            <ellipse cx="80" cy="118" rx="26" ry="20" fill="#d99b65" />
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+          <div className="flex flex-col items-center md:items-start text-center md:text-left gap-3 max-w-xl">
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
+              <span className="px-2.5 py-0.5 bg-primary border-[2px] border-border rounded-full text-[10px] font-black uppercase tracking-wider text-text-primary shadow-[0_1.5px_0_#141827]">
+                🎓 WASSCE Prep
+              </span>
+              <span className="px-2.5 py-0.5 bg-secondary border-[2px] border-border rounded-full text-[10px] font-black uppercase tracking-wider text-text-primary shadow-[0_1.5px_0_#141827]">
+                ⚡ {isGuest ? guestEnergy : currentEnergy} Energy Ready
+              </span>
+            </div>
 
-            <rect x="52" y="52" width="56" height="52" rx="18" fill="#d68d50" stroke="#141827" strokeWidth="3" />
-            <rect x="62" y="74" width="36" height="26" rx="9" fill="#c37d43" stroke="#141827" strokeWidth="3" />
-            <ellipse cx="80" cy="81" rx="4.5" ry="3" fill="#141827" />
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-text-primary leading-tight">
+              {isGuest
+                ? "Welcome, Guest Scholar! 👋"
+                : `Welcome back, ${user?.name || user?.email?.split("@")[0] || "Scholar"}! 🎓`}
+            </h1>
 
-            <ellipse cx="66" cy="67" rx="3" ry="3.5" fill="#141827" />
-            <circle cx="65" cy="65.5" r="1" fill="#ffffff" />
-            <ellipse cx="94" cy="67" rx="3" ry="3.5" fill="#141827" />
-            <circle cx="93" cy="65.5" r="1" fill="#ffffff" />
+            <p className="text-xs sm:text-sm font-bold text-text-secondary leading-relaxed">
+              {isGuest
+                ? "Prepare for your West African examinations with authoritative quizzes, syllabus tracking, and instant explanations."
+                : "Master your curriculum today. Attempt practice challenges, collect mastery stars, and climb the leaderboard rankings!"}
+            </p>
 
-            <ellipse cx="59" cy="76" rx="5.5" ry="2.5" fill="#ffb3c1" opacity="0.8" />
-            <ellipse cx="101" cy="76" rx="5.5" ry="2.5" fill="#ffb3c1" opacity="0.8" />
+            <div className="flex items-center gap-3 pt-1">
+              <button
+                type="button"
+                onClick={() => router.push("/study")}
+                className="px-5 py-2.5 bg-primary hover:bg-[#ebd060] text-text-primary border-[2.5px] border-border rounded-xl text-xs font-black shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 transition-all flex items-center gap-2 cursor-pointer"
+              >
+                <span>OPEN STUDY CENTER</span>
+                <ArrowRight size={14} className="stroke-[3]" />
+              </button>
+              <button
+                type="button"
+                onClick={() => handleStartQuiz("/study/quiz")}
+                className="px-4 py-2.5 bg-surface hover:bg-bg-primary text-text-primary border-[2.5px] border-border rounded-xl text-xs font-black shadow-[0_2px_0_#141827] active:translate-y-0.5 transition-all cursor-pointer"
+              >
+                QUICK QUIZ (3 🔋)
+              </button>
+            </div>
+          </div>
 
-            <ellipse cx="80" cy="49" rx="20" ry="4" fill="#a06030" stroke="#141827" strokeWidth="3" />
-            <path d="M 66 49 L 68 36 C 68 34, 92 34, 92 36 L 94 49 Z" fill="#a06030" stroke="#141827" strokeWidth="3" strokeLinejoin="round" />
-            <path d="M 68 46 C 76 45, 84 45, 92 46" fill="none" stroke="#F6D86B" strokeWidth="2.5" />
+          {/* Animated Capybara Mascot */}
+          <div className="w-36 h-36 md:w-44 md:h-44 shrink-0 flex items-center justify-center animate-capy-bob select-none p-2 bg-bg-primary border-[3px] border-border rounded-3xl shadow-[0_4px_0_rgba(20,24,39,0.9)]">
+            <svg viewBox="0 0 160 160" className="w-full h-full drop-shadow-sm">
+              <ellipse cx="55" cy="55" rx="7" ry="10" fill="#b06e33" stroke="#141827" strokeWidth="3" transform="rotate(-15 55 55)" />
+              <ellipse cx="55" cy="55" rx="3.5" ry="6" fill="#eed2bc" />
+              <ellipse cx="105" cy="55" rx="7" ry="10" fill="#b06e33" stroke="#141827" strokeWidth="3" transform="rotate(15 105 55)" />
+              <ellipse cx="105" cy="55" rx="3.5" ry="6" fill="#eed2bc" />
 
-            <g transform="translate(44, 108)">
-              <path d="M 4 22 C 16 19, 36 24, 36 24 C 36 24, 56 19, 68 22 C 68 22, 68 3, 68 3 C 56 1, 36 6, 36 6 C 36 6, 16 1, 4 3 Z" fill="#ffffff" stroke="#141827" strokeWidth="3" strokeLinejoin="round" />
-              <line x1="36" y1="6" x2="36" y2="24" stroke="#141827" strokeWidth="2.5" />
-              <path d="M 2 23 L 2 5 L 4 3" fill="none" stroke="#141827" strokeWidth="3" strokeLinecap="round" />
-              <path d="M 70 23 L 70 5 L 68 3" fill="none" stroke="#141827" strokeWidth="3" strokeLinecap="round" />
-              <line x1="10" y1="9" x2="28" y2="9" stroke="#5c6470" strokeWidth="1.5" strokeLinecap="round" />
-              <line x1="10" y1="13" x2="24" y2="13" stroke="#5c6470" strokeWidth="1.5" strokeLinecap="round" />
-              <line x1="10" y1="17" x2="30" y2="17" stroke="#5c6470" strokeWidth="1.5" strokeLinecap="round" />
-              <line x1="44" y1="9" x2="62" y2="9" stroke="#5c6470" strokeWidth="1.5" strokeLinecap="round" />
-              <line x1="44" y1="13" x2="58" y2="13" stroke="#5c6470" strokeWidth="1.5" strokeLinecap="round" />
-              <line x1="44" y1="17" x2="60" y2="17" stroke="#5c6470" strokeWidth="1.5" strokeLinecap="round" />
-            </g>
-            <ellipse cx="46" cy="116" rx="6" ry="5.5" fill="#d68d50" stroke="#141827" strokeWidth="2.5" />
-            <ellipse cx="114" cy="116" rx="6" ry="5.5" fill="#d68d50" stroke="#141827" strokeWidth="2.5" />
-          </svg>
-        </div>
+              <ellipse cx="80" cy="115" rx="42" ry="34" fill="#c37d43" stroke="#141827" strokeWidth="3" />
+              <ellipse cx="80" cy="118" rx="26" ry="20" fill="#d99b65" />
 
-        <div className="flex flex-col gap-1.5">
-          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-text-primary">
-            {isGuest
-              ? "Welcome, Guest Scholar! 👋"
-              : `Welcome back, ${user?.name || user?.email?.split("@")[0] || "Scholar"}! 🎓`}
-          </h1>
-          <p className="text-sm md:text-base text-text-secondary max-w-md mx-auto leading-relaxed">
-            {isGuest
-              ? "You're exploring Nay Prep in guest mode. Sign in to save your progress and unlock all features!"
-              : "Ready to master your WASSCE subjects? Attempt quizzes, complete daily quests, and climb the leaderboard!"}
-          </p>
+              <rect x="52" y="52" width="56" height="52" rx="18" fill="#d68d50" stroke="#141827" strokeWidth="3" />
+              <rect x="62" y="74" width="36" height="26" rx="9" fill="#c37d43" stroke="#141827" strokeWidth="3" />
+              <ellipse cx="80" cy="81" rx="4.5" ry="3" fill="#141827" />
+
+              <ellipse cx="66" cy="67" rx="3" ry="3.5" fill="#141827" />
+              <circle cx="65" cy="65.5" r="1" fill="#ffffff" />
+              <ellipse cx="94" cy="67" rx="3" ry="3.5" fill="#141827" />
+              <circle cx="93" cy="65.5" r="1" fill="#ffffff" />
+
+              <ellipse cx="59" cy="76" rx="5.5" ry="2.5" fill="#ffb3c1" opacity="0.8" />
+              <ellipse cx="101" cy="76" rx="5.5" ry="2.5" fill="#ffb3c1" opacity="0.8" />
+
+              <ellipse cx="80" cy="49" rx="20" ry="4" fill="#a06030" stroke="#141827" strokeWidth="3" />
+              <path d="M 66 49 L 68 36 C 68 34, 92 34, 92 36 L 94 49 Z" fill="#a06030" stroke="#141827" strokeWidth="3" strokeLinejoin="round" />
+              <path d="M 68 46 C 76 45, 84 45, 92 46" fill="none" stroke="#F6D86B" strokeWidth="2.5" />
+
+              <g transform="translate(44, 108)">
+                <path d="M 4 22 C 16 19, 36 24, 36 24 C 36 24, 56 19, 68 22 C 68 22, 68 3, 68 3 C 56 1, 36 6, 36 6 C 36 6, 16 1, 4 3 Z" fill="#ffffff" stroke="#141827" strokeWidth="3" strokeLinejoin="round" />
+                <line x1="36" y1="6" x2="36" y2="24" stroke="#141827" strokeWidth="2.5" />
+                <path d="M 2 23 L 2 5 L 4 3" fill="none" stroke="#141827" strokeWidth="3" strokeLinecap="round" />
+                <path d="M 70 23 L 70 5 L 68 3" fill="none" stroke="#141827" strokeWidth="3" strokeLinecap="round" />
+                <line x1="10" y1="9" x2="28" y2="9" stroke="#5c6470" strokeWidth="1.5" strokeLinecap="round" />
+                <line x1="10" y1="13" x2="24" y2="13" stroke="#5c6470" strokeWidth="1.5" strokeLinecap="round" />
+                <line x1="10" y1="17" x2="30" y2="17" stroke="#5c6470" strokeWidth="1.5" strokeLinecap="round" />
+                <line x1="44" y1="9" x2="62" y2="9" stroke="#5c6470" strokeWidth="1.5" strokeLinecap="round" />
+                <line x1="44" y1="13" x2="58" y2="13" stroke="#5c6470" strokeWidth="1.5" strokeLinecap="round" />
+                <line x1="44" y1="17" x2="60" y2="17" stroke="#5c6470" strokeWidth="1.5" strokeLinecap="round" />
+              </g>
+              <ellipse cx="46" cy="116" rx="6" ry="5.5" fill="#d68d50" stroke="#141827" strokeWidth="2.5" />
+              <ellipse cx="114" cy="116" rx="6" ry="5.5" fill="#d68d50" stroke="#141827" strokeWidth="2.5" />
+            </svg>
+          </div>
         </div>
       </div>
 
-      {/* ── Search Bar ── */}
-      <form onSubmit={handleSearchSubmit} className="w-full max-w-2xl mx-auto">
-        <div className="relative flex items-center bg-surface border-2.5 border-border rounded-2xl shadow-offset focus-within:ring-2 focus-within:ring-primary/40 focus-within:-translate-y-0.5 transition-all duration-150">
-          <div className="absolute left-4 text-text-secondary pointer-events-none">
-            <Plus size={20} className="stroke-[2.5]" />
+      {/* ── Search Bar & Quick Subject Jump Pills ── */}
+      <div className="flex flex-col gap-3">
+        <form onSubmit={handleSearchSubmit} className="w-full">
+          <div className="relative flex items-center bg-surface border-[3px] border-border rounded-2xl shadow-[0_4px_0_rgba(20,24,39,0.9)] focus-within:ring-2 focus-within:ring-primary/60 focus-within:-translate-y-0.5 transition-all duration-150">
+            <div className="absolute left-4 text-text-secondary pointer-events-none">
+              <Search size={18} className="stroke-[2.5]" />
+            </div>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search syllabus topics, formulas, or concepts (e.g., Quadratic Equations)…"
+              className="w-full bg-transparent border-0 outline-none pl-12 pr-28 py-3.5 text-xs sm:text-sm font-black placeholder:font-bold placeholder:text-text-secondary text-text-primary"
+            />
+            <div className="absolute right-2">
+              <button
+                type="submit"
+                className="px-4 py-2 bg-primary hover:bg-[#ebd060] text-text-primary border-[2px] border-border rounded-xl text-xs font-black shadow-[0_2px_0_#141827] active:translate-y-0.5 active:shadow-[0_0.5px_0_#141827] transition-all flex items-center gap-1.5 cursor-pointer"
+              >
+                <span>SEARCH</span>
+              </button>
+            </div>
           </div>
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="What subject or topic are we studying today?"
-            className="w-full bg-transparent border-0 outline-none pl-12 pr-32 py-4 text-sm md:text-base font-extrabold placeholder:font-bold placeholder:text-text-secondary text-text-primary"
-          />
-          <div className="absolute right-2.5">
+        </form>
+
+        {/* Quick Subject Chips */}
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-[11px] font-black uppercase tracking-wider text-text-secondary shrink-0">
+            Quick Jump:
+          </span>
+          {QUICK_SUBJECTS.map((s) => (
             <button
-              type="submit"
-              className="px-4 py-2 bg-primary hover:bg-[#ebd060] text-text-primary border-2 border-border rounded-xl text-xs font-black shadow-[0_2.5px_0_#141827] active:translate-y-0.5 active:shadow-[0_0.5px_0_#141827] transition-all flex items-center gap-1.5 cursor-pointer"
+              key={s.slug}
+              type="button"
+              onClick={() => router.push(`/study/${s.slug}`)}
+              className="px-3 py-1 bg-surface hover:bg-bg-primary text-text-primary border-[2px] border-border rounded-xl text-xs font-black shadow-[0_2px_0_#141827] active:translate-y-0.5 active:shadow-[0_0.5px_0_#141827] transition-all flex items-center gap-1.5 cursor-pointer"
             >
-              <Search size={14} strokeWidth={3} />
-              <span>SEARCH</span>
+              <span>{s.icon}</span>
+              <span>{s.name}</span>
             </button>
-          </div>
+          ))}
         </div>
-      </form>
+      </div>
 
       {/* ── QUICK LAUNCH STUDY ACTIONS ── */}
       <section className="flex flex-col gap-4">
-        <div className="flex items-center gap-2.5 border-b-2 border-border/10 pb-3">
-          <div className="w-9 h-9 rounded-xl bg-secondary border-2 border-border flex items-center justify-center shadow-[0_2px_0_#141827]">
+        <div className="flex items-center gap-2.5 border-b-[2.5px] border-border pb-3">
+          <div className="w-9 h-9 rounded-xl bg-secondary border-[2px] border-border flex items-center justify-center shadow-[0_2px_0_#141827]">
             <Target size={18} className="text-text-primary" />
           </div>
           <div>
-            <h2 className="text-xl font-extrabold text-text-primary tracking-tight">
-              Quick Study Launch
+            <h2 className="text-xl font-black text-text-primary tracking-tight">
+              Study Launchpad
             </h2>
             <p className="text-xs font-bold text-text-secondary">
-              Jump straight into practice questions or explore your curriculum.
+              Jump straight into active challenge questions or explore structured journeys.
             </p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {/* Action 1: Practice Quiz */}
-          <div className="bg-surface border-2.5 border-border rounded-2xl p-6 flex flex-col justify-between gap-5 group hover:-translate-y-0.5 transition-all duration-200">
+          <div className="bg-surface border-[3px] border-border rounded-2xl p-6 flex flex-col justify-between gap-5 group shadow-[0_6px_0_rgba(20,24,39,0.9)] hover:-translate-y-1 transition-all duration-200">
             <div className="flex items-start justify-between">
-              <div className="w-12 h-12 rounded-2xl bg-primary border-2.5 border-border flex items-center justify-center text-text-primary text-xl font-black shadow-[0_3px_0_#141827]">
+              <div className="w-12 h-12 rounded-2xl bg-primary border-[2.5px] border-border flex items-center justify-center text-text-primary text-xl font-black shadow-[0_3px_0_#141827]">
                 <Play size={22} fill="currentColor" />
               </div>
-              <span className="text-xs font-black px-3 py-1 bg-bg-primary border-2 border-border rounded-xl whitespace-nowrap">
+              <span className="text-xs font-black px-3 py-1 bg-primary/20 border-[2px] border-border rounded-xl whitespace-nowrap text-text-primary shadow-[0_1.5px_0_#141827]">
                 Cost: 3 🔋
               </span>
             </div>
 
             <div>
-              <h3 className="text-lg font-extrabold text-text-primary">
-                Practice Quizzes
+              <h3 className="text-lg font-black text-text-primary">
+                Practice Challenges
               </h3>
-              <p className="text-xs font-bold text-text-secondary mt-1 leading-relaxed">
-                Choose a WASSCE subject or subtopic and take practice questions with instant explanations and immediate scoring.
+              <p className="text-xs font-bold text-text-secondary mt-1.5 leading-relaxed">
+                Take curriculum-aligned WASSCE questions with instant pedagogical explanations, answer key breakdown, and live scoring.
               </p>
             </div>
 
             <button
               onClick={() => handleStartQuiz("/study/quiz")}
-              className="w-full py-3 bg-primary hover:bg-[#ebd060] text-text-primary border-2.5 border-border rounded-xl font-black text-sm shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] transition-all flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full py-3 bg-primary hover:bg-[#ebd060] text-text-primary border-[2.5px] border-border rounded-xl font-black text-xs md:text-sm shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer tracking-wider"
             >
-              <span>START PRACTICE QUIZ</span>
+              <span>START PRACTICE CHALLENGE</span>
               <ArrowRight size={16} strokeWidth={3} />
             </button>
           </div>
 
-          {/* Action 2: Study Center */}
-          <div className="bg-surface border-2.5 border-border rounded-2xl p-6 flex flex-col justify-between gap-5 group hover:-translate-y-0.5 transition-all duration-200">
+          {/* Action 2: Learning Paths */}
+          <div className="bg-surface border-[3px] border-border rounded-2xl p-6 flex flex-col justify-between gap-5 group shadow-[0_6px_0_rgba(20,24,39,0.9)] hover:-translate-y-1 transition-all duration-200">
             <div className="flex items-start justify-between">
-              <div className="w-12 h-12 rounded-2xl bg-secondary border-2.5 border-border flex items-center justify-center text-text-primary text-xl font-black shadow-[0_3px_0_#141827]">
+              <div className="w-12 h-12 rounded-2xl bg-secondary border-[2.5px] border-border flex items-center justify-center text-text-primary text-xl font-black shadow-[0_3px_0_#141827]">
                 <BookOpen size={22} />
               </div>
-              <span className="text-xs font-black px-3 py-1 bg-bg-primary border-2 border-border rounded-xl whitespace-nowrap">
-                Free
+              <span className="text-xs font-black px-3 py-1 bg-secondary/30 border-[2px] border-border rounded-xl whitespace-nowrap text-text-primary shadow-[0_1.5px_0_#141827]">
+                Free Access
               </span>
             </div>
 
             <div>
-              <h3 className="text-lg font-extrabold text-text-primary">
-                Learning Paths
+              <h3 className="text-lg font-black text-text-primary">
+                Syllabus Learning Paths
               </h3>
-              <p className="text-xs font-bold text-text-secondary mt-1 leading-relaxed">
-                Explore structured WASSCE curriculum topics, reading materials, and track your syllabus progress.
+              <p className="text-xs font-bold text-text-secondary mt-1.5 leading-relaxed">
+                Explore structured WASSCE curriculum maps stage-by-stage, unlock levels, and track topic mastery stars.
               </p>
             </div>
 
             <button
               onClick={() => router.push("/study")}
-              className="w-full py-3 bg-secondary hover:bg-[#b2c3bc] text-text-primary border-2.5 border-border rounded-xl font-black text-sm shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] transition-all flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full py-3 bg-secondary hover:bg-[#b2c3bc] text-text-primary border-[2.5px] border-border rounded-xl font-black text-xs md:text-sm shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer tracking-wider"
             >
-              <span>BROWSE SUBJECTS</span>
+              <span>BROWSE CURRICULUM JOURNEYS</span>
               <ArrowRight size={16} strokeWidth={3} />
             </button>
           </div>
@@ -317,4 +384,3 @@ export default function Dashboard() {
     </div>
   );
 }
-

@@ -21,10 +21,10 @@ interface FlashcardReviewProps {
 type AssessmentLevel = "again" | "hard" | "good" | "easy";
 
 const ASSESSMENT_BUTTONS: { level: AssessmentLevel; label: string; cls: string }[] = [
-  { level: "again", label: "Again", cls: "bg-surface hover:bg-surface-muted text-text-primary" },
-  { level: "hard",  label: "Hard",  cls: "bg-surface hover:bg-surface-muted text-text-primary" },
-  { level: "good",  label: "Good",  cls: "bg-secondary hover:brightness-95 text-text-primary" },
-  { level: "easy",  label: "Easy",  cls: "bg-primary hover:brightness-95 text-text-primary" },
+  { level: "again", label: "Again", cls: "bg-surface hover:bg-bg-primary text-text-primary shadow-[0_2px_0_#141827]" },
+  { level: "hard",  label: "Hard",  cls: "bg-surface hover:bg-bg-primary text-text-primary shadow-[0_2px_0_#141827]" },
+  { level: "good",  label: "Good",  cls: "bg-secondary hover:brightness-95 text-text-primary shadow-[0_2px_0_#141827]" },
+  { level: "easy",  label: "Easy",  cls: "bg-primary hover:brightness-95 text-text-primary shadow-[0_2px_0_#141827]" },
 ];
 
 function getDifficultyBadge(difficulty?: string | null): string {
@@ -313,27 +313,27 @@ export function FlashcardReview({
           type="button"
           onClick={handlePrev}
           disabled={currentIndex === 0}
-          className="inline-flex items-center gap-1.5 px-4 py-2.5 border-[2px] border-border rounded-xl font-black text-xs text-text-primary bg-surface hover:bg-surface-muted disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-4 py-2.5 border-[2px] border-border rounded-xl font-black text-xs text-text-primary bg-surface hover:bg-bg-primary shadow-[0_2.5px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer"
         >
-          <ChevronLeft size={14} strokeWidth={2.5} />
-          PREV
+          <ChevronLeft size={16} className="stroke-[2.5]" />
+          <span>PREV</span>
         </button>
 
         <button
           type="button"
           onClick={toggleFlip}
-          className="inline-flex items-center gap-1.5 px-5 py-2.5 border-[2px] border-border rounded-xl font-black text-xs text-text-primary bg-surface hover:bg-surface-muted transition-all cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-5 py-2.5 border-[2px] border-border rounded-xl font-black text-xs text-text-primary bg-surface hover:bg-bg-primary shadow-[0_2.5px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] transition-all cursor-pointer"
         >
-          {isFlipped ? "QUESTION" : "REVEAL"}
+          <span>{isFlipped ? "QUESTION" : "REVEAL"}</span>
         </button>
 
         <button
           type="button"
           onClick={handleNext}
-          className="inline-flex items-center gap-1.5 px-4 py-2.5 border-[2px] border-border rounded-xl font-black text-xs text-text-primary bg-surface hover:bg-surface-muted transition-all cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-4 py-2.5 border-[2px] border-border rounded-xl font-black text-xs text-text-primary bg-surface hover:bg-bg-primary shadow-[0_2.5px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] transition-all cursor-pointer"
         >
-          NEXT
-          <ChevronRight size={14} strokeWidth={2.5} />
+          <span>NEXT</span>
+          <ChevronRight size={16} className="stroke-[2.5]" />
         </button>
       </div>
 

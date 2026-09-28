@@ -26,7 +26,7 @@ export default function StudyCenterPage() {
   const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null);
 
   const selectedSubject = useMemo(() => {
-    if (!subjects || subjects.length === 0) return null;
+    if (!Array.isArray(subjects) || subjects.length === 0) return null;
     if (selectedSubjectId) {
       const found = subjects.find((s) => s.id === selectedSubjectId || s.slug === selectedSubjectId);
       if (found) return found;
@@ -53,7 +53,7 @@ export default function StudyCenterPage() {
   }
 
   // ─── Error State ────────────────────────────────────────────────────────────
-  if (isSubjectsError || !subjects) {
+  if (isSubjectsError || !Array.isArray(subjects)) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4 text-center px-4">
         <div className="w-14 h-14 rounded-2xl bg-destructive/10 border-[2px] border-border flex items-center justify-center text-destructive">

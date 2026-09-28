@@ -10,9 +10,9 @@ interface QuestionCardProps {
 }
 
 const DIFFICULTY_STYLES: Record<string, string> = {
-  EASY: "bg-secondary/30 text-text-primary border-border",
-  MEDIUM: "bg-primary/20 text-text-primary border-border",
-  HARD: "bg-text-primary/10 text-text-primary border-border",
+  EASY: "bg-secondary text-text-primary border-border",
+  MEDIUM: "bg-primary text-text-primary border-border",
+  HARD: "bg-rose-200 text-rose-950 border-border",
 };
 
 export function QuestionCard({ question, questionNumber, totalQuestions }: QuestionCardProps) {
@@ -28,13 +28,13 @@ export function QuestionCard({ question, questionNumber, totalQuestions }: Quest
         </span>
         <div className="flex items-center gap-2">
           {question.type && (
-            <span className="px-2.5 py-0.5 border-[2px] border-border bg-surface-muted text-text-secondary text-[11px] font-black rounded-full uppercase tracking-wide">
+            <span className="px-3 py-1 border-[2px] border-border bg-surface text-text-primary text-[11px] font-black rounded-full uppercase tracking-wider shadow-[0_1.5px_0_#141827]">
               {question.type.replace("_", " ")}
             </span>
           )}
           {question.difficulty && (
             <span
-              className={`px-2.5 py-0.5 border-[2px] text-[11px] font-black rounded-full uppercase tracking-wide ${diffClass}`}
+              className={`px-3 py-1 border-[2px] text-[11px] font-black rounded-full uppercase tracking-wider shadow-[0_1.5px_0_#141827] ${diffClass}`}
             >
               {question.difficulty}
             </span>
@@ -42,8 +42,8 @@ export function QuestionCard({ question, questionNumber, totalQuestions }: Quest
         </div>
       </div>
 
-      <div className="p-5 bg-bg-primary border-[2px] border-border rounded-xl shadow-[0_3px_0_rgba(20,24,39,0.9)]">
-        <h4 className="font-extrabold text-sm md:text-base text-text-primary leading-relaxed whitespace-pre-wrap">
+      <div className="p-5 md:p-6 bg-bg-secondary border-[3px] border-border rounded-2xl shadow-[0_4px_0_rgba(20,24,39,0.9)]">
+        <h4 className="font-black text-sm md:text-base text-text-primary leading-relaxed whitespace-pre-wrap">
           {question.text}
         </h4>
       </div>
