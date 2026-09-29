@@ -214,6 +214,12 @@ export function JourneyMap({
               ? levelTitleMap.get(selectedLevel.prerequisiteLevelId) || null
               : null
           }
+          prerequisiteLevel={
+            selectedLevel.prerequisiteLevelId
+              ? allLevels.find((l) => l.id === selectedLevel.prerequisiteLevelId) || null
+              : null
+          }
+          subjectId={journey.subjectId}
           onClose={() => setSelectedLevel(null)}
           onStartChallenge={(lvl) => {
             setSelectedLevel(null);

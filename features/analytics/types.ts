@@ -138,6 +138,8 @@ export type AnalyticsOverview = {
   insights?: ActionableInsight[];
   selectedSubjectId: string | null;
   entitlementActive: boolean;
+  isCalculating?: boolean;
+  hasCompletedAttempts?: boolean;
 };
 
 export type AnalyticsSummaryItem = {

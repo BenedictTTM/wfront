@@ -9,4 +9,5 @@ export * from './TopicMasteryBreakdown';
 export * from './JourneyProgressCard';
 export * from './MultiplayerCard';
 export * from './AnalyticsEmptyState';
+export * from './AnalyticsCalculatingState';
 export * from './AnalyticsSkeleton';

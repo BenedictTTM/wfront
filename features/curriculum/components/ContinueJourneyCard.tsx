@@ -14,11 +14,15 @@ interface ContinueJourneyCardProps {
 }
 
 export function ContinueJourneyCard({ subject, journey }: ContinueJourneyCardProps) {
-  // Locate current node
+  // Locate current node: prioritize unlocked/available nodes
   const allNodes = journey.units.flatMap((u) => u.nodes);
+  const explicitCurrent = journey.currentNodeId
+    ? allNodes.find((n) => n.id === journey.currentNodeId)
+    : null;
   const currentNode =
-    allNodes.find((n) => n.id === journey.currentNodeId) ||
+    (explicitCurrent && explicitCurrent.status !== "LOCKED" ? explicitCurrent : null) ||
     allNodes.find((n) => n.status === "UNLOCKED") ||
+    allNodes.find((n) => n.status === "COMPLETED") ||
     allNodes[0];
 
   const currentUnit =

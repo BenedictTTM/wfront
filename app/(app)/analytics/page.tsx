@@ -25,6 +25,7 @@ import {
   JourneyProgressCard,
   MultiplayerCard,
   AnalyticsEmptyState,
+  AnalyticsCalculatingState,
   AnalyticsSkeleton,
 } from "@/features/analytics/components";
 
@@ -35,25 +36,34 @@ const PERIOD_OPTIONS: { label: string; value: AnalyticsPeriod }[] = [
 ];
 
 export default function AnalyticsPage() {
-  const { data: me, isLoading: isLoadingAuth } = useMe();
-  const isGuest = !me || isGuestIdentity(me);
+  const { data: me, isLoading: isLoadingAuth, isPending: isPendingAuth } = useMe();
+  const [mounted, setMounted] = useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null);
   const [period, setPeriod] = useState<AnalyticsPeriod>("30d");
+
+  // Auth is resolving during SSR/hydration or when useMe query is in initial pending state
+  const isAuthResolving = !mounted || isLoadingAuth || isPendingAuth;
+  const isGuest = !isAuthResolving && (!me || isGuestIdentity(me));
 
   // Only execute analytics API query when user is authenticated (prevents wasted 401/403 network calls)
   const {
     data,
     isLoading: isLoadingAnalytics,
+    isPending: isPendingAnalytics,
     isError,
     error,
     refetch,
     isFetching,
   } = useAnalyticsOverview(selectedSubjectId ?? undefined, period, {
-    enabled: !isGuest && Boolean(me),
+    enabled: mounted && !isAuthResolving && !isGuest && Boolean(me),
   });
 
-  const isLoading = isLoadingAuth || (!isGuest && isLoadingAnalytics);
+  const isLoading = isAuthResolving || (!isGuest && (isLoadingAnalytics || (isPendingAnalytics && !data)));
 
   return (
     <div className="flex flex-col gap-8 py-4 w-full max-w-5xl mx-auto px-2 sm:px-4 animate-in fade-in duration-300">
@@ -233,7 +243,9 @@ export default function AnalyticsPage() {
       {/* ── 4. POPULATED OR EMPTY STATE (Authenticated users) ── */}
       {!isGuest && data && !isLoading && (
         <div id="analytics-content" role="tabpanel" aria-labelledby={`period-tab-${period}`}>
-          {data.snapshot.quizzesCompleted === 0 && data.snapshot.questionsCompleted === 0 ? (
+          {data.isCalculating || (data.hasCompletedAttempts && data.snapshot.quizzesCompleted === 0) ? (
+            <AnalyticsCalculatingState onRefresh={() => refetch()} isFetching={isFetching} />
+          ) : data.snapshot.quizzesCompleted === 0 && data.snapshot.questionsCompleted === 0 ? (
             <AnalyticsEmptyState />
           ) : (
             <div className="flex flex-col gap-7 sm:gap-8">

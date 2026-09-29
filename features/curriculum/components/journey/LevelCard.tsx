@@ -1,8 +1,10 @@
 // features/curriculum/components/journey/LevelCard.tsx
 
 import React from "react";
+import Link from "next/link";
 import {
   ArrowRight,
+  BookOpen,
   CheckCircle2,
   Crown,
   Lock,
@@ -18,6 +20,8 @@ interface LevelCardProps {
   level: JourneyLevelItem | null;
   stageTitle?: string;
   prerequisiteTitle?: string | null;
+  prerequisiteLevel?: JourneyLevelItem | null;
+  subjectId?: string;
   isOpen: boolean;
   isCurrent?: boolean;
   onClose: () => void;
@@ -29,6 +33,8 @@ export function LevelCard({
   level,
   stageTitle,
   prerequisiteTitle,
+  prerequisiteLevel,
+  subjectId,
   isOpen,
   isCurrent = false,
   onClose,
@@ -206,14 +212,44 @@ export function LevelCard({
         {/* Action Button */}
         <div>
           {isLocked ? (
-            <button
-              type="button"
-              disabled
-              className="w-full py-3.5 bg-surface-muted border-[2.5px] border-border-muted rounded-2xl text-xs font-black tracking-widest text-text-secondary uppercase opacity-60 cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              <Lock size={15} />
-              Locked • Complete Prerequisite First
-            </button>
+            <div className="flex flex-col gap-2.5">
+              <div className="w-full py-2.5 px-3.5 bg-surface-muted border-[2.5px] border-border-muted rounded-2xl text-xs font-black tracking-wider text-text-secondary uppercase opacity-85 flex items-center justify-center gap-2">
+                <Lock size={15} />
+                <span>Locked • Complete Prerequisite First</span>
+              </div>
+
+              {prerequisiteLevel ? (
+                <button
+                  type="button"
+                  onClick={() => onStartChallenge(prerequisiteLevel)}
+                  disabled={isStarting}
+                  className="w-full py-3.5 bg-primary text-text-primary border-[3px] border-border rounded-2xl text-xs font-black tracking-widest uppercase shadow-[0_4px_0_#141827] hover:-translate-y-0.5 active:translate-y-1 active:shadow-[0_1px_0_#141827] transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Sparkles size={15} />
+                  <span>Start Prerequisite Challenge</span>
+                  <ArrowRight size={15} />
+                </button>
+              ) : null}
+
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                <Link
+                  href={subjectId ? `/study/quiz?subjectId=${subjectId}&mode=quiz` : "/study/quiz"}
+                  onClick={onClose}
+                  className="py-3 px-3 bg-surface hover:bg-surface-muted text-text-primary border-[2px] border-border rounded-xl text-xs font-black shadow-[0_2px_0_#141827] active:translate-y-0.5 transition-all text-center flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <BookOpen size={14} />
+                  <span>Quizzes Page</span>
+                </Link>
+
+                <Link
+                  href="/study"
+                  onClick={onClose}
+                  className="py-3 px-3 bg-surface hover:bg-surface-muted text-text-secondary hover:text-text-primary border-[2px] border-border rounded-xl text-xs font-black shadow-[0_2px_0_#141827] active:translate-y-0.5 transition-all text-center flex items-center justify-center cursor-pointer"
+                >
+                  <span>Study Center</span>
+                </Link>
+              </div>
+            </div>
           ) : isCompleted || isMastered ? (
             <button
               type="button"
