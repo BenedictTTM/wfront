@@ -12,9 +12,12 @@ export default function MultiplayerEntryPage() {
     selectedSubject,
     setSelectedSubject,
     isSearching,
+    queueStatus,
+    joinError,
     startSearch,
     cancelSearch,
     isJoining,
+    isLeaving,
   } = useMatchmaking();
 
   if (isLoading) {
@@ -38,14 +41,34 @@ export default function MultiplayerEntryPage() {
     );
   }
 
-  if (isSearching && selectedSubject) {
+  // If user refreshed while in queue, find the subject from queueStatus.subjectId
+  const activeSubject =
+    selectedSubject ||
+    (queueStatus?.subjectId && subjects
+      ? subjects.find((s) => s.id === queueStatus.subjectId) ?? null
+      : null);
+
+  if ((isSearching || queueStatus?.inQueue) && activeSubject) {
     return (
-      <MatchmakingLobby subject={selectedSubject} onCancel={cancelSearch} />
+      <MatchmakingLobby
+        subject={activeSubject}
+        waitingSince={queueStatus?.waitingSince}
+        onCancel={cancelSearch}
+        isCancelling={isLeaving}
+      />
     );
   }
 
   return (
     <div className="flex flex-col gap-8 py-2 max-w-lg mx-auto w-full">
+      {/* Error banner if join failed */}
+      {joinError && (
+        <div className="p-4 bg-rose-500/10 border-[2px] border-rose-500/40 rounded-2xl flex items-center gap-3 text-xs font-bold text-rose-700 dark:text-rose-300 shadow-[0_2px_0_rgba(20,24,39,0.9)]">
+          <AlertCircle size={18} className="shrink-0 text-rose-500" />
+          <span>{joinError}</span>
+        </div>
+      )}
+
       {/* Header */}
       <header className="flex flex-col gap-1">
         <div className="flex items-center gap-3">

@@ -1,8 +1,7 @@
-"use client";
-
 import React, { useState } from "react";
-import { BookOpen, Sparkles, Zap, ChevronRight, Loader2 } from "lucide-react";
+import { BookOpen, Sparkles, Zap, ChevronRight, Loader2, X } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useSubjects, useTopics } from "@/features/curriculum/hooks";
 import { AttemptMode } from "../types";
 
@@ -17,6 +16,7 @@ export function SubjectTopicSelector({
   isStarting,
   userEnergy = 30,
 }: SubjectTopicSelectorProps) {
+  const router = useRouter();
   const { data: subjects, isLoading: loadingSubjects } = useSubjects();
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>("");
   const [selectedTopicId, setSelectedTopicId] = useState<string>("");
@@ -36,6 +36,11 @@ export function SubjectTopicSelector({
     onStartQuiz(activeSubjectId, selectedTopicId || undefined, "PRACTICE");
   };
 
+  const handleReturnToStudy = (e: React.MouseEvent) => {
+    e.preventDefault();
+    router.push("/study");
+  };
+
   const insufficientEnergy = userEnergy < 3;
 
   return (
@@ -53,9 +58,21 @@ export function SubjectTopicSelector({
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-primary border-[2px] border-border rounded-full text-xs font-black text-text-primary shadow-[0_1.5px_0_#141827]">
-          <Zap size={13} className="fill-text-primary text-text-primary stroke-[2]" />
-          <span>3 Energy</span>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-primary border-[2px] border-border rounded-full text-xs font-black text-text-primary shadow-[0_1.5px_0_#141827]">
+            <Zap size={13} className="fill-text-primary text-text-primary stroke-[2]" />
+            <span>3 Energy</span>
+          </div>
+          <button
+            type="button"
+            onClick={handleReturnToStudy}
+            className="p-2 border-[2px] border-border rounded-xl bg-surface hover:bg-surface-muted shadow-[0_2px_0_#141827] active:translate-y-0.5 transition-all cursor-pointer flex items-center justify-center text-text-secondary hover:text-text-primary"
+            aria-label="Return to Study"
+            title="Return to Study Center"
+          >
+            {/* <span className="text-xs font-black uppercase tracking-widest">Return to Study</span> */}
+            <X size={18} className="stroke-[2.5]" />
+          </button>
         </div>
       </div>
 
@@ -158,7 +175,7 @@ export function SubjectTopicSelector({
             <button
               type="button"
               onClick={handleStart}
-              disabled={isStarting || !selectedSubjectId || insufficientEnergy}
+              disabled={isStarting || !activeSubjectId || insufficientEnergy}
               className="w-full py-3.5 bg-primary text-text-primary border-[2.5px] border-border rounded-xl font-black text-sm shadow-[0_4px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 disabled:opacity-50 disabled:pointer-events-none transition-all flex items-center justify-center gap-2 cursor-pointer tracking-wider"
             >
               {isStarting ? (
@@ -175,6 +192,14 @@ export function SubjectTopicSelector({
               )}
             </button>
 
+            <button
+              type="button"
+              onClick={handleReturnToStudy}
+              className="w-full py-2.5 bg-surface text-text-secondary hover:text-text-primary border-[2px] border-border rounded-xl font-black text-xs text-center shadow-[0_2px_0_#141827] active:translate-y-0.5 transition-all cursor-pointer"
+            >
+              RETURN TO STUDY CENTER
+            </button>
+
             {insufficientEnergy && (
               <p className="text-xs font-bold text-text-secondary text-center">
                 You need 3 Energy to start a practice quiz.
@@ -186,3 +211,4 @@ export function SubjectTopicSelector({
     </div>
   );
 }
+

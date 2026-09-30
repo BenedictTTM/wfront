@@ -1,11 +1,11 @@
 "use client";
 
-import React, { Suspense } from "react";
+import React, { Suspense, useEffect } from "react";
 import { BookOpen, X, Loader2, Sparkles, ChevronLeft, CheckCircle2, XCircle, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useQuizSession } from "@/features/quiz/use-quiz-session";
 import {
-  SubjectTopicSelector,
   QuestionCard,
   OptionSelector,
   QuizResultsScreen,
@@ -27,6 +27,7 @@ function LoadingCard({ label }: { label: string }) {
 // ─── Main content ─────────────────────────────────────────────────────────────
 
 function PracticeQuizContent() {
+  const router = useRouter();
   const {
     currentAttempt,
     activeAttemptId,
@@ -46,7 +47,6 @@ function PracticeQuizContent() {
     attemptError,
     hasAutoStartParams,
     userEnergy,
-    handleStartQuiz,
     handleSelectOption,
     handleChangeText,
     handleNextQuestion,
@@ -56,6 +56,26 @@ function PracticeQuizContent() {
     handleExitSession,
     handleContinueNextLevel,
   } = useQuizSession();
+
+  // Redirect to /study when no active attempt or start params exist
+  useEffect(() => {
+    if (
+      !hasAutoStartParams &&
+      !activeAttemptId &&
+      !currentAttempt &&
+      !loadingAttempt &&
+      !createAttemptPending
+    ) {
+      router.replace("/study");
+    }
+  }, [
+    hasAutoStartParams,
+    activeAttemptId,
+    currentAttempt,
+    loadingAttempt,
+    createAttemptPending,
+    router,
+  ]);
 
   // ── Results Screen ───────────────────────────────────────────────────────────
   if (submissionResults) {
@@ -152,24 +172,9 @@ function PracticeQuizContent() {
     );
   }
 
-  // ── Selector (fallback ONLY if no active session and no auto-start params) ───
+  // ── No active session and no auto-start params -> Redirecting to Study Center ───
   if (!activeAttemptId && !currentAttempt) {
-    return (
-      <>
-        <SubjectTopicSelector
-          onStartQuiz={(subjectId, topicId, mode) =>
-            handleStartQuiz({ subjectId, topicId, mode })
-          }
-          isStarting={createAttemptPending}
-          userEnergy={userEnergy}
-        />
-        <EnergyWarningModal
-          isOpen={showEnergyWarning}
-          onClose={() => setShowEnergyWarning(false)}
-          currentEnergy={userEnergy}
-        />
-      </>
-    );
+    return <LoadingCard label="Redirecting to Study Center…" />;
   }
 
   // ── Active Quiz Session ───────────────────────────────────────────────────────

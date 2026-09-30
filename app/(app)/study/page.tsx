@@ -162,7 +162,7 @@ export default function StudyCenterPage() {
       ) : null}
 
       {/* ─── 2. PLAY (Multiplayer & Quick Practice) ───────────────────────────── */}
-      <PlayModesSection />
+      <PlayModesSection activeSubjectId={selectedSubject?.id} />
 
       {/* ─── 3. YOUR JOURNEYS / SUBJECTS ───────────────────────────────────────── */}
       <SubjectJourneysList

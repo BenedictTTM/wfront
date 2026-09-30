@@ -4,7 +4,11 @@ import React from "react";
 import Link from "next/link";
 import { Zap, Swords, ChevronRight, Users, Clock } from "lucide-react";
 
-export function PlayModesSection() {
+interface PlayModesSectionProps {
+  activeSubjectId?: string;
+}
+
+export function PlayModesSection({ activeSubjectId }: PlayModesSectionProps) {
   return (
     <section aria-labelledby="play-modes-heading" className="w-full flex flex-col gap-3">
       <div className="flex items-center justify-between">
@@ -22,7 +26,7 @@ export function PlayModesSection() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Quick Practice Card */}
         <Link
-          href="/study/quiz"
+          href={activeSubjectId ? `/study/quiz?subjectId=${activeSubjectId}&mode=quiz` : "/study"}
           className="p-5 bg-surface border-[3px] border-border rounded-2xl shadow-[0_5px_0_rgba(20,24,39,0.9)] hover:-translate-y-1 active:translate-y-0.5 active:shadow-[0_1px_0_rgba(20,24,39,0.9)] focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 transition-all flex flex-col justify-between gap-4 cursor-pointer group"
         >
           <div className="flex items-start justify-between gap-3">

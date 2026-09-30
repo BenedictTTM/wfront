@@ -13,12 +13,12 @@ import {
 } from "./api";
 import { JoinQueuePayload } from "./types";
 
-export function useQueueStatus(enabled = true) {
+export function useQueueStatus(enabled = true, isSearching = false) {
   return useQuery({
     queryKey: ["multiplayer", "queue-status"],
     queryFn: getQueueStatus,
     enabled,
-    refetchInterval: 2000, // poll every 2s — fast enough for match detection without hammering the server
+    refetchInterval: (query) => (query.state.data?.inQueue || isSearching ? 2000 : false),
     staleTime: 0,
   });
 }
@@ -82,36 +82,51 @@ export function useMultiplayerToken() {
 export function useMatchmaking() {
   const router = useRouter();
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
-  const [isSearching, setIsSearching] = useState(false);
+  const [isJoiningLocal, setIsJoiningLocal] = useState(false);
+  const [joinError, setJoinError] = useState<string | null>(null);
 
   const joinQueue = useJoinQueue();
   const leaveQueue = useLeaveQueue();
 
-  // Poll queue status every 2s while searching.
-  const { data: queueStatus } = useQueueStatus(isSearching);
+  // Enabled on mount to detect existing active queue entries after page refresh.
+  const { data: queueStatus } = useQueueStatus(true, isJoiningLocal);
 
+  const isSearching = Boolean(queueStatus?.inQueue || isJoiningLocal || joinQueue.isPending);
+
+  // Navigate as soon as matchId is populated by backend matchmaking
   useEffect(() => {
-    if (queueStatus?.matchId && isSearching) {
+    if (queueStatus?.matchId) {
       router.push(`/study/multiplayer/${queueStatus.matchId}`);
     }
-  }, [queueStatus?.matchId, isSearching, router]);
+  }, [queueStatus?.matchId, router]);
 
   const startSearch = async (subject?: Subject | null) => {
     const targetSubject = subject ?? selectedSubject;
     if (!targetSubject) return;
-    setIsSearching(true);
+    setJoinError(null);
+    setIsJoiningLocal(true);
     try {
       const result = await joinQueue.mutateAsync({ subjectId: targetSubject.id });
       if (result?.matchId) {
         router.push(`/study/multiplayer/${result.matchId}`);
       }
-    } catch {
-      setIsSearching(false);
+    } catch (err: unknown) {
+      const httpError = err as { status?: number; message?: string };
+      const message =
+        httpError?.status === 400
+          ? "A matchmaking request is already in progress. Please wait a moment."
+          : httpError?.status === 404
+          ? "Guests cannot enter the multiplayer arena. Please log in first."
+          : "Unable to join the matchmaking queue. Please check your connection and try again.";
+      setJoinError(message);
+    } finally {
+      setIsJoiningLocal(false);
     }
   };
 
   const cancelSearch = async () => {
-    setIsSearching(false);
+    setIsJoiningLocal(false);
+    setJoinError(null);
     try {
       await leaveQueue.mutateAsync();
     } catch {
@@ -124,9 +139,11 @@ export function useMatchmaking() {
     setSelectedSubject,
     isSearching,
     queueStatus,
+    joinError,
     startSearch,
     cancelSearch,
-    isJoining: joinQueue.isPending,
+    isJoining: joinQueue.isPending || isJoiningLocal,
     isLeaving: leaveQueue.isPending,
   };
 }
+

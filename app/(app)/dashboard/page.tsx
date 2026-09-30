@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import {
   BookOpen,
   ChevronDown,
-  Plus,
   Search,
   ArrowRight,
   Play,
@@ -207,7 +206,7 @@ export default function Dashboard() {
               </button>
               <button
                 type="button"
-                onClick={() => handleStartQuiz("/study/quiz")}
+                onClick={() => handleStartQuiz("/study")}
                 className="px-4 py-2.5 bg-surface hover:bg-bg-primary text-text-primary border-[2.5px] border-border rounded-xl text-xs font-black shadow-[0_2px_0_#141827] active:translate-y-0.5 transition-all cursor-pointer"
               >
                 QUICK QUIZ (3 🔋)
@@ -343,7 +342,7 @@ export default function Dashboard() {
             </div>
 
             <button
-              onClick={() => handleStartQuiz("/study/quiz")}
+              onClick={() => handleStartQuiz("/study")}
               className="w-full py-3 bg-primary hover:bg-[#ebd060] text-text-primary border-[2.5px] border-border rounded-xl font-black text-xs md:text-sm shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer tracking-wider"
             >
               <span>START PRACTICE CHALLENGE</span>
