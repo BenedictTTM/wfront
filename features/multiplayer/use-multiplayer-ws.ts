@@ -186,6 +186,12 @@ export function useMultiplayerWs({
           const d = data as WsRoundRevealEvent;
           setRoundReveal({ correctOptionId: d.correctOptionId, results: d.results });
           setMatchState("ROUND_REVEAL");
+          setParticipants((prev) =>
+            prev.map((p) => {
+              const res = d.results.find((r) => r.participantId === p.id);
+              return res ? { ...p, score: res.newScore } : p;
+            })
+          );
           break;
         }
 
@@ -193,6 +199,14 @@ export function useMultiplayerWs({
           const d = data as WsMatchEndEvent;
           setMatchEnd({ matchId: d.matchId, rankings: d.rankings });
           setMatchState("FINISHED");
+          setParticipants((prev) =>
+            prev.map((p) => {
+              const ranking = d.rankings.find((r) => r.participantId === p.id);
+              return ranking
+                ? { ...p, score: ranking.score, rank: ranking.rank, isWinner: ranking.isWinner }
+                : p;
+            })
+          );
           break;
         }
 

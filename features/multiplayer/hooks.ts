@@ -79,7 +79,7 @@ export function useMultiplayerToken() {
  * Hook encapsulating multiplayer matchmaking queue polling, joining, leaving,
  * and automatic transition to the match screen when matched.
  */
-export function useMatchmaking() {
+export function useMatchmaking(excludeMatchId?: string) {
   const router = useRouter();
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
   const [isJoiningLocal, setIsJoiningLocal] = useState(false);
@@ -93,12 +93,12 @@ export function useMatchmaking() {
 
   const isSearching = Boolean(queueStatus?.inQueue || isJoiningLocal || joinQueue.isPending);
 
-  // Navigate as soon as matchId is populated by backend matchmaking
+  // Navigate as soon as matchId is populated by backend matchmaking (excluding previous match)
   useEffect(() => {
-    if (queueStatus?.matchId) {
+    if (queueStatus?.matchId && queueStatus.matchId !== excludeMatchId) {
       router.push(`/study/multiplayer/${queueStatus.matchId}`);
     }
-  }, [queueStatus?.matchId, router]);
+  }, [queueStatus?.matchId, router, excludeMatchId]);
 
   const startSearch = async (subject?: Subject | null) => {
     const targetSubject = subject ?? selectedSubject;
@@ -106,8 +106,12 @@ export function useMatchmaking() {
     setJoinError(null);
     setIsJoiningLocal(true);
     try {
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("mp_last_subject_id", targetSubject.id);
+        sessionStorage.setItem("mp_last_subject_name", targetSubject.name);
+      }
       const result = await joinQueue.mutateAsync({ subjectId: targetSubject.id });
-      if (result?.matchId) {
+      if (result?.matchId && result.matchId !== excludeMatchId) {
         router.push(`/study/multiplayer/${result.matchId}`);
       }
     } catch (err: unknown) {
@@ -146,4 +150,6 @@ export function useMatchmaking() {
     isLeaving: leaveQueue.isPending,
   };
 }
+
+export { useStreak } from "./hooks/use-streak";
 
