@@ -91,7 +91,10 @@ export function useMatchmaking(excludeMatchId?: string) {
   // Enabled on mount to detect existing active queue entries after page refresh.
   const { data: queueStatus } = useQueueStatus(true, isJoiningLocal);
 
-  const isSearching = Boolean(queueStatus?.inQueue || isJoiningLocal || joinQueue.isPending);
+  const isInCurrentMatch = Boolean(excludeMatchId && queueStatus?.matchId === excludeMatchId);
+  const isSearching = Boolean(
+    (!isInCurrentMatch && queueStatus?.inQueue) || isJoiningLocal || joinQueue.isPending
+  );
 
   // Navigate as soon as matchId is populated by backend matchmaking (excluding previous match)
   useEffect(() => {

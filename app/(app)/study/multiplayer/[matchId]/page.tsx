@@ -180,7 +180,7 @@ export default function LiveMatchPage() {
       {/* ── State Views ── */}
 
       {/* 0. Matchmaking Lobby View (active when player clicks REMATCH from results) */}
-      {isSearching && activeSubject ? (
+      {isSearching && activeSubject && matchState === "FINISHED" ? (
         <MatchmakingLobby
           subject={activeSubject}
           waitingSince={queueStatus?.waitingSince}
@@ -308,6 +308,36 @@ export default function LiveMatchPage() {
               onRematch={handleRematch}
               onBackToMultiplayer={handleBackToMultiplayer}
             />
+          )}
+
+          {/* 5. Reconnecting mid-question — waiting for question data */}
+          {(matchState === "QUESTION_ACTIVE" || matchState === "ROUND_REVEAL") && !currentQuestion && (
+            <div className="flex-1 flex flex-col items-center justify-center py-12 gap-3">
+              <Loader2 size={32} className="text-text-secondary animate-spin" />
+              <span className="text-xs font-black text-text-secondary tracking-wide">
+                SYNCING MATCH DATA…
+              </span>
+            </div>
+          )}
+
+          {/* 6. Match Abandoned */}
+          {matchState === "ABANDONED" && (
+            <div className="flex-1 flex flex-col items-center justify-center py-12 gap-4 text-center">
+              <WifiOff size={32} className="text-text-secondary" />
+              <span className="text-sm font-black text-text-primary">
+                Match Abandoned
+              </span>
+              <span className="text-xs text-text-secondary">
+                Your opponent disconnected. The match has ended.
+              </span>
+              <button
+                type="button"
+                onClick={handleBackToMultiplayer}
+                className="mt-2 px-6 py-2.5 rounded-xl bg-primary border-[2px] border-border text-sm font-black text-text-primary shadow-[0_3px_0_rgba(20,24,39,0.9)] hover:translate-y-[1px] hover:shadow-[0_2px_0_rgba(20,24,39,0.9)] transition-all cursor-pointer"
+              >
+                Back to Arena
+              </button>
+            </div>
           )}
         </>
       )}
