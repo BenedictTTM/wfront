@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   BookOpen,
   ChevronDown,
@@ -24,12 +24,17 @@ const GUEST_MAX_ENERGY = 10;
 
 export default function Dashboard() {
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
   const user = useCurrentUser();
   const { data: meData } = useMe();
-  const isGuest = !meData || isGuestIdentity(meData);
+  const isGuest = Boolean(meData && isGuestIdentity(meData));
   const { data: dashboard } = useDashboard();
   const currentEnergy = dashboard?.energy?.current ?? 30;
   const refillMutation = useRefillEnergy();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // For guests, cap energy at GUEST_MAX_ENERGY
   const guestEnergy = Math.min(currentEnergy, GUEST_MAX_ENERGY);
@@ -142,7 +147,7 @@ export default function Dashboard() {
       </div>
 
       {/* ── Guest Mode Banner ── */}
-      {isGuest && (
+      {mounted && isGuest && (
         <div className="w-full bg-surface border-[3px] border-border rounded-2xl p-5 shadow-[0_4px_0_rgba(20,24,39,0.9)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
             <div className="w-11 h-11 rounded-xl bg-primary border-[2px] border-border flex items-center justify-center shadow-[0_2px_0_#141827] shrink-0">
@@ -179,18 +184,20 @@ export default function Dashboard() {
                 🎓 WASSCE Prep
               </span>
               <span className="px-2.5 py-0.5 bg-secondary border-[2px] border-border rounded-full text-[10px] font-black uppercase tracking-wider text-text-primary shadow-[0_1.5px_0_#141827]">
-                ⚡ {isGuest ? guestEnergy : currentEnergy} Energy Ready
+                ⚡ {mounted && isGuest ? guestEnergy : currentEnergy} Energy Ready
               </span>
             </div>
 
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-text-primary leading-tight">
-              {isGuest
+              {mounted && user
+                ? `Welcome back, ${user.name || user.email?.split("@")[0] || "Scholar"}! 🎓`
+                : mounted && isGuest
                 ? "Welcome, Guest Scholar! 👋"
-                : `Welcome back, ${user?.name || user?.email?.split("@")[0] || "Scholar"}! 🎓`}
+                : "Welcome, Scholar! 👋"}
             </h1>
 
             <p className="text-xs sm:text-sm font-bold text-text-secondary leading-relaxed">
-              {isGuest
+              {mounted && isGuest
                 ? "Prepare for your West African examinations with authoritative quizzes, syllabus tracking, and instant explanations."
                 : "Master your curriculum today. Attempt practice challenges, collect mastery stars, and climb the leaderboard rankings!"}
             </p>

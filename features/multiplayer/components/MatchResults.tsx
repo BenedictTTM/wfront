@@ -59,8 +59,10 @@ export function MatchResults({
 
   const myScore = myRanking?.score ?? me?.score ?? 0;
   const oppScore = oppRanking?.score ?? opponent?.score ?? 0;
-  const oppName = oppRanking?.name ?? opponent?.name ?? "Opponent";
-  const myName = myRanking?.name ?? me?.name ?? "You";
+  const rawOppName = oppRanking?.name ?? opponent?.gamerTag ?? opponent?.name;
+  const oppName = rawOppName && !rawOppName.includes('@') ? rawOppName : "Opponent";
+  const rawMyName = myRanking?.name ?? me?.gamerTag ?? me?.name;
+  const myName = rawMyName && !rawMyName.includes('@') ? rawMyName : "You";
 
   const outcomeInfo = computeMatchOutcome(myScore, oppScore, oppName);
   const performance = computePerformanceStats(

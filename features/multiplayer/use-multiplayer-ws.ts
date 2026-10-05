@@ -184,7 +184,7 @@ export function useMultiplayerWs({
 
         case "round_reveal": {
           const d = data as WsRoundRevealEvent;
-          setRoundReveal({ correctOptionId: d.correctOptionId, results: d.results });
+          setRoundReveal({ correctOptionId: d.correctOptionId, results: d.results, explanation: d.explanation });
           setMatchState("ROUND_REVEAL");
           setParticipants((prev) =>
             prev.map((p) => {

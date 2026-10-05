@@ -1,4 +1,4 @@
-// features/multiplayer/types.ts
+export * from './contracts/competitive-identity';
 
 export type MatchState =
   | 'LOBBY'
@@ -13,15 +13,24 @@ export type MatchQuestion = {
   text: string;
   options: Array<{ id: string; text: string }>;
   timeLimitMs: number;
+  explanation?: string;
 };
 
 export type ParticipantState = {
   id: string;
   name: string;
+  gamerTag?: string;
+  avatarUrl?: string | null;
+  school?: {
+    name: string;
+    shortCode: string;
+    crestUrl: string | null;
+  };
   score: number;
   isConnected: boolean;
   rank?: number;
   isWinner?: boolean;
+  status?: "THINKING" | "LOCKED_IN";
 };
 
 export type RoundResult = {
@@ -65,6 +74,7 @@ export type WsQuestionStartEvent = {
 export type WsRoundRevealEvent = {
   correctOptionId: string;
   results: RoundResult[];
+  explanation?: string;
 };
 
 export type WsMatchEndEvent = {
@@ -75,6 +85,8 @@ export type WsMatchEndEvent = {
     score: number;
     rank: number;
     isWinner: boolean;
+    eloDelta?: number;
+    ratingAfter?: number;
   }>;
 };
 
@@ -117,6 +129,7 @@ export type MatchResult = {
 export type RoundRevealData = {
   correctOptionId: string;
   results: RoundResult[];
+  explanation?: string;
 };
 
 export type MatchEndData = {

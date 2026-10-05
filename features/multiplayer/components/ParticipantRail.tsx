@@ -112,21 +112,23 @@ export function ParticipantRail({
 
   const finalRound = computeFinalRoundInfo(currentQuestionIndex, totalQuestions);
 
-  const prevLeadStatusRef = React.useRef<MatchLeadStatus | null>(null);
+  const [prevLeadStatus, setPrevLeadStatus] = React.useState<MatchLeadStatus | null>(null);
 
   const competitive = computeCompetitiveState(
     myTargetScore,
     opponentTargetScore,
     questionsRemaining,
-    prevLeadStatusRef.current
+    prevLeadStatus
   );
 
   React.useEffect(() => {
-    prevLeadStatusRef.current = competitive.leadStatus;
+    setPrevLeadStatus(competitive.leadStatus);
   }, [competitive.leadStatus]);
 
-  const myInitial = (me?.name || "Y").trim().charAt(0).toUpperCase();
-  const opponentInitial = (opponent?.name || "O").trim().charAt(0).toUpperCase();
+  const myDisplayName = me?.gamerTag || (me?.name && !me.name.includes('@') ? me.name : "You");
+  const opponentDisplayName = opponent?.gamerTag || (opponent?.name && !opponent.name.includes('@') ? opponent.name : "Opponent");
+  const myInitial = myDisplayName.trim().charAt(0).toUpperCase();
+  const opponentInitial = opponentDisplayName.trim().charAt(0).toUpperCase();
 
   return (
     <div className="w-full flex flex-col gap-3">
@@ -254,7 +256,7 @@ export function ParticipantRail({
               </div>
               <div className="flex flex-col min-w-0">
                 <span className="text-xs font-black text-text-primary truncate">
-                  {me?.name || "You"}
+                  {myDisplayName}
                 </span>
               </div>
             </div>
@@ -369,7 +371,7 @@ export function ParticipantRail({
               </div>
               <div className="flex items-center gap-1 min-w-0">
                 <span className="text-xs font-black text-text-primary truncate">
-                  {opponent?.name || "Opponent"}
+                  {opponentDisplayName}
                 </span>
                 <span
                   title={opponent?.isConnected ? "Connected" : "Disconnected"}

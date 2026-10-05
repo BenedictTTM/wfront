@@ -4,6 +4,7 @@
 
 "use client";
 
+import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   fetchCurrentUser,
@@ -46,10 +47,22 @@ export function getCachedUser(): MeResponse | null {
  * - 401 responses do NOT retry (token is deterministically absent/expired) and clear storage.
  */
 export function useMe() {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    // Synchronize query cache from localStorage after hydration to avoid SSR mismatch
+    const current = queryClient.getQueryData<MeResponse | null>(authKeys.me);
+    if (current === undefined) {
+      const cached = getCachedUser();
+      if (cached) {
+        queryClient.setQueryData(authKeys.me, cached);
+      }
+    }
+  }, [queryClient]);
+
   return useQuery<MeResponse | null, Error>({
     queryKey: authKeys.me,
     queryFn: fetchCurrentUser,
-    initialData: () => getCachedUser(),
     staleTime: 15 * 60 * 1000, // 15 min — user profile rarely changes mid-session
     gcTime: 60 * 60 * 1000,
     refetchOnMount: false,
@@ -67,7 +80,7 @@ export function useMe() {
 }
 
 /**
- * Returns the authenticated user directly from cache if present (QueryClient or storage),
+ * Returns the authenticated user directly from cache if present (QueryClient),
  * or from useMe(). Does not make extra network requests if user is already cached.
  */
 export function useCurrentUser(): AuthUser | null {
@@ -75,7 +88,7 @@ export function useCurrentUser(): AuthUser | null {
   const cachedFromQuery = queryClient.getQueryData<MeResponse | null>(authKeys.me);
   const { data } = useMe();
 
-  const user = data ?? cachedFromQuery ?? getCachedUser();
+  const user = data ?? cachedFromQuery;
   if (!user || isGuestIdentity(user)) return null;
   return user;
 }
