@@ -19,7 +19,7 @@ import { safeStorage } from "@/lib/storage";
 
 // ── Query keys ────────────────────────────────────────────────────────────────
 
-export const authKeys = {
+const authKeys = {
   me: ["auth", "me"] as const,
 } as const;
 
@@ -28,7 +28,7 @@ export const authKeys = {
 /**
  * Returns the cached authenticated user from storage synchronously, or null.
  */
-export function getCachedUser(): MeResponse | null {
+function getCachedUser(): MeResponse | null {
   if (typeof window === "undefined") return null;
   const user = safeStorage.getItem<MeResponse | null>(AUTH_STORAGE_KEY, null);
   if (user && !isGuestIdentity(user)) {
@@ -36,6 +36,7 @@ export function getCachedUser(): MeResponse | null {
   }
   return null;
 }
+
 
 // ── Queries ───────────────────────────────────────────────────────────────────
 
@@ -92,9 +93,6 @@ export function useCurrentUser(): AuthUser | null {
   if (!user || isGuestIdentity(user)) return null;
   return user;
 }
-
-/** Canonical alias for useCurrentUser */
-export const useUser = useCurrentUser;
 
 // ── Mutations ─────────────────────────────────────────────────────────────────
 

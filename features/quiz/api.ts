@@ -31,17 +31,6 @@ export async function submitQuizAttempt(attemptId: string): Promise<SubmitAttemp
   return apiPost<SubmitAttemptResponseDto>(`/quiz-attempts/${attemptId}/submit`);
 }
 
-export async function listQuizAttempts(query?: {
-  limit?: number;
-  cursor?: string;
-}): Promise<AttemptListResponseDto> {
-  const searchParams = new URLSearchParams();
-  if (query?.limit) searchParams.set("limit", String(query.limit));
-  if (query?.cursor) searchParams.set("cursor", query.cursor);
-  const queryString = searchParams.toString();
-  return apiGet<AttemptListResponseDto>(`/quiz-attempts${queryString ? `?${queryString}` : ""}`);
-}
-
 export async function getFlashcardsForAttempt(attemptId: string): Promise<FlashcardListResponse> {
   return apiGet<FlashcardListResponse>(`/quiz-attempts/${attemptId}/flashcards`);
 }
@@ -49,5 +38,6 @@ export async function getFlashcardsForAttempt(attemptId: string): Promise<Flashc
 export async function abandonQuizAttempt(attemptId: string): Promise<QuizAttempt> {
   return apiPost<QuizAttempt>(`/quiz-attempts/${attemptId}/abandon`);
 }
+
 
 

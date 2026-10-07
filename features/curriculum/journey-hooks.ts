@@ -1,10 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  getJourneyProgress,
   getLearningJourney,
-  getNextChallenge,
   getSubjectJourney,
-  recordLevelCompletion,
   startJourneyNodeSession,
 } from "./journey-api";
 
@@ -40,44 +37,3 @@ export function useLearningJourney(subjectSlug: string) {
   });
 }
 
-export function useJourneyProgress(journeyId: string | undefined) {
-  return useQuery({
-    queryKey: ["journey-progress", journeyId],
-    queryFn: () => (journeyId ? getJourneyProgress(journeyId) : Promise.reject("No journeyId")),
-    enabled: !!journeyId,
-    staleTime: 30 * 1000,
-  });
-}
-
-/** Canonical alias for useJourneyProgress */
-export const useProgress = useJourneyProgress;
-
-export function useNextChallenge(levelId: string | null) {
-  return useQuery({
-    queryKey: ["journey-challenge", levelId],
-    queryFn: () => (levelId ? getNextChallenge(levelId) : Promise.reject("No levelId")),
-    enabled: !!levelId,
-    staleTime: 0, // always fresh challenge
-  });
-}
-
-export function useRecordLevelCompletion() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({
-      levelId,
-      data,
-    }: {
-      levelId: string;
-      data: { score: number; idempotencyKey: string; attemptId?: string };
-    }) => recordLevelCompletion(levelId, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["learning-journey"] });
-      queryClient.invalidateQueries({ queryKey: ["journey-progress"] });
-      queryClient.invalidateQueries({ queryKey: ["journey"] });
-      queryClient.invalidateQueries({ queryKey: ["gamification"] });
-      queryClient.invalidateQueries({ queryKey: ["analytics"] });
-    },
-  });
-}

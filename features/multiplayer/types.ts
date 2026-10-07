@@ -1,5 +1,3 @@
-export * from './contracts/competitive-identity';
-
 export type MatchState =
   | 'LOBBY'
   | 'STARTING'

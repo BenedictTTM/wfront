@@ -2,15 +2,13 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Loader2, Wifi, WifiOff } from "lucide-react";
+import { Loader2, WifiOff } from "lucide-react";
 import { useMultiplayerWs } from "@/features/multiplayer/use-multiplayer-ws";
 import { MatchHUD } from "@/features/multiplayer/components/MatchHUD";
-import { ParticipantRail } from "@/features/multiplayer/components/ParticipantRail";
 import { LiveQuestion } from "@/features/multiplayer/components/LiveQuestion";
 import { RoundEvaluationDrawer } from "@/features/multiplayer/components/RoundEvaluationDrawer";
 import { ClutchStateBanner } from "@/features/multiplayer/components/ClutchStateBanner";
 import { PostMatchSummary } from "@/features/multiplayer/components/PostMatchSummary";
-import { MatchResults } from "@/features/multiplayer/components/MatchResults";
 import { MatchmakingLobby } from "@/features/multiplayer/components/MatchmakingLobby";
 import { toast } from "sonner";
 import {
@@ -108,10 +106,8 @@ export default function LiveMatchPage() {
   const {
     isSearching,
     queueStatus,
-    joinError: rematchError,
     startSearch,
     cancelSearch,
-    isJoining: isRematching,
     isLeaving: isCancellingRematch,
   } = useMatchmaking(matchId);
 
@@ -137,7 +133,7 @@ export default function LiveMatchPage() {
     reconnect,
   } = useMultiplayerWs({ token, matchId });
 
-  const { currentStreak, bestStreak, recordAnswer, resetStreak } = useStreak(matchId);
+  const { currentStreak, recordAnswer, resetStreak } = useStreak(matchId);
 
   // Track match performance statistics from round evaluations
   const [matchStats, setMatchStats] = useState({
@@ -153,7 +149,7 @@ export default function LiveMatchPage() {
     if (currentQuestion) {
       setRemainingTimeMs(currentQuestion.question.timeLimitMs || 15_000);
     }
-  }, [currentQuestion?.question.id]);
+  }, [currentQuestion]);
 
   // Track each evaluated question index so each round answer is only counted once
   const lastEvaluatedQuestionIndexRef = useRef<number | null>(null);
@@ -267,7 +263,7 @@ export default function LiveMatchPage() {
             score: opponent?.score ?? 0,
             streak: 0,
             status:
-              roundReveal || (opponent as any)?.status === "LOCKED_IN"
+              roundReveal || opponent?.status === "LOCKED_IN"
                 ? "LOCKED_IN"
                 : "THINKING",
           }}
@@ -428,7 +424,7 @@ export default function LiveMatchPage() {
               explanationText={getAcademicConceptExplanation(
                 currentQuestion?.question.text,
                 currentQuestion?.question.explanation,
-                (roundReveal as any)?.explanation
+                roundReveal.explanation
               )}
               onBookmarkConcept={() => {
                 toast.success("Concept saved to Revision Deck!");
@@ -502,7 +498,7 @@ export default function LiveMatchPage() {
                         conceptExplanation: getAcademicConceptExplanation(
                           currentQuestion.question.text,
                           currentQuestion.question.explanation,
-                          (roundReveal as any)?.explanation
+                          roundReveal?.explanation
                         ),
                       },
                     ]

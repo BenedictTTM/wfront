@@ -3,7 +3,6 @@
 import React from "react";
 import Link from "next/link";
 import {
-  Sparkles,
   RefreshCw,
   CheckCircle2,
   BookOpen,

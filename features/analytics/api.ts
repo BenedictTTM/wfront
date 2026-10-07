@@ -1,11 +1,5 @@
-// features/analytics/api.ts — student performance and learning insights API calls
-
 import { apiGet } from '@/lib/api-client';
-import type {
-  AnalyticsOverview,
-  AnalyticsSummaryItem,
-  TopicStrengthWeakness,
-} from './types';
+import type { AnalyticsOverview } from './types';
 
 /**
  * Fetch unified student performance and learning insights overview.
@@ -22,30 +16,3 @@ export async function getAnalyticsOverview(
   return apiGet<AnalyticsOverview>(`/users/me/analytics/overview${qs ? `?${qs}` : ''}`);
 }
 
-/**
- * Fetch raw daily analytics summaries.
- */
-export async function getAnalyticsSummary(params?: {
-  subjectId?: string;
-  topicId?: string;
-}): Promise<AnalyticsSummaryItem[]> {
-  const queryParams = new URLSearchParams();
-  if (params?.subjectId) queryParams.set('filter[subjectId]', params.subjectId);
-  if (params?.topicId) queryParams.set('filter[topicId]', params.topicId);
-  const qs = queryParams.toString();
-  return apiGet<AnalyticsSummaryItem[]>(`/users/me/analytics/summary${qs ? `?${qs}` : ''}`);
-}
-
-/**
- * Fetch weak topics.
- */
-export async function getWeakTopics(): Promise<TopicStrengthWeakness[]> {
-  return apiGet<TopicStrengthWeakness[]>('/users/me/analytics/weak-topics');
-}
-
-/**
- * Fetch strong topics.
- */
-export async function getStrongTopics(): Promise<TopicStrengthWeakness[]> {
-  return apiGet<TopicStrengthWeakness[]>('/users/me/analytics/strong-topics');
-}

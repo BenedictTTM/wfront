@@ -182,8 +182,7 @@ export function MultiplayerCard({ stats, isLoading = false }: MultiplayerCardPro
   );
 }
 
-// ── Subcomponent: Loading Skeleton ──
-export function MultiplayerSkeleton() {
+function MultiplayerSkeleton() {
   return (
     <div className="p-5 bg-surface border-2.5 border-border rounded-2xl shadow-[0_3px_0_#141827] flex flex-col gap-4 animate-pulse">
       <div className="flex items-center justify-between border-b-2 border-border pb-3">
@@ -205,3 +204,5 @@ export function MultiplayerSkeleton() {
     </div>
   );
 }
+
+

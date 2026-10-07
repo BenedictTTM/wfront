@@ -12,14 +12,13 @@ import { Swords } from "lucide-react";
 export default function MatchmakingPage() {
   const router = useRouter();
   const user = useCurrentUser();
-  const { data: subjects, isLoading: subjectsLoading } = useSubjects();
+  const { data: subjects } = useSubjects();
 
   const {
     selectedSubject,
     setSelectedSubject,
     isSearching,
     queueStatus,
-    startSearch,
     cancelSearch,
     isLeaving,
   } = useMatchmaking();

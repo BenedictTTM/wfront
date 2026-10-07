@@ -1,11 +1,6 @@
-// features/curriculum/journey-api.ts
-
 import { apiGet, apiPost } from "@/lib/api-client";
 import {
-  CurrentJourneyProgress,
   LearningJourney,
-  NextChallenge,
-  RecordCompletionResponse,
   StartNodeSessionResponse,
   SubjectJourney,
 } from "./types";
@@ -24,17 +19,3 @@ export async function getLearningJourney(subjectSlug: string): Promise<LearningJ
   return apiGet<LearningJourney>(`/subjects/${subjectSlug}/journey-tree`);
 }
 
-export async function getJourneyProgress(journeyId: string): Promise<CurrentJourneyProgress> {
-  return apiGet<CurrentJourneyProgress>(`/journey/${journeyId}/progress`);
-}
-
-export async function getNextChallenge(levelId: string): Promise<NextChallenge> {
-  return apiGet<NextChallenge>(`/journey/levels/${levelId}/challenge`);
-}
-
-export async function recordLevelCompletion(
-  levelId: string,
-  data: { score: number; idempotencyKey: string; attemptId?: string },
-): Promise<RecordCompletionResponse> {
-  return apiPost<RecordCompletionResponse>(`/journey/levels/${levelId}/complete`, data);
-}

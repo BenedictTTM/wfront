@@ -380,11 +380,9 @@ function TopicMasteryItemCard({ item }: { item: TopicMasteryBreakdownItem }) {
   );
 }
 
-// ── Subcomponent: Loading Skeleton ──
-export function TopicMasteryBreakdownSkeleton() {
+function TopicMasteryBreakdownSkeleton() {
   return (
     <div className="p-5 bg-surface border-2.5 border-border rounded-2xl shadow-[0_3px_0_#141827] flex flex-col gap-4 animate-pulse">
-      {/* Header skeleton */}
       <div className="flex items-center justify-between border-b-2 border-border pb-3">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-bg-secondary border border-border" />
@@ -396,10 +394,8 @@ export function TopicMasteryBreakdownSkeleton() {
         <div className="w-24 h-5 bg-bg-secondary rounded" />
       </div>
 
-      {/* Bar skeleton */}
       <div className="h-4 w-full rounded-full bg-bg-secondary border border-border" />
 
-      {/* Tabs skeleton */}
       <div className="flex gap-2">
         <div className="w-16 h-6 bg-bg-secondary rounded-lg" />
         <div className="w-24 h-6 bg-bg-secondary rounded-lg" />
@@ -407,7 +403,6 @@ export function TopicMasteryBreakdownSkeleton() {
         <div className="w-20 h-6 bg-bg-secondary rounded-lg" />
       </div>
 
-      {/* Cards skeleton */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
         {Array.from({ length: 4 }).map((_, i) => (
           <div
@@ -419,3 +414,5 @@ export function TopicMasteryBreakdownSkeleton() {
     </div>
   );
 }
+
+

@@ -66,14 +66,6 @@ export async function logoutUser(): Promise<void> {
   }
 }
 
-export async function refreshToken(): Promise<void> {
-  try {
-    await apiPost<void>("/api/auth/refresh");
-  } catch {
-    throw new Error("Session expired. Please log in again.");
-  }
-}
-
 /** Fetches the active auth token for WebSocket connections. */
 export async function fetchAuthToken(): Promise<string> {
   const data = await apiGet<{ token: string }>("/api/auth/token");
@@ -83,6 +75,3 @@ export async function fetchAuthToken(): Promise<string> {
   return data.token;
 }
 
-export async function mergeGuestSession(_anonymousToken: string): Promise<void> {
-  // TODO: implement once merge-guest endpoint accepts anonymous token in body
-}

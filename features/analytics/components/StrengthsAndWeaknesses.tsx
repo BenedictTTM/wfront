@@ -142,6 +142,4 @@ export function LearningProfileCard({
   );
 }
 
-// Backwards-compatible alias
-export const StrengthsAndWeaknessesCard = LearningProfileCard;
 

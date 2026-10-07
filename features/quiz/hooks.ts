@@ -3,7 +3,6 @@ import {
   createQuizAttempt,
   getFlashcardsForAttempt,
   getQuizAttempt,
-  listQuizAttempts,
   submitQuizAnswer,
   submitQuizAttempt,
 } from "./api";
@@ -19,9 +18,6 @@ export function useQuizAttempt(attemptId: string) {
   });
 }
 
-/** Canonical alias for useQuizAttempt */
-export const useQuiz = useQuizAttempt;
-
 export function useFlashcards(attemptId: string) {
   return useQuery({
     queryKey: ["quiz", "flashcards", attemptId],
@@ -30,7 +26,6 @@ export function useFlashcards(attemptId: string) {
     staleTime: 5 * 60 * 1000,
   });
 }
-
 
 export function useCreateQuizAttempt() {
   const queryClient = useQueryClient();
@@ -81,11 +76,4 @@ export function useSubmitQuizAttempt() {
   });
 }
 
-export function useQuizAttemptsList(query?: { limit?: number; cursor?: string }) {
-  return useQuery({
-    queryKey: ["quiz", "history", query],
-    queryFn: () => listQuizAttempts(query),
-    staleTime: 30 * 1000,
-  });
-}
 

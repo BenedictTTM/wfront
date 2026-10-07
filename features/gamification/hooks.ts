@@ -17,13 +17,12 @@ import {
   getDashboard,
   getEnergy,
   getLeaderboard,
-  getQuestCatalog,
-  getStreak,
   getUserQuests,
   refillEnergy,
   convertDiamondsToEnergy,
 } from "./api";
 import type { UserQuest } from "./types";
+
 
 const QUESTS_STORAGE_KEY = "wassce_cached_quests";
 
@@ -46,14 +45,6 @@ export function useQuests() {
     // Neon WebSocket / cold-start failures on the backend
     retry: 3,
     retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10_000),
-  });
-}
-
-export function useQuestCatalog() {
-  return useQuery({
-    queryKey: ["quests", "catalog"],
-    queryFn: getQuestCatalog,
-    staleTime: 60 * 1000,
   });
 }
 
@@ -86,21 +77,6 @@ export function useEnergy() {
   });
 }
 
-export function useStreak() {
-  return useQuery({
-    queryKey: ["gamification", "streak"],
-    queryFn: getStreak,
-    staleTime: 60 * 1000,
-  });
-}
-
-export function useChallenges() {
-  return useQuery({
-    queryKey: ["quests", "user"],
-    queryFn: getUserQuests,
-    staleTime: 30 * 1000,
-  });
-}
 
 export function useLeaderboard(params?: {
   scope?: "global" | "subject";

@@ -13,11 +13,3 @@ export function generateIdempotencyKey(): string {
   return crypto.randomUUID();
 }
 
-/**
- * useIdempotentMutation — TanStack Query mutation wrapper that generates an
- * idempotency key once per call site and reuses it on retries.
- * TODO: implement
- */
-export function useIdempotentMutation() {
-  // TODO
-}

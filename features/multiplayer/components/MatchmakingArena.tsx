@@ -15,14 +15,9 @@ import {
 } from "../utils/matchmaking-arena";
 
 export type { MatchmakingProps, MatchmakingState };
-export {
-  getMatchmakingStatusText,
-  formatElapsedDisplay,
-  CLASH_ANIMATION_DURATION_MS,
-  RADAR_RINGS_CONFIG,
-};
 
 export const MatchmakingArena = React.memo(function MatchmakingArena({
+
   currentUser,
   matchedOpponent,
   elapsedSeconds,

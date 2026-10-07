@@ -13,7 +13,7 @@ import {
 } from "./api";
 import { JoinQueuePayload } from "./types";
 
-export function useQueueStatus(enabled = true, isSearching = false) {
+function useQueueStatus(enabled = true, isSearching = false) {
   return useQuery({
     queryKey: ["multiplayer", "queue-status"],
     queryFn: getQueueStatus,
@@ -23,7 +23,7 @@ export function useQueueStatus(enabled = true, isSearching = false) {
   });
 }
 
-export function useJoinQueue() {
+function useJoinQueue() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (payload: JoinQueuePayload) => joinMatchmakingQueue(payload),
@@ -33,7 +33,7 @@ export function useJoinQueue() {
   });
 }
 
-export function useLeaveQueue() {
+function useLeaveQueue() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: leaveMatchmakingQueue,
@@ -42,6 +42,7 @@ export function useLeaveQueue() {
     },
   });
 }
+
 
 export function useMatchResult(matchId: string | null) {
   return useQuery({

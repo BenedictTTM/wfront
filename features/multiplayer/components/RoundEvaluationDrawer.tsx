@@ -38,8 +38,8 @@ export interface RoundEvaluationProps {
 export const RoundEvaluationDrawer = React.memo(function RoundEvaluationDrawer({
   isOpen,
   isCorrect,
-  selectedOptionId,
-  correctOptionId,
+  selectedOptionId: _selectedOptionId,
+  correctOptionId: _correctOptionId,
   scoreEarned,
   explanationText,
   onBookmarkConcept,

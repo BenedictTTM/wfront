@@ -125,7 +125,6 @@ export function JourneyNode({
   const isLocked = state === "LOCKED";
   const isMastered = state === "MASTERED" || level.isMastered;
   const isCompleted = state === "COMPLETED" || isMastered || level.isCompleted;
-  const isAvailable = state === "AVAILABLE";
   const isActive = isCurrent || state === "ACTIVE";
 
   // Use global journey index or orderIndex so every button has a different icon

@@ -34,8 +34,8 @@ export interface MatchHUDProps {
 export const MatchHUD = React.memo(function MatchHUD({
   player,
   opponent,
-  currentRound,
-  totalRounds = 10,
+  currentRound: _currentRound,
+  totalRounds: _totalRounds = 10,
   remainingTimeMs,
   maxScoreDifferential = 500,
 }: MatchHUDProps) {
