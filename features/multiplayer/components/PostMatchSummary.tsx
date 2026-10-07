@@ -115,108 +115,108 @@ export const PostMatchSummary = React.memo(function PostMatchSummary({
       className="w-full max-w-2xl mx-auto flex flex-col gap-4 sm:gap-5 py-2 px-3 sm:px-6 select-none animate-in fade-in duration-300"
     >
       {/* =================================================================== */}
-      {/* 1. HERO HEADER: Respectful Framing & Tightened Vertical Padding    */}
+      {/* 1. HERO HEADER: Solid Cream Neo-Brutalist Card with Stark Borders   */}
       {/* =================================================================== */}
       <div
         data-testid="post-match-hero"
-        className={`w-full py-3.5 sm:py-4 px-5 sm:px-6 rounded-2xl sm:rounded-3xl border-[2.5px] shadow-[0_5px_0_rgba(15,23,42,0.95)] flex flex-col items-center text-center gap-2 sm:gap-2.5 ${heroMeta.badgeBgClass}`}
+        className="w-full py-5 sm:py-6 px-5 sm:px-6 rounded-3xl border-[3px] border-border bg-surface shadow-[0_6px_0_#141827] flex flex-col items-center text-center gap-3"
       >
         <div className="flex items-center justify-center">
           {result === "VICTORY" ? (
-            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-amber-500/20 border-[2px] border-amber-400 flex items-center justify-center text-amber-400 shadow-sm">
+            <div className="w-12 h-12 rounded-2xl bg-primary border-[2.5px] border-border flex items-center justify-center text-text-primary shadow-[0_2px_0_#141827]">
               <Trophy size={24} className="stroke-[2.5]" />
             </div>
           ) : result === "DEFEAT" ? (
-            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-slate-800 border-[2px] border-slate-600 flex items-center justify-center text-slate-300 shadow-sm">
+            <div className="w-12 h-12 rounded-2xl bg-secondary border-[2.5px] border-border flex items-center justify-center text-text-primary shadow-[0_2px_0_#141827]">
               <Swords size={24} className="stroke-[2.5]" />
             </div>
           ) : (
-            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-slate-800 border-[2px] border-slate-600 flex items-center justify-center text-slate-300 shadow-sm">
+            <div className="w-12 h-12 rounded-2xl bg-surface-muted border-[2.5px] border-border flex items-center justify-center text-text-primary shadow-[0_2px_0_#141827]">
               <Scale size={24} className="stroke-[2.5]" />
             </div>
           )}
         </div>
 
         <div>
-          <h1 className="text-lg sm:text-xl font-black tracking-tight text-white uppercase leading-tight">
+          <h1 className="text-lg sm:text-xl font-black tracking-tight text-text-primary uppercase leading-tight">
             {heroMeta.title}
           </h1>
-          <p className="text-xs text-slate-300 font-bold mt-0.5">
+          <p className="text-xs sm:text-sm text-text-secondary font-bold mt-1">
             {player.finalScore} PTS <span className="opacity-60">•</span> Opponent: {opponent.finalScore} PTS
           </p>
         </div>
 
-        {/* ELO Delta indicator with directional arrow (↘ for loss, ↗ for win) */}
+        {/* ELO Delta indicator with directional arrow */}
         <div
           data-testid="hero-elo-delta"
-          className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-slate-950/80 border border-slate-700 shadow-inner"
+          className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-surface-muted border-[2px] border-border shadow-[0_1.5px_0_#141827]"
         >
           {player.eloDelta < 0 ? (
-            <TrendingDown size={14} className="text-slate-400" />
+            <TrendingDown size={14} className="text-text-secondary stroke-[2.5]" />
           ) : player.eloDelta > 0 ? (
-            <TrendingUp size={14} className={heroMeta.eloDeltaColorClass} />
+            <TrendingUp size={14} className="text-emerald-700 stroke-[2.5]" />
           ) : (
-            <TrendingUp size={14} className="text-slate-300" />
+            <TrendingUp size={14} className="text-text-secondary stroke-[2.5]" />
           )}
-          <span className={`text-xs sm:text-sm font-black tabular-nums tracking-wide ${heroMeta.eloDeltaColorClass}`}>
+          <span className="text-xs sm:text-sm font-black tabular-nums tracking-wide text-text-primary">
             {player.eloDelta < 0 ? `↘ ${heroMeta.eloDeltaText} ELO` : player.eloDelta > 0 ? `↗ ${heroMeta.eloDeltaText} ELO` : `0 ELO`}
           </span>
-          <span className="text-[11px] text-slate-400 font-bold">({player.newElo} Total)</span>
+          <span className="text-[11px] text-text-secondary font-black">({player.newElo} Total)</span>
         </div>
       </div>
 
       {/* =================================================================== */}
-      {/* 2. THREE-PILLAR INVESTMENT ROW                                      */}
+      {/* 2. THREE-PILLAR INVESTMENT ROW (Uniform Neo-Brutalist Card Modules)  */}
       {/* =================================================================== */}
       <div
         data-testid="three-pillar-row"
-        className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full"
+        className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 w-full"
       >
         {/* Pillar 1: Competitive Rank & Dynamic Ladder Distance */}
-        <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-900 border-[2px] border-slate-700/80 shadow-[0_4px_0_rgba(15,23,42,0.95)] flex flex-col justify-between gap-2.5">
+        <div className="p-4 rounded-2xl bg-surface border-[2.5px] border-border shadow-[0_3px_0_#141827] flex flex-col justify-between gap-3">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+            <span className="text-[10px] font-black uppercase tracking-widest text-text-secondary">
               Rank Tier
             </span>
-            <Sparkles size={14} className="text-amber-400" />
+            <Sparkles size={14} className="text-text-primary stroke-[2.5]" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className={`px-2 py-0.5 rounded-md border text-[11px] font-black uppercase tracking-wider ${tierMeta.badgeClass}`}>
+              <span className="px-2.5 py-0.5 rounded-full bg-primary border-[1.5px] border-border text-[11px] font-black uppercase tracking-wider text-text-primary shadow-[0_1px_0_#141827]">
                 {tierMeta.tier}
               </span>
-              <span className="text-base font-black text-white tabular-nums">
+              <span className="text-base sm:text-lg font-black text-text-primary tabular-nums">
                 {player.newElo}
               </span>
             </div>
-            {/* Dynamic Ladder Distance (e.g., "32 pts to Gold I") */}
-            <span className="text-[10px] text-amber-300/90 font-bold mt-1 block truncate">
+            {/* Dynamic Ladder Distance */}
+            <span className="text-[11px] text-text-secondary font-bold mt-1.5 block truncate">
               {ladderDistance}
             </span>
           </div>
         </div>
 
         {/* Pillar 2: Subject Mastery */}
-        <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-900 border-[2px] border-slate-700/80 shadow-[0_4px_0_rgba(15,23,42,0.95)] flex flex-col justify-between gap-2.5">
+        <div className="p-4 rounded-2xl bg-surface border-[2.5px] border-border shadow-[0_3px_0_#141827] flex flex-col justify-between gap-3">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+            <span className="text-[10px] font-black uppercase tracking-widest text-text-secondary truncate max-w-[120px]">
               {subject.name}
             </span>
-            <Target size={14} className="text-indigo-400" />
+            <Target size={14} className="text-text-primary stroke-[2.5]" />
           </div>
           <div>
             <div className="flex items-baseline justify-between mb-1.5">
-              <span className="text-base font-black text-white tabular-nums">
+              <span className="text-base sm:text-lg font-black text-text-primary tabular-nums">
                 {subject.accuracyPercentage}%
               </span>
-              <span className="text-[10px] font-bold text-emerald-400">
+              <span className="px-1.5 py-0.5 rounded-md bg-secondary border border-border text-[10px] font-black text-text-primary shadow-[0_1px_0_#141827]">
                 {subject.deltaAccuracy >= 0 ? `+${subject.deltaAccuracy}%` : `${subject.deltaAccuracy}%`}
               </span>
             </div>
             {/* Accuracy Progress Bar */}
-            <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden border border-slate-700">
+            <div className="w-full h-2.5 rounded-full bg-surface-muted border-[1.5px] border-border overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-indigo-500 to-emerald-400 rounded-full transition-all duration-500"
+                className="h-full bg-primary rounded-full transition-all duration-500"
                 style={{ width: `${Math.min(100, Math.max(0, subject.accuracyPercentage))}%` }}
               />
             </div>
@@ -224,20 +224,20 @@ export const PostMatchSummary = React.memo(function PostMatchSummary({
         </div>
 
         {/* Pillar 3: School Contribution */}
-        <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-900 border-[2px] border-slate-700/80 shadow-[0_4px_0_rgba(15,23,42,0.95)] flex flex-col justify-between gap-2.5">
+        <div className="p-4 rounded-2xl bg-surface border-[2.5px] border-border shadow-[0_3px_0_#141827] flex flex-col justify-between gap-3">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+            <span className="text-[10px] font-black uppercase tracking-widest text-text-secondary">
               School Turf
             </span>
-            <Shield size={14} className="text-amber-400" />
+            <Shield size={14} className="text-text-primary stroke-[2.5]" />
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <span className="text-base font-black text-amber-400 tabular-nums">
+              <span className="text-base sm:text-lg font-black text-text-primary tabular-nums">
                 +{schoolTurfContribution} PTS
               </span>
             </div>
-            <span className="text-[10px] text-slate-400 font-semibold mt-1 block truncate">
+            <span className="text-[11px] text-text-secondary font-bold mt-1.5 block truncate">
               Credited to {player.schoolCode || "Academy"}
             </span>
           </div>
@@ -245,28 +245,28 @@ export const PostMatchSummary = React.memo(function PostMatchSummary({
       </div>
 
       {/* =================================================================== */}
-      {/* 3. PRIMARY ACTION DOCK (Above-the-Fold Immediate Next Steps)        */}
+      {/* 3. PRIMARY ACTION DOCK (Clean Typography & Zero Heavy Gradients)    */}
       {/* =================================================================== */}
       <div
         data-testid="primary-action-dock"
-        className="w-full flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 py-1"
+        className="w-full flex flex-col sm:flex-row items-stretch sm:items-center gap-3 py-1"
       >
         {/* Primary CTA: [ ⚔️ Instant Rematch (5s) ] */}
         <button
           type="button"
           onClick={handleRequestRematch}
           disabled={rematchState === "WAITING" || rematchState === "OPPONENT_LEFT"}
-          className={`flex-1 py-3 px-5 rounded-xl border-2 font-black text-xs sm:text-sm tracking-wide flex items-center justify-center gap-2 transition-all shadow-md active:translate-y-0.5 cursor-pointer ${
+          className={`flex-1 py-3.5 px-5 rounded-2xl border-[2.5px] border-border font-black text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer ${
             rematchState === "WAITING"
-              ? "bg-indigo-950/80 border-indigo-500 text-indigo-200 cursor-wait ring-2 ring-indigo-500/30"
+              ? "bg-primary/30 text-text-primary cursor-wait shadow-[0_2px_0_#141827]"
               : rematchState === "OPPONENT_LEFT"
-              ? "bg-slate-900 border-slate-800 text-slate-500 cursor-not-allowed shadow-none"
-              : "bg-emerald-500 hover:bg-emerald-400 text-slate-950 border-emerald-400 shadow-[0_3px_0_#064e3b]"
+              ? "bg-surface-muted text-text-secondary opacity-60 cursor-not-allowed shadow-none"
+              : "bg-primary hover:bg-[#ebd060] text-text-primary shadow-[0_4px_0_#141827] active:shadow-[0_1px_0_#141827] active:translate-y-0.5 hover:-translate-y-0.5"
           }`}
         >
           {rematchState === "WAITING" ? (
             <>
-              <Loader2 size={16} className="animate-spin text-indigo-400" />
+              <Loader2 size={16} className="animate-spin text-text-primary" />
               <span>Waiting for {opponent.gamerTag}... ({countdown}s)</span>
             </>
           ) : rematchState === "OPPONENT_LEFT" ? (
@@ -277,7 +277,7 @@ export const PostMatchSummary = React.memo(function PostMatchSummary({
           ) : (
             <>
               <Swords size={16} className="stroke-[2.5]" />
-              <span>⚔️ Instant Rematch (5s)</span>
+              <span>Instant Rematch (5s)</span>
             </>
           )}
         </button>
@@ -286,87 +286,91 @@ export const PostMatchSummary = React.memo(function PostMatchSummary({
         <button
           type="button"
           onClick={onFindNewOpponent}
-          className={`flex-1 py-3 px-5 rounded-xl border-2 font-bold text-xs sm:text-sm tracking-wide flex items-center justify-center gap-2 transition-all cursor-pointer ${
+          className={`flex-1 py-3.5 px-5 rounded-2xl border-[2.5px] border-border font-black text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer ${
             rematchState === "OPPONENT_LEFT"
-              ? "bg-emerald-500 hover:bg-emerald-400 text-slate-950 border-emerald-400 shadow-[0_3px_0_#064e3b] font-black"
-              : "bg-slate-900/90 hover:bg-slate-800 text-white border-slate-700 shadow-sm active:translate-y-0.5"
+              ? "bg-primary hover:bg-[#ebd060] text-text-primary shadow-[0_4px_0_#141827] active:shadow-[0_1px_0_#141827] active:translate-y-0.5 hover:-translate-y-0.5"
+              : "bg-surface hover:bg-surface-muted text-text-primary shadow-[0_4px_0_#141827] active:shadow-[0_1px_0_#141827] active:translate-y-0.5 hover:-translate-y-0.5"
           }`}
         >
           <span>Find New Rival</span>
-          <ArrowRight size={15} className="stroke-[2.5]" />
+          <ArrowRight size={15} className="stroke-[3]" />
         </button>
       </div>
 
       {/* =================================================================== */}
-      {/* 4. MISSED CONCEPTS ACCORDION & PEDAGOGICAL REVISION LOOP            */}
+      {/* 4. EXPANDABLE NEO-BRUTALIST ACCORDION: REVIEW MISSED QUESTIONS      */}
       {/* =================================================================== */}
       <div
         data-testid="missed-concepts-accordion"
-        className="w-full bg-slate-900 border-[2px] border-slate-800 rounded-2xl overflow-hidden shadow-[0_4px_0_rgba(15,23,42,0.9)]"
+        className="w-full bg-surface border-[2.5px] border-border rounded-2xl overflow-hidden shadow-[0_4px_0_#141827]"
       >
         <button
           type="button"
           onClick={() => setIsAccordionOpen((prev) => !prev)}
-          className="w-full p-4 flex items-center justify-between text-left hover:bg-slate-850 transition-colors cursor-pointer"
+          className="w-full p-4 flex items-center justify-between text-left hover:bg-surface-muted transition-colors cursor-pointer"
         >
-          <div className="flex items-center gap-2.5">
-            <Lightbulb size={18} className="text-amber-400 shrink-0" />
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-primary border-[2px] border-border flex items-center justify-center text-text-primary shrink-0 shadow-[0_1px_0_#141827]">
+              <Lightbulb size={18} className="stroke-[2.5]" />
+            </div>
             <div>
-              <span className="text-xs sm:text-sm font-black text-white uppercase tracking-wide">
+              <span className="text-xs sm:text-sm font-black text-text-primary uppercase tracking-wide">
                 {missedQuestions.length > 0
                   ? `Review ${missedQuestions.length} Missed Question${missedQuestions.length > 1 ? "s" : ""}`
                   : "Perfect Run • 0 Missed Concepts"}
               </span>
-              <span className="block text-[11px] text-slate-400 font-medium">
+              <span className="block text-[11px] text-text-secondary font-medium">
                 {missedQuestions.length > 0
                   ? "Reinforce critical knowledge gaps before next duel"
                   : "All questions answered correctly"}
               </span>
             </div>
           </div>
-          <div className="p-1 rounded-lg bg-slate-800 text-slate-300">
+          <div className="p-1.5 rounded-xl bg-surface border-[1.5px] border-border text-text-primary shadow-[0_1px_0_#141827]">
             {isAccordionOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
           </div>
         </button>
 
         {isAccordionOpen && missedQuestions.length > 0 && (
-          <div className="p-4 pt-1 flex flex-col gap-4 border-t border-slate-800/80 bg-slate-950/40">
+          <div className="p-4 pt-2 flex flex-col gap-3.5 border-t-[2px] border-border bg-surface-muted/30">
             {missedQuestions.map((q, idx) => {
               const isBookmarked = bookmarkedQuestionIds.has(q.id);
               return (
                 <div
                   key={q.id || idx}
                   data-testid={`missed-question-${idx}`}
-                  className="p-3.5 sm:p-4 rounded-xl bg-slate-900/90 border border-slate-800 flex flex-col gap-3 shadow-inner"
+                  className="p-4 rounded-2xl bg-surface border-[2px] border-border flex flex-col gap-3 shadow-[0_2px_0_#141827]"
                 >
-                  <p className="text-xs sm:text-sm font-bold text-slate-200 leading-snug">
-                    <span className="text-amber-400 mr-1.5 font-black">#{idx + 1}</span>
+                  <p className="text-xs sm:text-sm font-black text-text-primary leading-snug">
+                    <span className="inline-block px-1.5 py-0.5 rounded-md bg-primary border border-border text-[10px] mr-2">
+                      #{idx + 1}
+                    </span>
                     {q.questionText}
                   </p>
 
-                  {/* Answers Comparison with Enhanced High-Contrast Pills */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                    {/* User Selection Pill: Label #FCA5A5 (rose-300), Text #FFFFFF (bold white) */}
-                    <div className="p-2.5 rounded-xl bg-rose-950/60 border border-rose-500/50 flex items-start gap-2.5 shadow-sm">
-                      <XCircle size={16} className="text-rose-400 shrink-0 mt-0.5 stroke-[2.5]" />
+                  {/* Answers Comparison with Neo-Brutalist High-Contrast Pills */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+                    {/* User Selection Pill */}
+                    <div className="p-3 rounded-xl bg-rose-50 border-[1.5px] border-border flex items-start gap-2.5 shadow-[0_1px_0_#141827]">
+                      <XCircle size={16} className="text-rose-700 shrink-0 mt-0.5 stroke-[2.5]" />
                       <div className="min-w-0">
-                        <span className="block text-[10px] uppercase font-black text-[#FCA5A5] tracking-wider mb-0.5">
+                        <span className="block text-[10px] uppercase font-black text-rose-800 tracking-wider mb-0.5">
                           YOUR ANSWER
                         </span>
-                        <span className="font-bold text-white text-xs sm:text-sm break-words leading-snug">
+                        <span className="font-bold text-text-primary text-xs sm:text-sm break-words leading-snug">
                           {q.selectedAnswer}
                         </span>
                       </div>
                     </div>
 
-                    {/* Correct Answer Pill: Label #6EE7B7 (emerald-300), Text #FFFFFF (bold white) */}
-                    <div className="p-2.5 rounded-xl bg-emerald-950/60 border border-emerald-500/50 flex items-start gap-2.5 shadow-sm">
-                      <CheckCircle2 size={16} className="text-emerald-400 shrink-0 mt-0.5 stroke-[2.5]" />
+                    {/* Correct Answer Pill */}
+                    <div className="p-3 rounded-xl bg-emerald-50 border-[1.5px] border-border flex items-start gap-2.5 shadow-[0_1px_0_#141827]">
+                      <CheckCircle2 size={16} className="text-emerald-700 shrink-0 mt-0.5 stroke-[2.5]" />
                       <div className="min-w-0">
-                        <span className="block text-[10px] uppercase font-black text-[#6EE7B7] tracking-wider mb-0.5">
+                        <span className="block text-[10px] uppercase font-black text-emerald-800 tracking-wider mb-0.5">
                           CORRECT ANSWER
                         </span>
-                        <span className="font-bold text-white text-xs sm:text-sm break-words leading-snug">
+                        <span className="font-bold text-text-primary text-xs sm:text-sm break-words leading-snug">
                           {q.correctAnswer}
                         </span>
                       </div>
@@ -374,13 +378,13 @@ export const PostMatchSummary = React.memo(function PostMatchSummary({
                   </div>
 
                   {/* Dynamic Rule Breakdown Card */}
-                  <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 flex items-start gap-2.5 shadow-inner">
-                    <Lightbulb size={16} className="text-amber-400 shrink-0 mt-0.5 stroke-[2.5]" />
+                  <div className="p-3 rounded-xl bg-surface-muted border border-border flex items-start gap-2.5 shadow-sm">
+                    <Lightbulb size={16} className="text-text-primary shrink-0 mt-0.5 stroke-[2.5]" />
                     <div className="flex-1 min-w-0">
-                      <span className="block text-[10px] uppercase font-black text-amber-400/90 tracking-wider mb-0.5">
+                      <span className="block text-[10px] uppercase font-black text-text-secondary tracking-wider mb-0.5">
                         Pedagogical Rule
                       </span>
-                      <p className="text-xs font-semibold text-slate-200 leading-relaxed break-words">
+                      <p className="text-xs font-bold text-text-primary leading-relaxed break-words">
                         {formatAcademicRule(q.conceptExplanation, q.questionText)}
                       </p>
                     </div>
@@ -392,20 +396,20 @@ export const PostMatchSummary = React.memo(function PostMatchSummary({
                       type="button"
                       onClick={() => handleToggleBookmark(q.id)}
                       disabled={isBookmarked}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-black transition-all cursor-pointer ${
+                      className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border-[1.5px] border-border text-xs font-black uppercase tracking-wider transition-all shadow-[0_2px_0_#141827] active:shadow-[0_1px_0_#141827] active:translate-y-0.5 cursor-pointer ${
                         isBookmarked
-                          ? "bg-emerald-950/60 border-emerald-500/60 text-emerald-300"
-                          : "bg-slate-800 hover:bg-slate-750 border-slate-700 text-slate-200 hover:text-white"
+                          ? "bg-secondary text-text-primary opacity-80 cursor-default"
+                          : "bg-surface hover:bg-surface-muted text-text-primary hover:-translate-y-0.5"
                       }`}
                     >
                       {isBookmarked ? (
                         <>
-                          <BookmarkCheck size={14} className="text-emerald-400 stroke-[3]" />
+                          <BookmarkCheck size={14} className="stroke-[3]" />
                           <span>Saved to Revision Deck</span>
                         </>
                       ) : (
                         <>
-                          <Bookmark size={14} className="text-amber-400 stroke-[2.5]" />
+                          <Bookmark size={14} className="stroke-[2.5]" />
                           <span>🔖 Save to Revision Deck</span>
                         </>
                       )}

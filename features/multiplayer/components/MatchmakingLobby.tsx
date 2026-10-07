@@ -59,10 +59,10 @@ export function MatchmakingLobby({
   return (
     <div className="w-full flex flex-col items-center">
       {/* Subject Badge Indicator */}
-      <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-slate-900 border border-amber-400/40 text-amber-300 text-xs font-black uppercase tracking-wider mb-2 shadow-sm">
+      <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-surface border-[2px] border-border text-text-primary text-xs font-black uppercase tracking-wider mb-4 shadow-[0_2px_0_#141827]">
         <span>{subject.name}</span>
-        <span className="opacity-60">•</span>
-        <span className="text-[11px] font-bold opacity-80">Ranked Duel</span>
+        <span className="opacity-40">•</span>
+        <span className="text-[11px] font-black text-text-secondary">Ranked Duel</span>
       </div>
 
       {/* Dynamic Radar Arena with VS Clash Transition (Redundant format card eliminated) */}

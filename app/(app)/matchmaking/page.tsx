@@ -83,13 +83,9 @@ export default function MatchmakingPage() {
     <main className="w-full min-h-[75vh] flex flex-col items-center justify-center py-6 px-4">
       {/* Subject indicator */}
       {selectedSubject && (
-        <div className="flex items-center gap-2 mb-4">
-          <div className="w-8 h-8 rounded-lg bg-amber-400 border border-slate-900 flex items-center justify-center text-slate-950 font-black shadow-sm">
-            <Swords size={16} />
-          </div>
-          <span className="text-sm font-black text-slate-900 dark:text-slate-100">
-            {selectedSubject.name} Arena
-          </span>
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-surface border-[2px] border-border text-text-primary text-xs font-black uppercase tracking-wider mb-4 shadow-[0_2px_0_#141827]">
+          <Swords size={14} className="stroke-[2.5]" />
+          <span>{selectedSubject.name} Arena</span>
         </div>
       )}
 

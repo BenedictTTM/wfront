@@ -52,24 +52,24 @@ export const MatchHUD = React.memo(function MatchHUD({
   const { timerTextColor, timerBorderColor, timerBgColor, timerPulseClass } = useMemo(() => {
     if (seconds <= 3) {
       return {
-        timerTextColor: "text-rose-400",
-        timerBorderColor: "border-rose-500",
-        timerBgColor: "bg-rose-500/20",
+        timerTextColor: "text-rose-700",
+        timerBorderColor: "border-rose-600",
+        timerBgColor: "bg-rose-100",
         timerPulseClass: "animate-pulse",
       };
     }
     if (seconds <= 7) {
       return {
-        timerTextColor: "text-amber-400",
-        timerBorderColor: "border-amber-400/80",
-        timerBgColor: "bg-amber-400/15",
+        timerTextColor: "text-text-primary",
+        timerBorderColor: "border-border",
+        timerBgColor: "bg-primary",
         timerPulseClass: "",
       };
     }
     return {
-      timerTextColor: "text-slate-200",
-      timerBorderColor: "border-slate-700",
-      timerBgColor: "bg-slate-800/80",
+      timerTextColor: "text-text-primary",
+      timerBorderColor: "border-border",
+      timerBgColor: "bg-surface-muted",
       timerPulseClass: "",
     };
   }, [seconds]);
@@ -81,13 +81,13 @@ export const MatchHUD = React.memo(function MatchHUD({
     <header
       role="region"
       aria-label="Multiplayer Match HUD"
-      className="sticky top-0 z-30 w-full h-16 max-h-16 bg-[#0F172A] border border-slate-800 rounded-xl px-2.5 sm:px-4 shadow-lg select-none"
+      className="sticky top-0 z-30 w-full bg-surface border-[2.5px] border-border rounded-2xl px-3 sm:px-4 py-2 sm:py-2.5 shadow-[0_4px_0_#141827] select-none"
     >
       <div className="w-full h-full grid grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-4">
-        {/* ── LEFT COLUMN: User (Avatar Circle, Gamer Tag, Streak, Neutral Bold Score) ── */}
+        {/* ── LEFT COLUMN: User (Avatar Circle, Gamer Tag, Streak, Score) ── */}
         <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 justify-start">
           {/* Avatar Circle */}
-          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-slate-700 bg-slate-800 flex items-center justify-center font-bold text-xs text-slate-200 overflow-hidden shrink-0 shadow-sm">
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border-[2px] border-border bg-secondary flex items-center justify-center font-black text-xs text-text-primary overflow-hidden shrink-0 shadow-[0_1px_0_#141827]">
             {player.avatarUrl ? (
               <img
                 src={player.avatarUrl}
@@ -102,27 +102,27 @@ export const MatchHUD = React.memo(function MatchHUD({
           {/* Gamer Tag & Streak */}
           <div className="flex items-center gap-1.5 min-w-0">
             <span
-              className="text-xs sm:text-sm font-bold text-slate-100 truncate max-w-[60px] sm:max-w-[100px]"
+              className="text-xs sm:text-sm font-black text-text-primary truncate max-w-[60px] sm:max-w-[100px]"
               title={player.gamerTag}
             >
               {player.gamerTag}
             </span>
             {player.streak >= 2 && (
               <span
-                className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-black shrink-0"
+                className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-primary border-[1.5px] border-border text-text-primary text-[10px] font-black shrink-0 shadow-[0_1px_0_#141827]"
                 title={`${player.streak} streak`}
               >
-                <Flame size={10} className="text-amber-400 fill-amber-400 shrink-0" />
+                <Flame size={10} className="text-text-primary fill-text-primary shrink-0" />
                 <span>{player.streak}</span>
               </span>
             )}
           </div>
 
-          {/* Neutral Bold Score (White / Neutral — Never misleading green while trailing) */}
+          {/* Neutral Bold Score */}
           <span
             aria-live="polite"
             aria-atomic="true"
-            className="text-sm sm:text-base font-black tabular-nums text-white shrink-0 ml-0.5"
+            className="text-sm sm:text-base font-black tabular-nums text-text-primary shrink-0 ml-0.5"
             title="Your score"
           >
             {player.score.toLocaleString()}
@@ -131,25 +131,30 @@ export const MatchHUD = React.memo(function MatchHUD({
 
         {/* ── CENTER COLUMN: Match Dynamics (Anchored Timer & Tug-of-War Track) ── */}
         <div className="flex flex-col items-center justify-center w-[130px] sm:w-[200px] md:w-[240px] px-1 sm:px-2 min-w-0">
-          {/* Countdown Timer (Positioned cleanly directly above the balance bar) */}
+          {/* Countdown Timer */}
           <div
-            className={`px-2 py-0.5 rounded-md border text-[11px] sm:text-xs font-mono font-bold flex items-center justify-center transition-colors mb-1 ${timerTextColor} ${timerBorderColor} ${timerBgColor} ${timerPulseClass}`}
+            className={`px-2.5 py-0.5 rounded-full border-[1.5px] text-[11px] sm:text-xs font-mono font-black flex items-center justify-center transition-colors mb-1 shadow-[0_1px_0_#141827] ${timerTextColor} ${timerBorderColor} ${timerBgColor} ${timerPulseClass}`}
             title={`Remaining Time: ${countdownText}`}
           >
             <span>{countdownText}</span>
           </div>
 
-          {/* 6px Horizontal Tug-of-War Balance Track with Centered Relative Gap Marker */}
-          <div className="w-full relative flex items-center h-[6px]">
-            {/* Gradient Track: Red/Rose (Opponent Advantage) vs Green/Emerald (Player Advantage) */}
-            <div className="h-[6px] w-full rounded-full bg-gradient-to-r from-rose-500 via-slate-700 to-emerald-500 shadow-inner" />
+          {/* Tug-of-War Balance Track with Centered Relative Gap Marker */}
+          <div className="w-full relative flex items-center h-2">
+            {/* Clean neutral track */}
+            <div className="h-2 w-full rounded-full bg-surface-muted border-[1.5px] border-border overflow-hidden relative flex">
+              <div className="w-1/2 h-full bg-secondary/50 border-r border-border/30" />
+              <div className="w-1/2 h-full bg-surface-muted" />
+            </div>
 
-            {/* Centered Spring Marker representing relative score gap */}
+            {/* Marker representing relative score gap */}
             <div
-              className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full bg-white border-2 border-slate-900 shadow-[0_0_8px_rgba(255,255,255,0.9)] z-10 pointer-events-none transition-all duration-300 ease-out"
+              className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-primary border-[2px] border-border shadow-[0_1.5px_0_#141827] z-10 pointer-events-none transition-all duration-300 ease-out flex items-center justify-center"
               style={{ left: `${indicatorPosition}%` }}
               aria-label={`Momentum position ${indicatorPosition}%`}
-            />
+            >
+              <div className="w-1 h-1 rounded-full bg-border" />
+            </div>
           </div>
         </div>
 
@@ -157,14 +162,14 @@ export const MatchHUD = React.memo(function MatchHUD({
         <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0 justify-end">
           {/* Opponent Live Status Badge */}
           {opponent.status === "LOCKED_IN" ? (
-            <span className="inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-[10px] font-black shrink-0 tracking-tight">
-              <Check size={10} className="stroke-[3.5] text-emerald-400 shrink-0" />
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 border-[1.5px] border-border text-emerald-900 text-[10px] font-black shrink-0 shadow-[0_1px_0_#141827] tracking-tight">
+              <Check size={10} className="stroke-[3.5] text-emerald-800 shrink-0" />
               <span className="hidden sm:inline">Locked In</span>
               <span className="sm:hidden">Locked</span>
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300 text-[10px] font-bold shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-pulse shrink-0" />
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-muted border-[1.5px] border-border text-text-secondary text-[10px] font-black shrink-0 shadow-[0_1px_0_#141827]">
+              <span className="w-1.5 h-1.5 rounded-full bg-text-secondary animate-pulse shrink-0" />
               <span className="hidden sm:inline">Thinking...</span>
               <span className="sm:hidden">Thinking</span>
             </span>
@@ -174,7 +179,7 @@ export const MatchHUD = React.memo(function MatchHUD({
           <span
             aria-live="polite"
             aria-atomic="true"
-            className="text-sm sm:text-base font-black tabular-nums text-white shrink-0"
+            className="text-sm sm:text-base font-black tabular-nums text-text-primary shrink-0"
             title="Opponent score"
           >
             {opponent.score.toLocaleString()}
@@ -182,14 +187,14 @@ export const MatchHUD = React.memo(function MatchHUD({
 
           {/* Opponent Tag */}
           <span
-            className="text-xs sm:text-sm font-bold text-slate-100 truncate max-w-[60px] sm:max-w-[100px] text-right"
+            className="text-xs sm:text-sm font-black text-text-primary truncate max-w-[60px] sm:max-w-[100px] text-right"
             title={opponent.gamerTag}
           >
             {opponent.gamerTag}
           </span>
 
           {/* Opponent Avatar Circle */}
-          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-slate-700 bg-slate-800 flex items-center justify-center font-bold text-xs text-slate-200 overflow-hidden shrink-0 shadow-sm">
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border-[2px] border-border bg-primary flex items-center justify-center font-black text-xs text-text-primary overflow-hidden shrink-0 shadow-[0_1px_0_#141827]">
             {opponent.avatarUrl ? (
               <img
                 src={opponent.avatarUrl}

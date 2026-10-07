@@ -10,6 +10,10 @@ import { RoundEvaluationDrawer } from "@/features/multiplayer/components/RoundEv
 import { ClutchStateBanner } from "@/features/multiplayer/components/ClutchStateBanner";
 import { PostMatchSummary } from "@/features/multiplayer/components/PostMatchSummary";
 import { MatchmakingLobby } from "@/features/multiplayer/components/MatchmakingLobby";
+import {
+  VersusMatchTransition,
+  type CombatantProfile,
+} from "@/features/multiplayer/components/VersusMatchTransition";
 import { toast } from "sonner";
 import {
   useMatchmaking,
@@ -134,6 +138,7 @@ export default function LiveMatchPage() {
   } = useMultiplayerWs({ token, matchId });
 
   const { currentStreak, recordAnswer, resetStreak } = useStreak(matchId);
+  const [transitionDone, setTransitionDone] = useState(false);
 
   // Track match performance statistics from round evaluations
   const [matchStats, setMatchStats] = useState({
@@ -213,10 +218,41 @@ export default function LiveMatchPage() {
   const myRanking = matchEnd?.rankings?.find((r) => r.participantId === currentUserId);
   const oppRanking = matchEnd?.rankings?.find((r) => r.participantId !== currentUserId);
 
+  // Construct combatant profiles for the 1v1 Versus cinematic transition
+  const player1: CombatantProfile = {
+    username: me?.gamerTag || (me?.name && !me.name.includes("@") ? me.name : "Kofi_Amanfoo"),
+    avatarUrl: me?.avatarUrl || null,
+    elo: 1420,
+    schoolName: me?.school?.name || "Prempeh College",
+    schoolShortCode: me?.school?.shortCode || "PMP",
+    schoolColor: "#055B38",
+    schoolAccentColor: "#F4D06F",
+    crestUrl: me?.school?.crestUrl || null,
+    motto: "Suban ne Nimdeε",
+    region: "Kumasi, Ashanti",
+    rankTitle: "Ashanti Regional Champion",
+  };
+
+  const player2: CombatantProfile = {
+    username:
+      opponent?.gamerTag ||
+      (opponent?.name && !opponent.name.includes("@") ? opponent.name : "Nana_Akora"),
+    avatarUrl: opponent?.avatarUrl || null,
+    elo: 1395,
+    schoolName: opponent?.school?.name || "Achimota School",
+    schoolShortCode: opponent?.school?.shortCode || "MOT",
+    schoolColor: "#172554",
+    schoolAccentColor: "#93C5FD",
+    crestUrl: opponent?.school?.crestUrl || null,
+    motto: "Ut Omnes Unum Sint",
+    region: "Legon, Greater Accra",
+    rankTitle: "Greater Accra Top Seed",
+  };
+
   return (
-    <div className="flex flex-col gap-4 py-2 max-w-lg mx-auto w-full min-h-[70vh] pb-32 sm:pb-36">
+    <div className="flex flex-col gap-4 py-2 max-w-4xl mx-auto w-full min-h-[70vh] pb-32 sm:pb-36">
       {/* ── Match Header: Identity & Status ── */}
-      <div className="flex items-center justify-between px-1">
+      <div className="flex items-center justify-between px-1 max-w-lg mx-auto w-full">
         <span className="text-[10px] font-black uppercase tracking-widest text-text-secondary">
           1v1 Speed Match
         </span>
@@ -233,9 +269,9 @@ export default function LiveMatchPage() {
               </button>
             </>
           ) : isConnected ? (
-            <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              <span className="text-[10px] font-black text-emerald-600">LIVE</span>
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface border-[2px] border-border text-[10px] font-black text-text-primary shadow-[0_1.5px_0_#141827]">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>LIVE MATCH</span>
             </div>
           ) : (
             <div className="flex items-center gap-1.5 text-text-secondary text-xs">
@@ -246,133 +282,70 @@ export default function LiveMatchPage() {
         </div>
       </div>
 
-      {/* ── Unified Competitive Match HUD (Replaces fragmented score, timer & status boxes) ── */}
-      {participants.length > 0 && currentQuestion && matchState !== "FINISHED" && (
-        <MatchHUD
-          player={{
-            gamerTag: me?.gamerTag || (me?.name && !me.name.includes("@") ? me.name : "You"),
-            avatarUrl: me?.avatarUrl || "",
-            score: me?.score ?? 0,
-            streak: currentStreak,
-          }}
-          opponent={{
-            gamerTag:
-              opponent?.gamerTag ||
-              (opponent?.name && !opponent.name.includes("@") ? opponent.name : "Ghost Scholar"),
-            avatarUrl: opponent?.avatarUrl || "",
-            score: opponent?.score ?? 0,
-            streak: 0,
-            status:
-              roundReveal || opponent?.status === "LOCKED_IN"
-                ? "LOCKED_IN"
-                : "THINKING",
-          }}
-          currentRound={(currentQuestion?.questionIndex ?? 0) + 1}
-          totalRounds={currentQuestion?.totalQuestions ?? 10}
-          remainingTimeMs={remainingTimeMs}
-          maxScoreDifferential={500}
-        />
+      {/* ── Unified Competitive Match HUD (Appears after cinematic transition completes) ── */}
+      {participants.length > 0 && currentQuestion && matchState !== "FINISHED" && transitionDone && (
+        <div className="max-w-lg mx-auto w-full">
+          <MatchHUD
+            player={{
+              gamerTag: me?.gamerTag || (me?.name && !me.name.includes("@") ? me.name : "You"),
+              avatarUrl: me?.avatarUrl || "",
+              score: me?.score ?? 0,
+              streak: currentStreak,
+            }}
+            opponent={{
+              gamerTag:
+                opponent?.gamerTag ||
+                (opponent?.name && !opponent.name.includes("@") ? opponent.name : "Ghost Scholar"),
+              avatarUrl: opponent?.avatarUrl || "",
+              score: opponent?.score ?? 0,
+              streak: 0,
+              status:
+                roundReveal || opponent?.status === "LOCKED_IN"
+                  ? "LOCKED_IN"
+                  : "THINKING",
+            }}
+            currentRound={(currentQuestion?.questionIndex ?? 0) + 1}
+            totalRounds={currentQuestion?.totalQuestions ?? 10}
+            remainingTimeMs={remainingTimeMs}
+            maxScoreDifferential={500}
+          />
+        </div>
       )}
 
       {/* ── State Views ── */}
 
       {/* 0. Matchmaking Lobby View (active when player clicks REMATCH from results) */}
       {isSearching && activeSubject && matchState === "FINISHED" ? (
-        <MatchmakingLobby
-          subject={activeSubject}
-          waitingSince={queueStatus?.waitingSince}
-          onCancel={cancelSearch}
-          isCancelling={isCancellingRematch}
-        />
+        <div className="max-w-lg mx-auto w-full">
+          <MatchmakingLobby
+            subject={activeSubject}
+            waitingSince={queueStatus?.waitingSince}
+            onCancel={cancelSearch}
+            isCancelling={isCancellingRematch}
+          />
+        </div>
+      ) : !transitionDone && matchState !== "FINISHED" ? (
+        /* 1. Snappy 1v1 Versus Pre-Match Cinematic Transition (Plays on entry before Question 1) */
+        <div className="flex-1 flex flex-col items-center justify-center py-4 w-full">
+          <VersusMatchTransition
+            player1={player1}
+            player2={player2}
+            subject={activeSubject ? `${activeSubject.name.toUpperCase()} • SPEED ROUND` : "CORE MATHEMATICS • SPEED ROUND"}
+            stakes="+25 SCHOOL TURF PTS"
+            onComplete={() => setTransitionDone(true)}
+          />
+        </div>
       ) : (
-        <>
-          {/* 1. Pre-Game Matchup & Countdown */}
-          {(!matchState || matchState === "LOBBY" || matchState === "STARTING") && !matchEnd && (
+        <div className="max-w-lg mx-auto w-full flex flex-col gap-4">
+          {/* Waiting for Question 1 after transition completes */}
+          {(!matchState || matchState === "LOBBY" || matchState === "STARTING") && !matchEnd && !currentQuestion && (
             <div className="flex-1 flex flex-col items-center justify-center py-12">
-              {countdown !== null ? (
-                <div className="w-full max-w-sm flex flex-col items-center gap-5 p-6 bg-surface border-[2px] border-border rounded-2xl shadow-[0_4px_0_rgba(20,24,39,0.9)] animate-in fade-in duration-200">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-text-secondary bg-surface-muted px-3 py-1 border border-border/40 rounded-full">
-                    Match Found
-                  </span>
-
-                  {/* Player vs Opponent Face-Off */}
-                  <div className="w-full grid grid-cols-5 items-center gap-2">
-                    {/* You */}
-                    <div className="col-span-2 flex flex-col items-center gap-1.5 text-center min-w-0">
-                      <div className="relative">
-                        <div className="w-12 h-12 rounded-xl bg-primary border-[2px] border-border flex items-center justify-center text-base font-black text-text-primary shadow-[0_2px_0_rgba(20,24,39,0.9)]">
-                          {(me?.name || "Y").trim().charAt(0).toUpperCase()}
-                        </div>
-                        <span
-                          title="Connected"
-                          className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-surface bg-emerald-500"
-                        />
-                      </div>
-                      <span className="text-xs font-black text-text-primary truncate max-w-full">
-                        {me?.name || "You"}
-                      </span>
-                      <div className="flex items-center gap-1">
-                        <span className="text-[9px] font-black uppercase text-text-secondary px-1.5 py-0.2 bg-primary/20 rounded">
-                          YOU
-                        </span>
-                        <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
-                          Ready
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* VS Emblem */}
-                    <div className="col-span-1 flex items-center justify-center">
-                      <div className="w-8 h-8 rounded-lg bg-surface-muted border-[1.5px] border-border flex items-center justify-center font-black text-xs text-text-secondary">
-                        VS
-                      </div>
-                    </div>
-
-                    {/* Opponent */}
-                    <div className="col-span-2 flex flex-col items-center gap-1.5 text-center min-w-0">
-                      <div className="relative">
-                        <div className="w-12 h-12 rounded-xl bg-surface border-[2px] border-border flex items-center justify-center text-base font-black text-text-secondary shadow-[0_2px_0_rgba(20,24,39,0.9)]">
-                          {(opponent?.name || "O").trim().charAt(0).toUpperCase()}
-                        </div>
-                        <span
-                          title={opponent?.isConnected ? "Opponent connected" : "Opponent disconnected"}
-                          className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-surface ${
-                            opponent?.isConnected ? "bg-emerald-500" : "bg-rose-500"
-                          }`}
-                        />
-                      </div>
-                      <span className="text-xs font-black text-text-primary truncate max-w-full">
-                        {opponent?.name || "Opponent"}
-                      </span>
-                      <div className="flex items-center gap-1">
-                        <span className="text-[9px] font-black uppercase text-text-secondary px-1.5 py-0.2 bg-surface-muted rounded">
-                          OPPONENT
-                        </span>
-                        <span className={`text-[10px] font-bold ${opponent?.isConnected ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500"}`}>
-                          {opponent?.isConnected ? "Ready" : "Waiting"}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Countdown Number */}
-                  <div className="flex flex-col items-center gap-1 pt-3 border-t border-border/10 w-full">
-                    <span className="text-5xl font-black text-text-primary tabular-nums">
-                      {countdown}
-                    </span>
-                    <span className="text-[10px] font-black uppercase tracking-wider text-text-secondary">
-                      Get ready to answer
-                    </span>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center gap-3 text-center">
-                  <Loader2 size={32} className="text-text-secondary animate-spin" />
-                  <span className="text-xs font-black text-text-secondary tracking-wide">
-                    {status === "connecting" ? "CONNECTING TO MATCH…" : "WAITING FOR OPPONENT TO CONNECT…"}
-                  </span>
-                </div>
-              )}
+              <div className="flex flex-col items-center gap-3 text-center">
+                <Loader2 size={32} className="text-text-secondary animate-spin" />
+                <span className="text-xs font-black text-text-secondary tracking-wide">
+                  CALIBRATING QUESTION 1…
+                </span>
+              </div>
             </div>
           )}
 
@@ -539,7 +512,7 @@ export default function LiveMatchPage() {
               </button>
             </div>
           )}
-        </>
+        </div>
       )}
     </div>
   );

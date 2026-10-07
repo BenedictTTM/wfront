@@ -1,7 +1,7 @@
 // features/multiplayer/components/ClutchStateBanner.test.ts
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { evaluateClutchState } from '../utils/clutchEngine.ts';
+import { evaluateClutchState, type ClutchAnalysis } from '../utils/clutchEngine.ts';
 
 describe('ClutchStateBanner Specifications & Tokens', () => {
   it('correctly maps CLUTCH_WINDOW tokens: #2E1065 dark purple bg and #F59E0B gold border', () => {

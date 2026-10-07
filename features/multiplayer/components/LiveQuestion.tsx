@@ -91,48 +91,48 @@ export function LiveQuestion({
     <div className="w-full flex flex-col gap-4">
       {/* ── Standalone Fallback Timer (Only shown if hideTimer is false) ── */}
       {!hideTimer && (
-        <div className="flex flex-col gap-1.5 p-3 rounded-xl bg-white border border-slate-300 shadow-sm">
-          <div className="flex justify-between items-center text-xs font-bold text-slate-700">
+        <div className="flex flex-col gap-1.5 p-3 rounded-2xl bg-surface border-[2.5px] border-border shadow-[0_3px_0_#141827]">
+          <div className="flex justify-between items-center text-xs font-black text-text-primary">
             <div className="flex items-center gap-1.5">
               <Clock
                 size={14}
                 className={
                   isUrgent
-                    ? "text-rose-600"
+                    ? "text-rose-600 stroke-[2.5]"
                     : isWarning
-                    ? "text-amber-600"
-                    : "text-slate-600"
+                    ? "text-amber-600 stroke-[2.5]"
+                    : "text-text-primary stroke-[2.5]"
                 }
               />
               <span>Time Remaining</span>
               {isFinalQuestion && (
-                <span className="ml-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-amber-100 text-amber-900 border border-amber-300">
+                <span className="ml-1 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-primary text-text-primary border-[1.5px] border-border shadow-[0_1px_0_#141827]">
                   FINAL QUESTION
                 </span>
               )}
             </div>
 
             <span
-              className={`font-black text-sm tabular-nums tracking-wide px-2 py-0.5 rounded-md border ${
+              className={`font-black text-xs tabular-nums tracking-wide px-2.5 py-0.5 rounded-full border-[1.5px] border-border shadow-[0_1px_0_#141827] ${
                 isUrgent
-                  ? "bg-rose-100 border-rose-300 text-rose-800"
+                  ? "bg-rose-100 text-rose-800"
                   : isWarning
-                  ? "bg-amber-100 border-amber-300 text-amber-800"
-                  : "bg-slate-100 border-slate-300 text-slate-800"
+                  ? "bg-primary text-text-primary"
+                  : "bg-surface-muted text-text-primary"
               }`}
             >
               {timeLeftSeconds}s
             </span>
           </div>
 
-          <div className="w-full h-2 bg-slate-100 border border-slate-300 rounded-full overflow-hidden">
+          <div className="w-full h-2.5 bg-surface-muted border-[1.5px] border-border rounded-full overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-75 ${
                 isUrgent
-                  ? "bg-rose-600"
+                  ? "bg-rose-500"
                   : isWarning
-                  ? "bg-amber-500"
-                  : "bg-slate-900"
+                  ? "bg-primary"
+                  : "bg-text-primary"
               }`}
               style={{ width: `${progressPercent}%` }}
             />
@@ -140,27 +140,27 @@ export function LiveQuestion({
         </div>
       )}
 
-      {/* ── Question Card (High Contrast & Clear Typography) ── */}
+      {/* ── Question Card (Sharp-Bordered Cream Card) ── */}
       <div
-        className={`p-5 sm:p-6 bg-white border rounded-2xl shadow-sm transition-colors ${
+        className={`p-5 sm:p-6 bg-surface border-[3px] border-border rounded-3xl shadow-[0_4px_0_#141827] transition-all ${
           isFinalQuestion
-            ? "border-amber-400 ring-2 ring-amber-400/30"
-            : "border-slate-300"
+            ? "bg-primary/10"
+            : ""
         }`}
       >
         {isFinalQuestion && (
-          <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-amber-800 mb-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary border-[2px] border-border text-[10px] font-black uppercase tracking-wider text-text-primary shadow-[0_1.5px_0_#141827] mb-3">
+            <span className="w-2 h-2 rounded-full bg-text-primary animate-pulse" />
             <span>Deciding Question</span>
           </div>
         )}
-        <p className="text-base sm:text-lg font-bold text-[#0F172A] leading-relaxed">
+        <p className="text-base sm:text-lg font-black text-text-primary leading-relaxed">
           {question.text}
         </p>
       </div>
 
-      {/* ── Accessible 2x2 Answer Grid ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
+      {/* ── Accessible 2x2 Answer Grid (Solid Fills & Bold Black Borders) ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 w-full">
         {question.options.map((option, idx) => {
           const isSelected = selectedOptionId === option.id;
           const isCorrectOption = roundReveal ? roundReveal.correctOptionId === option.id : false;
@@ -174,32 +174,32 @@ export function LiveQuestion({
           let badgeClasses = "";
 
           if (isUserMissed) {
-            // User Missed: Background #FFF1F2 (rose-50), border #E11D48 (rose-600), text #881337 (rose-900)
+            // User Missed: Crisp red fill, bold black border, sharp text
             buttonClasses =
-              "bg-[#FFF1F2] border-2 border-[#E11D48] text-[#881337] shadow-sm";
-            badgeClasses = "bg-[#E11D48] text-white border-[#E11D48] font-black";
+              "bg-rose-100 border-[2.5px] border-border text-rose-950 shadow-[0_3px_0_#141827]";
+            badgeClasses = "bg-rose-500 text-white border-[2px] border-border font-black";
           } else if (isCorrectRevealed) {
-            // Correct Revealed: Background #ECFDF5 (emerald-50), border #059669 (emerald-600), text #064E3B (emerald-950)
+            // Correct Revealed: Crisp green fill, bold black border, sharp text
             buttonClasses =
-              "bg-[#ECFDF5] border-2 border-[#059669] text-[#064E3B] shadow-sm";
-            badgeClasses = "bg-[#059669] text-white border-[#059669] font-black";
+              "bg-emerald-100 border-[2.5px] border-border text-emerald-950 shadow-[0_3px_0_#141827]";
+            badgeClasses = "bg-emerald-500 text-white border-[2px] border-border font-black";
           } else if (isOtherOption) {
-            // Other Options: Dimmed with 50% opacity, standard readable dark text
+            // Other Options: Dimmed with 40% opacity
             buttonClasses =
-              "opacity-50 bg-white border-[1.5px] border-[#CBD5E1] text-[#0F172A]";
+              "opacity-40 bg-surface border-[2px] border-border/60 text-text-secondary shadow-none";
             badgeClasses =
-              "bg-slate-100 border border-slate-300 text-slate-700 font-bold";
+              "bg-surface-muted border-[1.5px] border-border/60 text-text-secondary font-bold";
           } else if (isSelected) {
             // Pre-reveal selection locked state
             buttonClasses =
-              "bg-slate-100 border-2 border-slate-900 text-[#0F172A] ring-2 ring-slate-400/40 shadow-sm";
-            badgeClasses = "bg-slate-900 text-white border-slate-900 font-black";
+              "bg-primary/20 border-[2.5px] border-border text-text-primary shadow-[0_3px_0_#141827]";
+            badgeClasses = "bg-primary text-text-primary border-[2px] border-border font-black";
           } else {
-            // Default / Unselected: White background, 1.5px border #CBD5E1, text #0F172A
+            // Default / Unselected: Solid white/cream fill, 2.5px black border, hard shadow
             buttonClasses =
-              "bg-white border-[1.5px] border-[#CBD5E1] text-[#0F172A] hover:border-slate-400 hover:bg-slate-50/80 shadow-sm";
+              "bg-surface border-[2.5px] border-border text-text-primary hover:bg-surface-muted shadow-[0_3px_0_#141827]";
             badgeClasses =
-              "bg-slate-100 border border-slate-300 text-slate-700 font-bold";
+              "bg-surface-muted border-[2px] border-border text-text-primary font-black";
           }
 
           return (
@@ -209,19 +209,19 @@ export function LiveQuestion({
               onClick={() => handleSelect(option.id)}
               disabled={isDisabled}
               aria-label={`Option ${String.fromCharCode(65 + idx)}: ${option.text}`}
-              className={`relative flex items-center gap-3 p-3.5 sm:p-4 min-h-[58px] rounded-xl text-left text-sm font-bold transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 ${buttonClasses} ${
+              className={`relative flex items-center gap-3 p-3.5 sm:p-4 min-h-[62px] rounded-2xl text-left text-sm font-black transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${buttonClasses} ${
                 isDisabled && !isSelected && !isCorrectOption && !isReveal
                   ? "opacity-60 cursor-not-allowed"
                   : isReveal
                   ? "cursor-default"
                   : isSelected
                   ? "cursor-default"
-                  : "cursor-pointer active:translate-y-0.5 hover:-translate-y-0.5"
+                  : "cursor-pointer active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5"
               }`}
             >
               {/* Option letter badge (A, B, C, D) */}
               <span
-                className={`w-7 h-7 rounded-lg border flex items-center justify-center text-xs shrink-0 transition-colors ${badgeClasses}`}
+                className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs shrink-0 transition-colors shadow-[0_1px_0_#141827] ${badgeClasses}`}
               >
                 {String.fromCharCode(65 + idx)}
               </span>
@@ -233,17 +233,17 @@ export function LiveQuestion({
 
               {/* Semantic Status Badges during Reveal */}
               {isUserMissed && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-200/80 border border-rose-300 text-[#881337] text-xs font-black shrink-0">
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-rose-200 border-[1.5px] border-border text-rose-950 text-xs font-black shrink-0 shadow-[0_1px_0_#141827]">
                   ✕ Your answer
                 </span>
               )}
               {isCorrectRevealed && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-200/80 border border-emerald-300 text-[#064E3B] text-xs font-black shrink-0">
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-200 border-[1.5px] border-border text-emerald-950 text-xs font-black shrink-0 shadow-[0_1px_0_#141827]">
                   ✓ Correct answer
                 </span>
               )}
               {!isReveal && isSelected && (
-                <Check size={18} className="text-[#0F172A] stroke-[3] shrink-0" />
+                <Check size={18} className="text-text-primary stroke-[3] shrink-0" />
               )}
             </button>
           );
@@ -252,13 +252,13 @@ export function LiveQuestion({
 
       {/* ── Pre-Reveal Feedback Indicators (Locked / Time Up) ── */}
       {selectedOptionId && !isReveal ? (
-        <div className="p-3 bg-slate-100 border border-slate-300 rounded-xl flex items-center justify-center gap-2 text-xs font-bold text-slate-800 animate-in fade-in duration-200">
-          <Check size={15} className="text-slate-900 stroke-[3]" />
+        <div className="p-3 bg-primary/20 border-[2px] border-border rounded-2xl flex items-center justify-center gap-2 text-xs font-black text-text-primary shadow-[0_2px_0_#141827] animate-in fade-in duration-200">
+          <Check size={15} className="text-text-primary stroke-[3]" />
           <span>Answer locked in — waiting for round reveal</span>
         </div>
       ) : isTimeUp && !selectedOptionId && !isReveal ? (
-        <div className="p-3 bg-rose-50 border border-rose-300 rounded-xl flex items-center justify-center gap-2 text-xs font-bold text-rose-800 animate-in fade-in duration-200">
-          <AlertCircle size={15} className="text-rose-600 stroke-[2.5]" />
+        <div className="p-3 bg-rose-100 border-[2px] border-border rounded-2xl flex items-center justify-center gap-2 text-xs font-black text-rose-900 shadow-[0_2px_0_#141827] animate-in fade-in duration-200">
+          <AlertCircle size={15} className="text-rose-700 stroke-[2.5]" />
           <span>Time is up! Round ending...</span>
         </div>
       ) : null}

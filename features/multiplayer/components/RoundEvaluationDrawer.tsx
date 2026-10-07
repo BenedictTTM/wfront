@@ -66,36 +66,6 @@ export const RoundEvaluationDrawer = React.memo(function RoundEvaluationDrawer({
     onBookmarkConcept();
   };
 
-  // ── Design Tokens & Strict WCAG 2.2 AAA Contrast (> 7:1) ───────────────────
-  // Correct State:
-  // - Background: #064E3B (emerald-900)
-  // - Border: #10B981 (emerald-500)
-  // - Text: #ECFDF5 (emerald-50) -> Contrast ratio 11.2:1 (exceeds 7:1 AAA)
-  //
-  // Incorrect State:
-  // - Background: #4C0519 (rose-950)
-  // - Border: #F43F5E (rose-500)
-  // - Text: #FFF1F2 (rose-50) -> Contrast ratio 13.8:1 (exceeds 7:1 AAA)
-  const containerTokens = isCorrect
-    ? "bg-[#064E3B] border-[#10B981] text-[#ECFDF5]"
-    : "bg-[#4C0519] border-[#F43F5E] text-[#FFF1F2]";
-
-  const accentCardTokens = isCorrect
-    ? "bg-[#043327] border-emerald-500/50 text-[#ECFDF5]"
-    : "bg-[#330311] border-rose-500/50 text-[#FFF1F2]";
-
-  const bookmarkButtonTokens = isCorrect
-    ? isBookmarked
-      ? "bg-emerald-800 border-emerald-400 text-[#ECFDF5]"
-      : "bg-emerald-700 hover:bg-emerald-600 border-emerald-400 text-[#ECFDF5] shadow-sm"
-    : isBookmarked
-    ? "bg-rose-900 border-rose-400 text-[#FFF1F2]"
-    : "bg-rose-800 hover:bg-rose-700 border-rose-400 text-[#FFF1F2] shadow-sm";
-
-  const nextButtonTokens = isCorrect
-    ? "bg-[#10B981] hover:bg-[#059669] text-emerald-950 border border-emerald-300 font-black shadow-sm"
-    : "bg-[#F43F5E] hover:bg-[#E11D48] text-white border border-rose-300 font-black shadow-sm";
-
   const basePoints = scoreEarned.base > 0 ? scoreEarned.base : 100;
   const breakdownText = `+${scoreEarned.total} PTS (Base: ${basePoints} | Speed: +${scoreEarned.speedBonus} | Streak: +${scoreEarned.streakBonus})`;
 
@@ -109,20 +79,18 @@ export const RoundEvaluationDrawer = React.memo(function RoundEvaluationDrawer({
       }`}
     >
       <div className="max-w-xl sm:max-w-2xl mx-auto px-3 sm:px-6">
-        {/* ── Anchored Card Container ── */}
-        <div
-          className={`w-full rounded-t-2xl sm:rounded-t-3xl border-t-[2.5px] border-x-[1.5px] shadow-[0_-8px_30px_rgba(0,0,0,0.65)] overflow-hidden flex flex-col max-h-[85vh] sm:max-h-[80vh] ${containerTokens}`}
-        >
-          {/* Contained Top Progress Indicator (does NOT span full viewport width) */}
+        {/* ── Structured Neo-Brutalist Drawer Container ── */}
+        <div className="w-full rounded-t-3xl border-t-[3px] border-x-[3px] border-border bg-surface shadow-[0_-6px_0_#141827] overflow-hidden flex flex-col max-h-[85vh] sm:max-h-[80vh]">
+          {/* Contained Top Progress Indicator Bar */}
           <div
-            className="w-full h-1 bg-black/30 overflow-hidden shrink-0"
+            className="w-full h-1.5 bg-surface-muted border-b border-border overflow-hidden shrink-0"
             role="progressbar"
             aria-label="Round countdown progress"
           >
             <div
               className={`h-full transition-all duration-[1200ms] ease-linear ${
                 isOpen ? "w-full" : "w-0"
-              } ${isCorrect ? "bg-[#10B981]" : "bg-[#F43F5E]"}`}
+              } ${isCorrect ? "bg-emerald-500" : "bg-primary"}`}
             />
           </div>
 
@@ -133,13 +101,13 @@ export const RoundEvaluationDrawer = React.memo(function RoundEvaluationDrawer({
               {/* Left State Badge */}
               <div className="flex items-center gap-2 min-w-0">
                 {isCorrect ? (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-950/70 border border-[#10B981] font-black text-xs sm:text-sm tracking-wide uppercase shadow-sm">
-                    <CheckCircle2 size={16} className="text-[#10B981] stroke-[3]" />
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 border-[2px] border-border font-black text-xs sm:text-sm tracking-wide uppercase text-emerald-950 shadow-[0_2px_0_#141827]">
+                    <CheckCircle2 size={16} className="text-emerald-700 stroke-[3]" />
                     <span>LOCKED &amp; VERIFIED</span>
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-rose-950/70 border border-[#F43F5E] font-black text-xs sm:text-sm tracking-wide uppercase shadow-sm">
-                    <Sparkles size={15} className="text-[#F43F5E] stroke-[2.5]" />
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-100 border-[2px] border-border font-black text-xs sm:text-sm tracking-wide uppercase text-rose-950 shadow-[0_2px_0_#141827]">
+                    <Sparkles size={15} className="text-rose-700 stroke-[2.5]" />
                     <span>COUNTERED • FOCUS ON CONCEPT</span>
                   </span>
                 )}
@@ -148,11 +116,11 @@ export const RoundEvaluationDrawer = React.memo(function RoundEvaluationDrawer({
               {/* Right Points Delta Badge */}
               <div className="flex items-center shrink-0">
                 {isCorrect ? (
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-emerald-950/80 border border-emerald-400/60 font-bold text-xs sm:text-sm tabular-nums tracking-tight">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full bg-primary border-[2px] border-border font-black text-xs sm:text-sm tabular-nums tracking-tight text-text-primary shadow-[0_2px_0_#141827]">
                     {breakdownText}
                   </span>
                 ) : (
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-rose-950/80 border border-rose-400/60 font-bold text-xs sm:text-sm tabular-nums tracking-tight">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full bg-surface-muted border-[2px] border-border font-black text-xs sm:text-sm tabular-nums tracking-tight text-text-secondary shadow-[0_2px_0_#141827]">
                     +0 PTS
                   </span>
                 )}
@@ -161,39 +129,37 @@ export const RoundEvaluationDrawer = React.memo(function RoundEvaluationDrawer({
 
             {/* ── 2. Content Card: Rule-Based Concept Breakdown ── */}
             {explanationText && (
-              <div
-                className={`p-3.5 sm:p-4 rounded-xl border flex items-start gap-3 shadow-inner ${accentCardTokens}`}
-              >
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-surface-muted border-[2px] border-border flex items-start gap-3 shadow-[0_2px_0_#141827]">
                 <div
-                  className={`p-1.5 rounded-lg shrink-0 ${
-                    isCorrect
-                      ? "bg-emerald-900/80 text-[#10B981]"
-                      : "bg-rose-900/80 text-[#F43F5E]"
-                  }`}
+                  className="p-2 rounded-xl bg-primary border-[2px] border-border text-text-primary shrink-0 shadow-[0_1px_0_#141827]"
                   aria-hidden="true"
                 >
                   <Lightbulb size={18} className="stroke-[2.5]" />
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <span className="block text-[10px] font-black uppercase tracking-wider opacity-85 mb-0.5">
+                  <span className="block text-[10px] font-black uppercase tracking-wider text-text-secondary mb-0.5">
                     Concept Breakdown
                   </span>
-                  <p className="text-xs sm:text-sm font-semibold leading-relaxed break-words">
+                  <p className="text-xs sm:text-sm font-bold text-text-primary leading-relaxed break-words">
                     {explanationText}
                   </p>
                 </div>
               </div>
             )}
 
-            {/* ── 3. Actions Row: Revision Deck Bookmark & Next Question CTA ── */}
+            {/* ── 3. Actions Row: Clean Pill Buttons ── */}
             <div className="flex items-center justify-between gap-3 pt-0.5 shrink-0">
-              {/* Left: Bookmark to Revision Deck */}
+              {/* Left: Bookmark to Revision Deck Pill Button */}
               <button
                 type="button"
                 onClick={handleBookmark}
                 disabled={isBookmarked}
-                className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border font-black text-xs tracking-wide transition-all active:scale-[0.98] cursor-pointer ${bookmarkButtonTokens}`}
+                className={`inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full border-[2px] border-border font-black text-xs tracking-wider uppercase transition-all shadow-[0_3px_0_#141827] active:shadow-[0_1px_0_#141827] active:translate-y-0.5 cursor-pointer ${
+                  isBookmarked
+                    ? "bg-secondary text-text-primary opacity-80 cursor-default"
+                    : "bg-surface hover:bg-surface-muted text-text-primary hover:-translate-y-0.5"
+                }`}
               >
                 {isBookmarked ? (
                   <>
@@ -208,14 +174,14 @@ export const RoundEvaluationDrawer = React.memo(function RoundEvaluationDrawer({
                 )}
               </button>
 
-              {/* Right: Next Question CTA or Auto-Advance Indicator */}
+              {/* Right: Next Question CTA Pill Button */}
               <button
                 type="button"
                 onClick={onNextQuestionReady}
-                className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs tracking-wide transition-all active:scale-[0.98] cursor-pointer ${nextButtonTokens}`}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary hover:bg-[#ebd060] border-[2px] border-border font-black text-xs tracking-wider uppercase text-text-primary shadow-[0_3px_0_#141827] active:shadow-[0_1px_0_#141827] active:translate-y-0.5 hover:-translate-y-0.5 transition-all cursor-pointer"
               >
                 <span>Next Question</span>
-                <ArrowRight size={13} className="stroke-[3]" />
+                <ArrowRight size={14} className="stroke-[3]" />
               </button>
             </div>
           </div>

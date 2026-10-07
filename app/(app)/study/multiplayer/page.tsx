@@ -1,12 +1,17 @@
 "use client";
 
-import React from "react";
-import { AlertCircle, ChevronRight, Swords } from "lucide-react";
+import React, { useState } from "react";
+import { AlertCircle, ChevronRight, Swords, Zap } from "lucide-react";
 import { useSubjects } from "@/features/curriculum/hooks";
 import { useMatchmaking } from "@/features/multiplayer/hooks";
 import { MatchmakingLobby } from "@/features/multiplayer/components/MatchmakingLobby";
+import {
+  VersusMatchTransition,
+  MOCK_VERSUS_MATCH,
+} from "@/features/multiplayer/components/VersusMatchTransition";
 
 export default function MultiplayerEntryPage() {
+  const [isPreviewingVersus, setIsPreviewingVersus] = useState(false);
   const { data: subjects, isLoading, isError } = useSubjects();
   const {
     selectedSubject,
@@ -56,6 +61,27 @@ export default function MultiplayerEntryPage() {
         onCancel={cancelSearch}
         isCancelling={isLeaving}
       />
+    );
+  }
+
+  if (isPreviewingVersus) {
+    return (
+      <div className="flex flex-col items-center gap-4 py-4 max-w-4xl mx-auto w-full">
+        <VersusMatchTransition
+          player1={MOCK_VERSUS_MATCH.player1}
+          player2={MOCK_VERSUS_MATCH.player2}
+          subject={selectedSubject ? `${selectedSubject.name.toUpperCase()} • SPEED ROUND` : MOCK_VERSUS_MATCH.subject}
+          stakes={MOCK_VERSUS_MATCH.stakes}
+          onComplete={() => setIsPreviewingVersus(false)}
+        />
+        <button
+          type="button"
+          onClick={() => setIsPreviewingVersus(false)}
+          className="px-4 py-2 bg-surface hover:bg-surface-muted text-text-primary border-[2px] border-border rounded-xl text-xs font-black shadow-[0_2px_0_#141827] cursor-pointer"
+        >
+          Exit Preview
+        </button>
+      </div>
     );
   }
 
@@ -124,7 +150,7 @@ export default function MultiplayerEntryPage() {
         </div>
       </div>
 
-      {/* CTA */}
+      {/* CTA: Find Opponent */}
       <button
         type="button"
         onClick={() => startSearch()}
@@ -134,6 +160,16 @@ export default function MultiplayerEntryPage() {
         <Swords size={16} />
         {isJoining ? "ENTERING QUEUE…" : "FIND OPPONENT"}
         <ChevronRight size={15} className="stroke-[3]" />
+      </button>
+
+      {/* Cinematic Preview Button */}
+      <button
+        type="button"
+        onClick={() => setIsPreviewingVersus(true)}
+        className="w-full py-3 bg-surface hover:bg-surface-muted text-text-primary border-[2px] border-border rounded-2xl text-xs font-black shadow-[0_3px_0_rgba(20,24,39,0.9)] active:translate-y-0.5 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
+      >
+        <Zap size={14} className="text-amber-500 fill-amber-400" />
+        <span>PREVIEW 1v1 VERSUS TRANSITION (PREMPEH VS. ACHIMOTA)</span>
       </button>
 
       {/* Rules */}
