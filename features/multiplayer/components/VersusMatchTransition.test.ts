@@ -2,7 +2,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import type {
-  CombatantProfile,
   VersusMatchTransitionProps,
 } from "../utils/versus-transition.ts";
 import {
@@ -73,5 +72,38 @@ describe("VersusMatchTransition Specifications & Mock Data Integrity", () => {
     assert.equal(mockProps.stakes, "+25 SCHOOL TURF PTS");
     mockProps.onComplete?.();
     assert.equal(completed, true);
+  });
+
+  it("provides valid neo-brutalist mock profile for St. Thomas Aquinas SHS vs Ghost Scholar", async () => {
+    const { MOCK_ST_THOMAS_AQUINAS, MOCK_GHOST_SCHOLAR, SAMPLE_VERSUS_MATCH } = await import(
+      "../utils/versus-transition.ts"
+    );
+
+    // St. Thomas Aquinas SHS (User)
+    assert.equal(MOCK_ST_THOMAS_AQUINAS.username, "Afotey Benedict");
+    assert.equal(MOCK_ST_THOMAS_AQUINAS.schoolName, "St. Thomas Aquinas SHS");
+    assert.equal(MOCK_ST_THOMAS_AQUINAS.region, "Greater Accra");
+    assert.equal(MOCK_ST_THOMAS_AQUINAS.motto, "Veritas Liberat (The Truth Sets Us Free)");
+    assert.equal(MOCK_ST_THOMAS_AQUINAS.elo, 1000);
+
+    // Ghost Scholar (Opponent)
+    assert.equal(MOCK_GHOST_SCHOLAR.username, "Ghost Scholar");
+    assert.equal(MOCK_GHOST_SCHOLAR.schoolName, "Achimota School");
+    assert.equal(MOCK_GHOST_SCHOLAR.region, "Greater Accra");
+    assert.equal(MOCK_GHOST_SCHOLAR.elo, 1000);
+
+    // Sample Versus Match
+    assert.equal(SAMPLE_VERSUS_MATCH.durationMs, 3000);
+    assert.equal(SAMPLE_VERSUS_MATCH.stakes, "+25 SCHOOL TURF PTS");
+
+    let countdownDone = false;
+    const testProps: VersusMatchTransitionProps = {
+      ...SAMPLE_VERSUS_MATCH,
+      onCountdownComplete: () => {
+        countdownDone = true;
+      },
+    };
+    testProps.onCountdownComplete?.();
+    assert.equal(countdownDone, true);
   });
 });

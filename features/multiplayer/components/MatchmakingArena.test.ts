@@ -131,4 +131,28 @@ describe('MatchmakingArena Specifications & Motion State Machine', () => {
       );
     }
   });
+
+  it('provides educational micro-copy tips for perceived latency reduction', async () => {
+    const { MATCHMAKING_TIPS } = await import('../utils/matchmaking-arena.ts');
+    assert.ok(Array.isArray(MATCHMAKING_TIPS));
+    assert.ok(MATCHMAKING_TIPS.length >= 3);
+    assert.ok(MATCHMAKING_TIPS.some((tip: string) => tip.includes('speed bonus')));
+    assert.ok(MATCHMAKING_TIPS.some((tip: string) => tip.includes('rivals in your region')));
+  });
+
+  it('supports integrated subjectName in MatchmakingProps', () => {
+    const props: MatchmakingProps = {
+      currentUser: {
+        gamerTag: 'Scholar_8f82',
+        avatarUrl: '',
+        elo: 1000,
+        schoolCode: 'TEMASHS',
+      },
+      matchedOpponent: null,
+      elapsedSeconds: 0,
+      onReadyToStart: () => {},
+      subjectName: 'ENGLISH LANGUAGE',
+    };
+    assert.equal(props.subjectName, 'ENGLISH LANGUAGE');
+  });
 });

@@ -23,7 +23,8 @@ export interface VersusMatchTransitionProps {
   subject?: string;
   stakes?: string;
   onComplete?: () => void;
-  durationMs?: number; // defaults to 2500ms
+  onCountdownComplete?: () => void;
+  durationMs?: number; // defaults to 3000ms
   className?: string;
   autoStart?: boolean;
 }
@@ -61,6 +62,45 @@ export function getUserInitials(username: string): string {
   const clean = username.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
   return clean.slice(0, 2) || "SH";
 }
+
+/**
+ * Sample Mock Data for St. Thomas Aquinas SHS vs. Achimota School / Ghost Scholar
+ */
+export const MOCK_ST_THOMAS_AQUINAS: CombatantProfile = {
+  username: "Afotey Benedict",
+  avatarUrl: null,
+  elo: 1000,
+  schoolName: "St. Thomas Aquinas SHS",
+  schoolShortCode: "AQU",
+  schoolColor: "#055B38", // Deep Aquinas Green
+  schoolAccentColor: "#F4D06F", // Warm Gold
+  crestUrl: "https://res.cloudinary.com/dsriwu6yn/image/upload/v1791470415/crests/st-thomas-aquinas-senior-high-school.jpg",
+  motto: "Veritas Liberat (The Truth Sets Us Free)",
+  region: "Greater Accra",
+  rankTitle: "Greater Accra Contender",
+};
+
+export const MOCK_GHOST_SCHOLAR: CombatantProfile = {
+  username: "Ghost Scholar",
+  avatarUrl: null,
+  elo: 1000,
+  schoolName: "Achimota School",
+  schoolShortCode: "MOT",
+  schoolColor: "#172554", // Motown Navy Blue
+  schoolAccentColor: "#93C5FD",
+  crestUrl: null,
+  motto: "Ut Omnes Unum Sint",
+  region: "Greater Accra",
+  rankTitle: "WASSCE Scholar League",
+};
+
+export const SAMPLE_VERSUS_MATCH: VersusMatchTransitionProps = {
+  player1: MOCK_ST_THOMAS_AQUINAS,
+  player2: MOCK_GHOST_SCHOLAR,
+  subject: "CORE MATHEMATICS • SPEED ROUND",
+  stakes: "+25 SCHOOL TURF PTS",
+  durationMs: 3000,
+};
 
 /**
  * Production-ready mock data: Prempeh College ("Amanfoo") vs. Achimota School ("Motown/Akora")

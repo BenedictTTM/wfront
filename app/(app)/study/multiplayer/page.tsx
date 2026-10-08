@@ -90,7 +90,11 @@ export default function MultiplayerEntryPage() {
   const studentCrestUrl =
     savedProfile?.schoolCrestUrl ||
     authUser?.school?.crestUrl ||
-    null;
+    (studentSchoolName?.toLowerCase().includes("aquinas") ||
+    studentSchoolShortCode === "AQUINAS" ||
+    studentSchoolShortCode === "AQU"
+      ? "https://res.cloudinary.com/dsriwu6yn/image/upload/v1791470415/crests/st-thomas-aquinas-senior-high-school.jpg"
+      : null);
 
   const studentAvatarUrl =
     savedProfile?.avatarUrl ||

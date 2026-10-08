@@ -49,7 +49,12 @@ export default function StudentProfilePage() {
       name: saved?.name || authUser?.name || "",
       school: saved?.school || authUser?.school?.name || "",
       schoolId: saved?.schoolId || authUser?.schoolId || authUser?.school?.id || null,
-      schoolCrestUrl: saved?.schoolCrestUrl || authUser?.school?.crestUrl || null,
+      schoolCrestUrl:
+        saved?.schoolCrestUrl ||
+        authUser?.school?.crestUrl ||
+        ((saved?.school || authUser?.school?.name)?.toLowerCase().includes("aquinas")
+          ? "https://res.cloudinary.com/dsriwu6yn/image/upload/v1791470415/crests/st-thomas-aquinas-senior-high-school.jpg"
+          : null),
       schoolRegion: saved?.schoolRegion || authUser?.school?.region || null,
       schoolShortCode: saved?.schoolShortCode || authUser?.school?.shortCode || null,
       track: saved?.track || "",
@@ -65,7 +70,12 @@ export default function StudentProfilePage() {
       name: saved?.name || authUser?.name || "",
       school: saved?.school || authUser?.school?.name || "",
       schoolId: saved?.schoolId || authUser?.schoolId || authUser?.school?.id || null,
-      schoolCrestUrl: saved?.schoolCrestUrl || authUser?.school?.crestUrl || null,
+      schoolCrestUrl:
+        saved?.schoolCrestUrl ||
+        authUser?.school?.crestUrl ||
+        ((saved?.school || authUser?.school?.name)?.toLowerCase().includes("aquinas")
+          ? "https://res.cloudinary.com/dsriwu6yn/image/upload/v1791470415/crests/st-thomas-aquinas-senior-high-school.jpg"
+          : null),
       schoolRegion: saved?.schoolRegion || authUser?.school?.region || null,
       schoolShortCode: saved?.schoolShortCode || authUser?.school?.shortCode || null,
       track: saved?.track || "",

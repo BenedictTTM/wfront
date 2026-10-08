@@ -58,14 +58,7 @@ export function MatchmakingLobby({
 
   return (
     <div className="w-full flex flex-col items-center">
-      {/* Subject Badge Indicator */}
-      <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-surface border-[2px] border-border text-text-primary text-xs font-black uppercase tracking-wider mb-4 shadow-[0_2px_0_#141827]">
-        <span>{subject.name}</span>
-        <span className="opacity-40">•</span>
-        <span className="text-[11px] font-black text-text-secondary">Ranked Duel</span>
-      </div>
-
-      {/* Dynamic Radar Arena with VS Clash Transition (Redundant format card eliminated) */}
+      {/* Dynamic Arena with Integrated Card Header & Micro-Copy Carousel */}
       <MatchmakingArena
         currentUser={{
           gamerTag,
@@ -78,6 +71,7 @@ export function MatchmakingLobby({
         onReadyToStart={onReadyToStart}
         onCancel={onCancel}
         isCancelling={isCancelling}
+        subjectName={subject.name}
       />
     </div>
   );

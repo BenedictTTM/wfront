@@ -1,28 +1,33 @@
 "use client";
 // features/multiplayer/components/VersusMatchTransition.tsx
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
-import { Swords, Trophy, Zap, Flame, Sparkles } from "lucide-react";
+import { Trophy, Zap } from "lucide-react";
 import {
   type CombatantProfile,
   type VersusMatchTransitionProps,
-  VERSUS_ANIMATION_TIMINGS,
   getSchoolAbbreviation,
   getUserInitials,
+  MOCK_ST_THOMAS_AQUINAS,
+  MOCK_GHOST_SCHOLAR,
+} from "../utils/versus-transition";
+
+export type { CombatantProfile, VersusMatchTransitionProps };
+export {
+  VERSUS_ANIMATION_TIMINGS,
+  MOCK_ST_THOMAS_AQUINAS,
+  MOCK_GHOST_SCHOLAR,
+  SAMPLE_VERSUS_MATCH,
   MOCK_PREMPEH_COLLEGE,
   MOCK_ACHIMOTA_SCHOOL,
   MOCK_VERSUS_MATCH,
 } from "../utils/versus-transition";
 
-export type { CombatantProfile, VersusMatchTransitionProps };
-export { MOCK_PREMPEH_COLLEGE, MOCK_ACHIMOTA_SCHOOL, MOCK_VERSUS_MATCH };
-
 /**
  * Resilient School Crest Component:
- * If crestUrl is null or fails to load, falls back to a sharp, rounded-xl box
- * tinted in the school's primary color with 3px black border displaying the
- * school's 3-letter abbreviation (e.g. "PMP", "MOT") in bold white text.
+ * Displays school crest image if valid, or falls back to a neo-brutalist badge
+ * in the school's primary color with 3px solid black border and bold abbreviation.
  */
 export function SchoolCrestBadge({
   schoolName,
@@ -39,9 +44,48 @@ export function SchoolCrestBadge({
 }) {
   const [imgError, setImgError] = useState(false);
 
+  // Known fallback crest catalog for immediate zero-latency resolution
+  const getKnownCrestUrl = (name: string, code: string): string | null => {
+    const n = (name || "").toLowerCase();
+    const c = (code || "").toUpperCase();
+    if (n.includes("aquinas") || c === "AQUINAS" || c === "AQU") {
+      return "https://res.cloudinary.com/dsriwu6yn/image/upload/v1791470415/crests/st-thomas-aquinas-senior-high-school.jpg";
+    }
+    if (n.includes("abakrampa") || c.startsWith("ASHS")) {
+      return "https://school-crests.s3.auto.amazonaws.com/crests/abakrampa-senior-high-technical-school.webp";
+    }
+    return null;
+  };
+
+  const [resolvedUrl, setResolvedUrl] = useState<string | null>(
+    crestUrl || getKnownCrestUrl(schoolName, schoolShortCode)
+  );
+
   useEffect(() => {
     setImgError(false);
-  }, [crestUrl]);
+    if (crestUrl) {
+      setResolvedUrl(crestUrl);
+    } else {
+      const known = getKnownCrestUrl(schoolName, schoolShortCode);
+      if (known) {
+        setResolvedUrl(known);
+      } else if (
+        schoolName &&
+        schoolName !== "Independent Scholar" &&
+        schoolName !== "WASSCE Scholar League"
+      ) {
+        fetch(`/api/schools?search=${encodeURIComponent(schoolName)}&limit=1`)
+          .then((res) => (res.ok ? res.json() : null))
+          .then((data) => {
+            const found = data?.schools?.[0];
+            if (found?.crestUrl) {
+              setResolvedUrl(found.crestUrl);
+            }
+          })
+          .catch(() => {});
+      }
+    }
+  }, [crestUrl, schoolName, schoolShortCode]);
 
   const sizeClasses = {
     sm: "w-10 h-10 text-xs",
@@ -49,18 +93,19 @@ export function SchoolCrestBadge({
     lg: "w-16 h-16 sm:w-20 sm:h-20 text-lg sm:text-xl",
   }[size];
 
-  // If a valid URL is provided and has not failed, render the image
-  if (crestUrl && !imgError) {
+  const activeUrl = crestUrl || resolvedUrl;
+
+  if (activeUrl && !imgError) {
     return (
       <div
-        className={`${sizeClasses} rounded-xl border-[3px] border-black overflow-hidden bg-white shadow-[3px_3px_0px_#000] flex items-center justify-center shrink-0`}
+        className={`${sizeClasses} rounded-full border-[3px] border-black overflow-hidden bg-white shadow-[3px_3px_0px_#000] flex items-center justify-center shrink-0 p-1`}
         title={schoolName}
       >
         <img
-          src={crestUrl}
+          src={activeUrl}
           alt={`${schoolName} Crest`}
           onError={() => setImgError(true)}
-          className="w-full h-full object-contain p-1"
+          className="w-full h-full object-contain"
         />
       </div>
     );
@@ -68,26 +113,23 @@ export function SchoolCrestBadge({
 
   const abbr = getSchoolAbbreviation(schoolShortCode);
 
-  // Automatic Neo-brutalist 3-letter abbreviation fallback box
   return (
     <div
-      className={`${sizeClasses} rounded-xl border-[3px] border-black shadow-[3px_3px_0px_#000] flex items-center justify-center font-black text-white uppercase tracking-wider shrink-0 transition-transform select-none`}
+      className={`${sizeClasses} rounded-full border-[3px] border-black shadow-[3px_3px_0px_#000] flex items-center justify-center font-black text-white uppercase tracking-wider shrink-0 transition-transform select-none`}
       style={{ backgroundColor: schoolColor }}
       title={`${schoolName} (${abbr})`}
       data-testid="crest-fallback"
     >
-      <span className="drop-shadow-[0_1.5px_0_rgba(0,0,0,0.8)]">
-        {abbr}
-      </span>
+      <span className="drop-shadow-[0_1.5px_0_rgba(0,0,0,0.8)]">{abbr}</span>
     </div>
   );
 }
 
 /**
  * Resilient Combatant Avatar:
- * Renders avatar image if available, else initials inside a bold neo-brutalist circle.
+ * Renders avatar image if available, else bold initials inside a neo-brutalist circle.
  */
-function CombatantAvatar({
+export function CombatantAvatar({
   username,
   avatarUrl,
   accentColor = "#F4D06F",
@@ -104,7 +146,7 @@ function CombatantAvatar({
 
   if (avatarUrl && !imgError) {
     return (
-      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-[3.5px] border-black shadow-[4px_4px_0px_#000] overflow-hidden bg-white shrink-0">
+      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-[3px] border-black shadow-[4px_4px_0px_#000] overflow-hidden bg-white shrink-0">
         <img
           src={avatarUrl}
           alt={username}
@@ -119,8 +161,8 @@ function CombatantAvatar({
 
   return (
     <div
-      className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-[3.5px] border-black shadow-[4px_4px_0px_#000] flex items-center justify-center font-black text-xl sm:text-2xl text-black shrink-0 select-none"
-      style={{ backgroundColor: accentColor || "#F4D06F" }}
+      className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-[3px] border-black shadow-[4px_4px_0px_#000] flex items-center justify-center font-black text-xl sm:text-2xl text-black shrink-0 select-none"
+      style={{ backgroundColor: accentColor }}
       data-testid="avatar-fallback"
     >
       {initials}
@@ -129,134 +171,122 @@ function CombatantAvatar({
 }
 
 /**
- * 1v1 "Versus" Pre-Match Cinematic Transition Component
- * 
- * Snappy Animation Sequence:
- * - 0.0s - 0.4s: Left and Right panels slide in aggressively with spring overshoot.
- * - 0.4s - 0.7s: Center "VS" starburst slams down with a hard bounce.
- * - 0.7s - 2.2s: "READY... SET... CLASH!" countdown indicator pulses.
- * - 2.5s: onComplete callback triggered to seamlessly launch Question 1.
+ * Balanced, Symmetrical Neo-Brutalist 1v1 "Live WASSCE Duel" Pre-Match Screen.
  */
 export function VersusMatchTransition({
-  player1,
-  player2,
-  subject = "CORE MATHEMATICS • SPEED ROUND",
+  player1 = MOCK_ST_THOMAS_AQUINAS,
+  player2 = MOCK_GHOST_SCHOLAR,
+  subject,
   stakes = "+25 SCHOOL TURF PTS",
   onComplete,
-  durationMs = VERSUS_ANIMATION_TIMINGS.totalDurationMs,
+  onCountdownComplete,
+  durationMs = 3000,
   className = "",
   autoStart = true,
 }: VersusMatchTransitionProps) {
-  // Countdown phase: null -> "READY" -> "SET" -> "CLASH"
-  const [countdownState, setCountdownState] = useState<"READY" | "SET" | "CLASH" | null>(null);
+  const [secondsLeft, setSecondsLeft] = useState(Math.max(1, Math.ceil(durationMs / 1000)));
   const [progressPercent, setProgressPercent] = useState(0);
+  const completedRef = useRef(false);
 
   const handleComplete = useCallback(() => {
+    if (completedRef.current) return;
+    completedRef.current = true;
+    if (onCountdownComplete) {
+      onCountdownComplete();
+    }
     if (onComplete) {
       onComplete();
     }
-  }, [onComplete]);
+  }, [onCountdownComplete, onComplete]);
 
   useEffect(() => {
+    completedRef.current = false;
+    setSecondsLeft(Math.max(1, Math.ceil(durationMs / 1000)));
+    setProgressPercent(0);
+
     if (!autoStart) return;
 
-    // Progress bar ticker (runs across total duration)
     const startTime = Date.now();
     const interval = setInterval(() => {
       const elapsed = Date.now() - startTime;
       const progress = Math.min(100, (elapsed / durationMs) * 100);
       setProgressPercent(progress);
-    }, 25);
 
-    // Timeline Sequence
-    // 0.7s: "READY"
-    const tReady = setTimeout(() => {
-      setCountdownState("READY");
-    }, VERSUS_ANIMATION_TIMINGS.readyCountdownDelayMs);
+      const remainingSec = Math.max(0, Math.ceil((durationMs - elapsed) / 1000));
+      setSecondsLeft(remainingSec);
 
-    // 1.4s: "SET"
-    const tSet = setTimeout(() => {
-      setCountdownState("SET");
-    }, VERSUS_ANIMATION_TIMINGS.setCountdownDelayMs);
+      if (elapsed >= durationMs) {
+        clearInterval(interval);
+        handleComplete();
+      }
+    }, 40);
 
-    // 2.1s: "CLASH"
-    const tClash = setTimeout(() => {
-      setCountdownState("CLASH");
-    }, VERSUS_ANIMATION_TIMINGS.clashCountdownDelayMs);
-
-    // 2.5s: onComplete
-    const tDone = setTimeout(() => {
-      clearInterval(interval);
-      setProgressPercent(100);
-      handleComplete();
-    }, durationMs);
-
-    return () => {
-      clearInterval(interval);
-      clearTimeout(tReady);
-      clearTimeout(tSet);
-      clearTimeout(tClash);
-      clearTimeout(tDone);
-    };
+    return () => clearInterval(interval);
   }, [autoStart, durationMs, handleComplete]);
+
+  // Clean stakes text without duplicate fire emojis
+  const cleanStakes = stakes.replace(/^🔥\s*/, "");
 
   return (
     <div
       role="region"
-      aria-label="Pre-match versus transition"
+      aria-label="Live WASSCE Duel Pre-Match Screen"
       className={`relative w-full max-w-4xl mx-auto flex flex-col items-center justify-center p-2 sm:p-4 select-none ${className}`}
     >
-      {/* ── Outer Card: Warm Cream Canvas, 4px Solid Black Border, Punchy Drop Shadow ── */}
-      <div className="relative w-full bg-[#F5F3EC] border-[4px] border-black rounded-3xl shadow-[8px_8px_0px_#000] overflow-hidden flex flex-col">
+      {/* ── Outer Neo-Brutalist Card ── */}
+      <div className="relative w-full bg-[#F5F3EC] border-[3px] sm:border-[4px] border-black rounded-3xl shadow-[8px_8px_0px_#000] overflow-hidden flex flex-col">
         
-        {/* ── Top Header Stakes Pill Banner ── */}
-        <div className="w-full bg-[#141827] text-white px-4 py-2.5 sm:py-3 border-b-[4px] border-black flex flex-wrap items-center justify-between gap-2 z-20">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#F4D06F] animate-ping" />
-            <span className="px-2.5 py-0.5 rounded-md bg-[#F4D06F] text-black font-black text-[11px] sm:text-xs uppercase tracking-wider border-[2px] border-black shadow-[2px_2px_0px_#000]">
+        {/* ── 1. Top Header Bar ── */}
+        <div className="w-full bg-[#F5F3EC] px-4 sm:px-6 py-3 border-b-2 sm:border-b-[3px] border-black flex items-center justify-between gap-3 flex-wrap z-20">
+          {/* Left Tag: Yellow pill badge with 2px black border reading "LIVE WASSCE DUEL" */}
+          <div className="flex items-center gap-2.5">
+            <span className="inline-flex items-center px-3.5 py-1 rounded-full bg-[#F4D06F] text-black font-black text-xs uppercase tracking-wider border-2 border-black shadow-[2px_2px_0px_#000]">
               LIVE WASSCE DUEL
             </span>
-            <span className="text-xs sm:text-sm font-black tracking-tight text-[#F5F3EC] uppercase hidden xs:inline">
-              {subject}
-            </span>
+            {subject && (
+              <span className="text-xs font-black uppercase tracking-tight text-black/70 hidden md:inline">
+                {subject}
+              </span>
+            )}
           </div>
 
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-400 text-black border-[2px] border-black text-[11px] sm:text-xs font-black uppercase tracking-wide shadow-[2px_2px_0px_#000]">
-            <Flame size={14} className="fill-black stroke-black" />
-            <span>STAKES: {stakes}</span>
+          {/* Right Tag: Emerald green pill badge with 2px black border reading "🔥 STAKES: +25 SCHOOL TURF PTS" */}
+          <div className="inline-flex items-center px-3.5 py-1 rounded-full bg-[#10B981] text-black font-black text-xs uppercase tracking-wider border-2 border-black shadow-[2px_2px_0px_#000]">
+            🔥 STAKES: {cleanStakes}
           </div>
         </div>
 
-        {/* ── Split Combat Arena Body ── */}
-        <div className="relative w-full grid grid-cols-1 md:grid-cols-2 min-h-[380px] sm:min-h-[420px] overflow-hidden">
+        {/* ── 2. Main Split Versus Arena (Perfect Symmetry) ── */}
+        <div className="relative w-full grid grid-cols-1 md:grid-cols-2 min-h-[360px] sm:min-h-[380px] bg-[#F5F3EC]">
           
-          {/* ================================================================= */}
-          {/* LEFT PANEL: PLAYER 1 (Prempeh College)                            */}
-          {/* ================================================================= */}
+          {/* Vertical 2px black divider between left and right columns (desktop) */}
+          <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-[2px] bg-black -translate-x-1/2 z-10" />
+
+          {/* ═════════════════════════════════════════════════════════════════ */}
+          {/* LEFT COLUMN: "YOU" (St. Thomas Aquinas SHS / User Profile)        */}
+          {/* ═════════════════════════════════════════════════════════════════ */}
           <motion.div
-            initial={{ x: "-110%", opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{
-              type: "spring",
-              stiffness: 260,
-              damping: 20,
-              duration: 0.4,
-            }}
-            className="relative flex flex-col justify-between p-6 sm:p-8 bg-[#F5F3EC] border-b-[4px] md:border-b-0 md:border-r-[4px] border-black overflow-hidden group"
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.35, ease: "easeOut" }}
+            className="relative flex flex-col justify-between p-5 sm:p-6 md:p-8 border-b-2 border-black md:border-b-0 overflow-hidden"
           >
-            {/* School Color Tint Accent Panel */}
+            {/* Subtle school tint accent */}
             <div
-              className="absolute inset-0 opacity-12 pointer-events-none"
-              style={{ backgroundColor: player1.schoolColor }}
-            />
-            {/* Top decorative badge bar */}
-            <div
-              className="absolute top-0 left-0 right-0 h-3 border-b-[2px] border-black"
-              style={{ backgroundColor: player1.schoolColor }}
+              className="absolute inset-0 opacity-[0.06] pointer-events-none"
+              style={{ backgroundColor: player1.schoolColor || "#055B38" }}
             />
 
-            {/* Top Row: School Crest Badge & Region */}
-            <div className="relative z-10 flex items-start justify-between gap-3">
+            {/* Top Sub-Header & School Meta */}
+            <div className="relative z-10 flex flex-col gap-3">
+              {/* Top Sub-Header: Clean pill tag "YOU" */}
+              <div className="flex items-center justify-start">
+                <span className="px-3 py-0.5 rounded-full bg-white border-2 border-black text-xs font-black text-black uppercase tracking-wider shadow-[2px_2px_0px_#000]">
+                  YOU
+                </span>
+              </div>
+
+              {/* School Meta: Crest (left) followed by school name and region */}
               <div className="flex items-center gap-3">
                 <SchoolCrestBadge
                   schoolName={player1.schoolName}
@@ -265,92 +295,87 @@ export function VersusMatchTransition({
                   crestUrl={player1.crestUrl}
                   size="md"
                 />
-                <div>
-                  {player1.region ? (
-                    <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-[#5C6470] block">
-                      {player1.region}
-                    </span>
-                  ) : null}
+                <div className="flex flex-col">
                   <h3 className="text-base sm:text-lg font-black text-black leading-tight">
                     {player1.schoolName}
                   </h3>
+                  {player1.region ? (
+                    <span className="text-[11px] font-bold text-black/70 uppercase tracking-wide">
+                      {player1.region}
+                    </span>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+
+            {/* Competitor Profile: Centered flanking the Center VS Badge */}
+            <div className="relative z-10 my-6 sm:my-8 flex items-center justify-end gap-3 sm:gap-4 md:pr-12">
+              <div className="flex flex-col items-end gap-1.5 text-right">
+                <span className="text-lg sm:text-xl font-black text-black tracking-tight">
+                  {player1.username}
+                </span>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border-2 border-black text-xs font-black text-black shadow-[2px_2px_0px_#000]">
+                  <Trophy size={13} className="text-amber-500 fill-amber-400 stroke-[2.5]" />
+                  <span>{player1.elo !== undefined ? `${player1.elo.toLocaleString()} ELO` : "1,000 ELO"}</span>
                 </div>
               </div>
 
-              {/* Contender 1 Pill */}
-              <span className="px-2.5 py-1 bg-white border-[2px] border-black text-[10px] font-black rounded-lg text-black uppercase tracking-wider shadow-[2px_2px_0px_#000]">
-                CONTENDER 1
-              </span>
-            </div>
-
-            {/* Center Area: Player Avatar & Core Gamer Info */}
-            <div className="relative z-10 my-4 flex items-center gap-4">
               <CombatantAvatar
                 username={player1.username}
                 avatarUrl={player1.avatarUrl}
                 accentColor={player1.schoolAccentColor || "#F4D06F"}
               />
-
-              <div className="flex flex-col gap-1">
-                <span className="text-xl sm:text-2xl font-black text-black tracking-tight flex items-center gap-1.5">
-                  {player1.username}
-                  <Sparkles size={16} className="text-amber-500 fill-amber-400" />
-                </span>
-
-                {/* ELO Rating Badge */}
-                {player1.elo !== undefined && (
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white border-[2.5px] border-black text-xs font-black text-black shadow-[2px_2px_0px_#000] w-fit">
-                    <Trophy size={14} className="stroke-[2.5] text-amber-500 fill-amber-400" />
-                    <span>{player1.elo.toLocaleString()} ELO</span>
-                  </div>
-                )}
-              </div>
             </div>
 
-            {/* Bottom Row: Motto Banner */}
-            {player1.motto ? (
-              <div className="relative z-10 pt-3 border-t-[2.5px] border-black/20 flex items-center justify-between text-xs font-bold text-black/80">
-                <span className="italic font-extrabold text-[11px] sm:text-xs text-black/70">
-                  "{player1.motto}"
-                </span>
-                <span
-                  className="w-3 h-3 rounded-full border-[1.5px] border-black"
-                  style={{ backgroundColor: player1.schoolColor || "#055B38" }}
-                  title={player1.schoolName}
-                />
-              </div>
-            ) : null}
+            {/* Bottom Motto */}
+            <div className="relative z-10 pt-3 border-t-2 border-black/15 flex items-center justify-between text-xs font-bold text-black/80">
+              <span className="italic font-extrabold text-[11px] sm:text-xs text-black/75 truncate pr-2">
+                &ldquo;{player1.motto || "Veritas Liberat (The Truth Sets Us Free)"}&rdquo;
+              </span>
+              <span
+                className="w-3 h-3 rounded-full border border-black shrink-0"
+                style={{ backgroundColor: player1.schoolColor || "#055B38" }}
+                title={player1.schoolName}
+              />
+            </div>
           </motion.div>
 
-          {/* ================================================================= */}
-          {/* RIGHT PANEL: PLAYER 2 (Achimota School)                           */}
-          {/* ================================================================= */}
+          {/* ═════════════════════════════════════════════════════════════════ */}
+          {/* RIGHT COLUMN: "OPPONENT" (Achimota / Ghost Scholar - Mirrored)   */}
+          {/* ═════════════════════════════════════════════════════════════════ */}
           <motion.div
-            initial={{ x: "110%", opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{
-              type: "spring",
-              stiffness: 260,
-              damping: 20,
-              duration: 0.4,
-              delay: 0.05,
-            }}
-            className="relative flex flex-col justify-between p-6 sm:p-8 bg-[#F5F3EC] overflow-hidden group"
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.35, ease: "easeOut" }}
+            className="relative flex flex-col justify-between p-5 sm:p-6 md:p-8 overflow-hidden"
           >
-            {/* School Color Tint Accent Panel */}
+            {/* Subtle school tint accent */}
             <div
-              className="absolute inset-0 opacity-12 pointer-events-none"
-              style={{ backgroundColor: player2.schoolColor }}
-            />
-            {/* Top decorative badge bar */}
-            <div
-              className="absolute top-0 left-0 right-0 h-3 border-b-[2px] border-black"
-              style={{ backgroundColor: player2.schoolColor }}
+              className="absolute inset-0 opacity-[0.06] pointer-events-none"
+              style={{ backgroundColor: player2.schoolColor || "#172554" }}
             />
 
-            {/* Top Row: Opponent School Crest & Region */}
-            <div className="relative z-10 flex items-start justify-between gap-3 md:flex-row-reverse">
-              <div className="flex items-center gap-3 md:flex-row-reverse md:text-right">
+            {/* Top Sub-Header & School Meta (Mirrored) */}
+            <div className="relative z-10 flex flex-col gap-3">
+              {/* Top Sub-Header: Clean pill tag "OPPONENT" */}
+              <div className="flex items-center justify-end">
+                <span className="px-3 py-0.5 rounded-full bg-white border-2 border-black text-xs font-black text-black uppercase tracking-wider shadow-[2px_2px_0px_#000]">
+                  OPPONENT
+                </span>
+              </div>
+
+              {/* School Meta (Mirrored): Opponent Crest on right, Name & Region on left */}
+              <div className="flex items-center justify-end gap-3 text-right">
+                <div className="flex flex-col items-end">
+                  <h3 className="text-base sm:text-lg font-black text-black leading-tight">
+                    {player2.schoolName}
+                  </h3>
+                  {player2.region ? (
+                    <span className="text-[11px] font-bold text-black/70 uppercase tracking-wide">
+                      {player2.region}
+                    </span>
+                  ) : null}
+                </div>
                 <SchoolCrestBadge
                   schoolName={player2.schoolName}
                   schoolShortCode={player2.schoolShortCode}
@@ -358,149 +383,110 @@ export function VersusMatchTransition({
                   crestUrl={player2.crestUrl}
                   size="md"
                 />
-                <div>
-                  {player2.region ? (
-                    <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-[#5C6470] block">
-                      {player2.region}
-                    </span>
-                  ) : null}
-                  <h3 className="text-base sm:text-lg font-black text-black leading-tight">
-                    {player2.schoolName}
-                  </h3>
-                </div>
               </div>
-
-              {/* Contender 2 Pill */}
-              <span className="px-2.5 py-1 bg-white border-[2px] border-black text-[10px] font-black rounded-lg text-black uppercase tracking-wider shadow-[2px_2px_0px_#000]">
-                CONTENDER 2
-              </span>
             </div>
 
-            {/* Center Area: Opponent Avatar & ELO */}
-            <div className="relative z-10 my-4 flex items-center gap-4 md:flex-row-reverse md:text-right">
+            {/* Competitor Profile: Centered flanking the Center VS Badge (Mirrored) */}
+            <div className="relative z-10 my-6 sm:my-8 flex items-center justify-start gap-3 sm:gap-4 md:pl-12">
               <CombatantAvatar
                 username={player2.username}
                 avatarUrl={player2.avatarUrl}
                 accentColor={player2.schoolAccentColor || "#93C5FD"}
               />
 
-              <div className="flex flex-col gap-1 md:items-end">
-                <span className="text-xl sm:text-2xl font-black text-black tracking-tight flex items-center gap-1.5 md:flex-row-reverse">
+              <div className="flex flex-col items-start gap-1.5 text-left">
+                <span className="text-lg sm:text-xl font-black text-black tracking-tight">
                   {player2.username}
-                  <Zap size={16} className="text-blue-600 fill-blue-500" />
                 </span>
-
-                {player2.elo !== undefined && (
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white border-[2.5px] border-black text-xs font-black text-black shadow-[2px_2px_0px_#000] w-fit">
-                    <Trophy size={14} className="stroke-[2.5] text-amber-500 fill-amber-400" />
-                    <span>{player2.elo.toLocaleString()} ELO</span>
-                  </div>
-                )}
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border-2 border-black text-xs font-black text-black shadow-[2px_2px_0px_#000]">
+                  <Trophy size={13} className="text-amber-500 fill-amber-400 stroke-[2.5]" />
+                  <span>{player2.elo !== undefined ? `${player2.elo.toLocaleString()} ELO` : "1,000 ELO"}</span>
+                </div>
               </div>
             </div>
 
-            {/* Bottom Row: Opponent Motto */}
-            {player2.motto ? (
-              <div className="relative z-10 pt-3 border-t-[2.5px] border-black/20 flex items-center justify-between text-xs font-bold text-black/80 md:flex-row-reverse">
-                <span className="italic font-extrabold text-[11px] sm:text-xs text-black/70">
-                  "{player2.motto}"
-                </span>
-                <span
-                  className="w-3 h-3 rounded-full border-[1.5px] border-black"
-                  style={{ backgroundColor: player2.schoolColor || "#172554" }}
-                  title={player2.schoolName}
-                />
-              </div>
-            ) : null}
+            {/* Bottom Motto / League Subtitle to preserve vertical balance */}
+            <div className="relative z-10 pt-3 border-t-2 border-black/15 flex items-center justify-between text-xs font-bold text-black/80 flex-row-reverse">
+              <span className="italic font-extrabold text-[11px] sm:text-xs text-black/75 truncate pl-2">
+                &ldquo;{player2.motto || "Ut Omnes Unum Sint (That All May Be One)"}&rdquo;
+              </span>
+              <span
+                className="w-3 h-3 rounded-full border border-black shrink-0"
+                style={{ backgroundColor: player2.schoolColor || "#172554" }}
+                title={player2.schoolName}
+              />
+            </div>
           </motion.div>
 
-          {/* ================================================================= */}
-          {/* CENTER ELEMENT: PUNCHY "VS" STARBURST / CIRCLE SLAM BADGE         */}
-          {/* Slams down at 0.4s - 0.7s with a hard bounce                      */}
-          {/* ================================================================= */}
-          <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-30">
+          {/* ═════════════════════════════════════════════════════════════════ */}
+          {/* CENTERPIECE "VS" BADGE: Tilted diamond positioned dead-center    */}
+          {/* ═════════════════════════════════════════════════════════════════ */}
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-none">
             <motion.div
-              initial={{ y: -160, scale: 2.2, opacity: 0, rotate: -25 }}
-              animate={{ y: 0, scale: 1, opacity: 1, rotate: -5 }}
+              initial={{ scale: 0, rotate: 0 }}
+              animate={{ scale: 1, rotate: 45 }}
               transition={{
-                delay: 0.4,
-                duration: 0.3,
                 type: "spring",
-                bounce: 0.6,
-                damping: 10,
+                stiffness: 300,
+                damping: 18,
+                delay: 0.1,
               }}
-              className="relative flex items-center justify-center pointer-events-auto"
+              className="w-20 h-20 sm:w-24 sm:h-24 bg-[#F4D06F] border-[3px] border-black shadow-[4px_4px_0px_#000] rounded-xl flex items-center justify-center pointer-events-auto select-none"
             >
-              {/* Starburst Spike Background (Neo-Brutalist 8-Point Polygon) */}
-              <div className="absolute w-28 h-28 sm:w-32 sm:h-32 bg-[#F4D06F] border-[3.5px] border-black shadow-[5px_5px_0px_#000] rotate-45 rounded-2xl -z-10" />
-
-              {/* Central Crisp Circular Core */}
-              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-[#F4D06F] border-[4px] border-black shadow-[4px_4px_0px_#000] flex flex-col items-center justify-center text-center">
-                <span className="text-3xl sm:text-4xl font-black italic tracking-tighter text-black leading-none drop-shadow-[1.5px_1.5px_0_#FFF]">
+              {/* Inside text un-rotated (-rotate-45) */}
+              <div className="-rotate-45 flex flex-col items-center justify-center text-center">
+                <span className="text-2xl sm:text-3xl font-black italic text-black leading-none tracking-tighter">
                   VS
                 </span>
-                <span className="text-[9px] font-black tracking-widest uppercase text-black/80 -mt-0.5">
+                <span className="text-[9px] sm:text-[10px] font-black uppercase text-black/90 tracking-widest mt-0.5">
                   ROUND 1
                 </span>
               </div>
             </motion.div>
           </div>
+
         </div>
 
-        {/* ── Footer Countdown Indicator & Progress Bar (0.7s - 2.5s) ── */}
-        <div className="relative w-full bg-white border-t-[4px] border-black p-3 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3 z-20">
+        {/* ── 3. Bottom Action & Countdown Bar ── */}
+        <div className="relative w-full bg-white border-t-[3px] border-black p-3.5 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3 z-20">
           
-          {/* Left info: Speed rules */}
-          <div className="flex items-center gap-2 text-xs font-black text-black">
-            <span className="w-7 h-7 rounded-lg bg-[#F4D06F] border-[2px] border-black flex items-center justify-center shadow-[1.5px_1.5px_0px_#000]">
-              <Swords size={16} className="text-black" />
+          {/* Left: Icon badge and bonus text */}
+          <div className="flex items-center gap-2.5">
+            <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#F4D06F] border-2 border-black flex items-center justify-center shadow-[2px_2px_0px_#000] shrink-0">
+              <Zap size={16} className="fill-black stroke-black" />
             </span>
-            <span>FIRST TO ANSWER ACCURATELY WINS SPEED BONUS (+50)</span>
+            <span className="text-xs sm:text-sm font-black text-black tracking-tight">
+              ⚡ First accurate answer wins Speed Bonus (+50)
+            </span>
           </div>
 
-          {/* Center / Right: Dynamic Pulsing Countdown Indicator */}
-          <div className="flex items-center gap-3">
-            {countdownState && (
-              <motion.div
-                key={countdownState}
-                initial={{ scale: 0.8, opacity: 0, y: 4 }}
-                animate={{ scale: [1, 1.1, 1], opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-                className={`px-4 py-1.5 rounded-xl border-[2.5px] border-black text-xs sm:text-sm font-black uppercase tracking-wider shadow-[3px_3px_0px_#000] flex items-center gap-2 ${
-                  countdownState === "READY"
-                    ? "bg-[#F4D06F] text-black"
-                    : countdownState === "SET"
-                    ? "bg-amber-400 text-black"
-                    : "bg-emerald-400 text-black animate-pulse"
-                }`}
-                data-testid="countdown-indicator"
-              >
-                {countdownState === "CLASH" ? (
-                  <>
-                    <Zap size={15} className="fill-black stroke-black" />
-                    <span>CLASH!</span>
-                  </>
-                ) : (
-                  <>
-                    <span className="w-2 h-2 rounded-full bg-black animate-ping" />
-                    <span>{countdownState}...</span>
-                  </>
-                )}
-              </motion.div>
-            )}
-
-            {/* Quick Skip button for manual advance / accessibility */}
+          {/* Right: Primary Yellow Auto-Start Countdown Button & Secondary Ghost SKIP Button */}
+          <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+            {/* Primary Yellow Button: STARTING (3s)... */}
             <button
               type="button"
               onClick={handleComplete}
-              className="px-3 py-1.5 bg-[#F5F3EC] hover:bg-[#F0EBE0] text-black border-[2px] border-black rounded-xl text-xs font-black shadow-[2px_2px_0px_#000] active:translate-y-0.5 transition-all cursor-pointer"
+              className="flex-1 sm:flex-initial px-4 py-2 bg-[#F4D06F] hover:bg-[#ebd060] text-black border-2 border-black rounded-xl text-xs sm:text-sm font-black shadow-[3px_3px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0px_#000] transition-all cursor-pointer flex items-center justify-center gap-2"
+              data-testid="countdown-button"
+            >
+              <span>
+                {secondsLeft > 0 ? `STARTING (${secondsLeft}s)...` : "STARTING..."}
+              </span>
+            </button>
+
+            {/* Secondary Ghost Button: SKIP */}
+            <button
+              type="button"
+              onClick={handleComplete}
+              className="px-4 py-2 bg-white hover:bg-[#F5F3EC] text-black border-2 border-black rounded-xl text-xs sm:text-sm font-black shadow-[2px_2px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-[1px_1px_0px_#000] transition-all cursor-pointer"
+              data-testid="skip-button"
             >
               SKIP
             </button>
           </div>
 
           {/* Snappy Bottom Neon/Solid Progress Gauge */}
-          <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-[#141827]/10">
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/10 overflow-hidden">
             <div
               className="h-full bg-black transition-all duration-75 ease-linear"
               style={{ width: `${progressPercent}%` }}

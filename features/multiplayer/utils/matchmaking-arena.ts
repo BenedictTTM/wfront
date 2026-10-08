@@ -17,7 +17,16 @@ export interface MatchmakingProps {
   onReadyToStart: () => void;
   onCancel?: () => void;
   isCancelling?: boolean;
+  subjectName?: string;
 }
+
+export const MATCHMAKING_TIPS = [
+  "Tip: First accurate answer earns a +50 speed bonus!",
+  "Searching active rivals in your region...",
+  "Streak Bonus: 3 correct answers in a row trigger 1.5x score multiplier!",
+  "Turf Points: Winning this duel rewards +25 points to your school!",
+  "Fast recall is rewarded: Questions are timed at 15 seconds each!",
+] as const;
 
 export type MatchmakingState = "SEARCHING" | "RIVAL_FOUND" | "TRANSITION_TO_MATCH";
 

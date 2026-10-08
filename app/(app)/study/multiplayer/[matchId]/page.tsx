@@ -259,7 +259,11 @@ export default function LiveMatchPage() {
     savedProfile?.schoolCrestUrl ||
     authUser?.school?.crestUrl ||
     me?.school?.crestUrl ||
-    null;
+    (studentSchoolName?.toLowerCase().includes("aquinas") ||
+    studentSchoolShortCode === "AQUINAS" ||
+    studentSchoolShortCode === "AQU"
+      ? "https://res.cloudinary.com/dsriwu6yn/image/upload/v1791470415/crests/st-thomas-aquinas-senior-high-school.jpg"
+      : null);
 
   const studentRegion =
     savedProfile?.schoolRegion ||
