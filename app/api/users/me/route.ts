@@ -77,3 +77,47 @@ export async function GET() {
   const data = await response.json();
   return NextResponse.json(data);
 }
+
+export async function PATCH(req: Request) {
+  const cookieStore = await cookies();
+  const accessToken = cookieStore.get("accessToken")?.value;
+
+  if (!accessToken) {
+    return NextResponse.json(
+      { message: "Authentication required to update profile." },
+      { status: 401 }
+    );
+  }
+
+  try {
+    const body = await req.json();
+
+    const response = await fetch(`${API_URL}/users/me`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify(body),
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      let errorBody: unknown = {};
+      try {
+        errorBody = await response.json();
+      } catch {
+        errorBody = { message: response.statusText };
+      }
+      return NextResponse.json(errorBody, { status: response.status });
+    }
+
+    const data = await response.json();
+    return NextResponse.json(data);
+  } catch (error: any) {
+    return NextResponse.json(
+      { message: error?.message || "Failed to update user profile" },
+      { status: 500 }
+    );
+  }
+}

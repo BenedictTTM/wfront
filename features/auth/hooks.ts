@@ -12,6 +12,8 @@ import {
   logoutUser,
   registerUser,
   requestPasswordReset,
+  updateUserProfile,
+  fetchSchools,
   AUTH_STORAGE_KEY,
 } from "./api";
 import { isGuestIdentity, type AuthUser, type MeResponse } from "./types";
@@ -157,5 +159,47 @@ export function useLogoutMutation() {
       queryClient.setQueryData(authKeys.me, null);
       queryClient.removeQueries({ queryKey: authKeys.me });
     },
+  });
+}
+
+/**
+ * Update student profile mutation (updates name, schoolId, avatarUrl).
+ * Writes updated AuthUser to query cache and safeStorage synchronously.
+ */
+export function useUpdateProfileMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateUserProfile,
+    onSuccess: (updated) => {
+      if (updated && !isGuestIdentity(updated)) {
+        queryClient.setQueryData(authKeys.me, updated);
+        safeStorage.setItem(AUTH_STORAGE_KEY, updated);
+      } else {
+        queryClient.invalidateQueries({ queryKey: authKeys.me });
+      }
+    },
+  });
+}
+
+/**
+ * TanStack Query hook to search and list Ghanaian SHS schools.
+ */
+export function useSchools(params?: {
+  search?: string;
+  region?: string;
+  limit?: number;
+  page?: number;
+}) {
+  const search = params?.search || "";
+  const region = params?.region || "";
+  const limit = params?.limit ?? 50;
+  const page = params?.page ?? 1;
+
+  return useQuery({
+    queryKey: ["schools", { search, region, limit, page }],
+    queryFn: () => fetchSchools({ search, region, limit, page }),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
   });
 }

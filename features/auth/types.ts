@@ -8,6 +8,17 @@ export type UserRole =
   | "CONTENT_DEVELOPER"
   | "ADMIN";
 
+export type SchoolSummary = {
+  id: string;
+  name: string;
+  shortCode: string;
+  slug: string;
+  region?: string | null;
+  crestUrl?: string | null;
+  motto?: string | null;
+  turfScore?: number;
+};
+
 /** Authenticated user profile returned by GET /api/users/me */
 export type AuthUser = {
   id: string;
@@ -16,6 +27,9 @@ export type AuthUser = {
   entitlementActive: boolean;
   createdAt: string; // ISO-8601 string (serialised Date)
   name?: string | null;
+  avatarUrl?: string | null;
+  schoolId?: string | null;
+  school?: SchoolSummary | null;
 };
 
 /** Guest identity view returned by GET /api/users/me when caller is a guest */

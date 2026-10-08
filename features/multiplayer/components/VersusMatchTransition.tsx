@@ -27,17 +27,21 @@ export { MOCK_PREMPEH_COLLEGE, MOCK_ACHIMOTA_SCHOOL, MOCK_VERSUS_MATCH };
 export function SchoolCrestBadge({
   schoolName,
   schoolShortCode,
-  schoolColor,
+  schoolColor = "#055B38",
   crestUrl,
   size = "md",
 }: {
   schoolName: string;
   schoolShortCode: string;
-  schoolColor: string;
+  schoolColor?: string;
   crestUrl?: string | null;
   size?: "sm" | "md" | "lg";
 }) {
   const [imgError, setImgError] = useState(false);
+
+  useEffect(() => {
+    setImgError(false);
+  }, [crestUrl]);
 
   const sizeClasses = {
     sm: "w-10 h-10 text-xs",
@@ -86,13 +90,17 @@ export function SchoolCrestBadge({
 function CombatantAvatar({
   username,
   avatarUrl,
-  accentColor,
+  accentColor = "#F4D06F",
 }: {
   username: string;
   avatarUrl?: string | null;
-  accentColor: string;
+  accentColor?: string;
 }) {
   const [imgError, setImgError] = useState(false);
+
+  useEffect(() => {
+    setImgError(false);
+  }, [avatarUrl]);
 
   if (avatarUrl && !imgError) {
     return (
@@ -258,9 +266,11 @@ export function VersusMatchTransition({
                   size="md"
                 />
                 <div>
-                  <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-[#5C6470] block">
-                    {player1.region || "Ashanti Region"}
-                  </span>
+                  {player1.region ? (
+                    <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-[#5C6470] block">
+                      {player1.region}
+                    </span>
+                  ) : null}
                   <h3 className="text-base sm:text-lg font-black text-black leading-tight">
                     {player1.schoolName}
                   </h3>
@@ -288,24 +298,28 @@ export function VersusMatchTransition({
                 </span>
 
                 {/* ELO Rating Badge */}
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white border-[2.5px] border-black text-xs font-black text-black shadow-[2px_2px_0px_#000] w-fit">
-                  <Trophy size={14} className="stroke-[2.5] text-amber-500 fill-amber-400" />
-                  <span>{player1.elo.toLocaleString()} ELO</span>
-                </div>
+                {player1.elo !== undefined && (
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white border-[2.5px] border-black text-xs font-black text-black shadow-[2px_2px_0px_#000] w-fit">
+                    <Trophy size={14} className="stroke-[2.5] text-amber-500 fill-amber-400" />
+                    <span>{player1.elo.toLocaleString()} ELO</span>
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Bottom Row: Motto Banner */}
-            <div className="relative z-10 pt-3 border-t-[2.5px] border-black/20 flex items-center justify-between text-xs font-bold text-black/80">
-              <span className="italic font-extrabold text-[11px] sm:text-xs text-black/70">
-                "{player1.motto || "Suban ne Nimdeε"}"
-              </span>
-              <span
-                className="w-3 h-3 rounded-full border-[1.5px] border-black"
-                style={{ backgroundColor: player1.schoolColor }}
-                title={player1.schoolName}
-              />
-            </div>
+            {player1.motto ? (
+              <div className="relative z-10 pt-3 border-t-[2.5px] border-black/20 flex items-center justify-between text-xs font-bold text-black/80">
+                <span className="italic font-extrabold text-[11px] sm:text-xs text-black/70">
+                  "{player1.motto}"
+                </span>
+                <span
+                  className="w-3 h-3 rounded-full border-[1.5px] border-black"
+                  style={{ backgroundColor: player1.schoolColor || "#055B38" }}
+                  title={player1.schoolName}
+                />
+              </div>
+            ) : null}
           </motion.div>
 
           {/* ================================================================= */}
@@ -345,9 +359,11 @@ export function VersusMatchTransition({
                   size="md"
                 />
                 <div>
-                  <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-[#5C6470] block">
-                    {player2.region || "Greater Accra"}
-                  </span>
+                  {player2.region ? (
+                    <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-[#5C6470] block">
+                      {player2.region}
+                    </span>
+                  ) : null}
                   <h3 className="text-base sm:text-lg font-black text-black leading-tight">
                     {player2.schoolName}
                   </h3>
@@ -374,24 +390,28 @@ export function VersusMatchTransition({
                   <Zap size={16} className="text-blue-600 fill-blue-500" />
                 </span>
 
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white border-[2.5px] border-black text-xs font-black text-black shadow-[2px_2px_0px_#000] w-fit">
-                  <Trophy size={14} className="stroke-[2.5] text-amber-500 fill-amber-400" />
-                  <span>{player2.elo.toLocaleString()} ELO</span>
-                </div>
+                {player2.elo !== undefined && (
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white border-[2.5px] border-black text-xs font-black text-black shadow-[2px_2px_0px_#000] w-fit">
+                    <Trophy size={14} className="stroke-[2.5] text-amber-500 fill-amber-400" />
+                    <span>{player2.elo.toLocaleString()} ELO</span>
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Bottom Row: Opponent Motto */}
-            <div className="relative z-10 pt-3 border-t-[2.5px] border-black/20 flex items-center justify-between text-xs font-bold text-black/80 md:flex-row-reverse">
-              <span className="italic font-extrabold text-[11px] sm:text-xs text-black/70">
-                "{player2.motto || "Ut Omnes Unum Sint"}"
-              </span>
-              <span
-                className="w-3 h-3 rounded-full border-[1.5px] border-black"
-                style={{ backgroundColor: player2.schoolColor }}
-                title={player2.schoolName}
-              />
-            </div>
+            {player2.motto ? (
+              <div className="relative z-10 pt-3 border-t-[2.5px] border-black/20 flex items-center justify-between text-xs font-bold text-black/80 md:flex-row-reverse">
+                <span className="italic font-extrabold text-[11px] sm:text-xs text-black/70">
+                  "{player2.motto}"
+                </span>
+                <span
+                  className="w-3 h-3 rounded-full border-[1.5px] border-black"
+                  style={{ backgroundColor: player2.schoolColor || "#172554" }}
+                  title={player2.schoolName}
+                />
+              </div>
+            ) : null}
           </motion.div>
 
           {/* ================================================================= */}

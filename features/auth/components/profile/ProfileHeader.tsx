@@ -139,9 +139,25 @@ export function ProfileHeader({
             {/* School & Track */}
             <div className="flex items-center gap-2 text-xs sm:text-sm font-black text-text-primary mt-0.5 flex-wrap">
               {profile.school ? (
-                <span className="flex items-center gap-1.5 bg-bg-secondary px-2.5 py-1 rounded-lg border border-border">
-                  <SchoolIcon className="w-3.5 h-3.5 text-text-primary shrink-0" />
+                <span className="inline-flex items-center gap-2 bg-bg-secondary px-2.5 py-1 rounded-lg border border-border shadow-xs">
+                  {profile.schoolCrestUrl ? (
+                    <Image
+                      src={profile.schoolCrestUrl}
+                      alt={profile.school}
+                      width={18}
+                      height={18}
+                      unoptimized
+                      className="w-4.5 h-4.5 object-contain shrink-0 rounded"
+                    />
+                  ) : (
+                    <SchoolIcon className="w-3.5 h-3.5 text-text-primary shrink-0" />
+                  )}
                   <span>{profile.school}</span>
+                  {profile.schoolRegion && (
+                    <span className="text-[10px] font-bold text-text-secondary bg-surface px-1.5 py-0.5 rounded border border-border/60">
+                      {profile.schoolRegion}
+                    </span>
+                  )}
                 </span>
               ) : (
                 <button

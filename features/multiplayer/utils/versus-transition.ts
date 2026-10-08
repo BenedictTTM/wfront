@@ -6,15 +6,15 @@
 export interface CombatantProfile {
   username: string;
   avatarUrl?: string | null;
-  elo: number;
+  elo?: number;
   schoolName: string;
-  schoolShortCode: string; // e.g., "PMP", "MOT", "PRS", "ACH"
-  schoolColor: string; // Primary hex color (e.g. "#055B38" for Prempeh green)
-  schoolAccentColor?: string; // Secondary accent hex (e.g. "#F4D06F" for golden yellow)
+  schoolShortCode: string; // e.g., "PMP", "MOT", "PRS", "ACH", "IND"
+  schoolColor?: string; // Primary hex color
+  schoolAccentColor?: string; // Secondary accent hex
   crestUrl?: string | null; // School crest image URL
-  motto?: string; // School Latin/Twi motto
-  region?: string; // Region / City
-  rankTitle?: string; // e.g. "Ashanti Regional Champion"
+  motto?: string | null; // School Latin/Twi motto
+  region?: string | null; // Region / City
+  rankTitle?: string | null; // e.g. "Ashanti Regional Champion"
 }
 
 export interface VersusMatchTransitionProps {

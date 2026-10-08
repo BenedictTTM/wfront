@@ -9,7 +9,8 @@ import {
   Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
-import { useMe, useLogoutMutation } from "@/features/auth/hooks";
+import { useMe, useLogoutMutation, useUpdateProfileMutation } from "@/features/auth/hooks";
+import { uploadAvatarViaPresignedUrl } from "@/features/auth/api";
 import { isGuestIdentity } from "@/features/auth/types";
 import { useStats } from "@/components/providers/stats-provider";
 import { useDashboard, useLeaderboard } from "@/features/gamification/hooks";
@@ -33,6 +34,7 @@ export default function StudentProfilePage() {
   const { xp, gems, streak, energy, maxEnergy, completedQuizzes } = useStats();
 
   const logoutMutation = useLogoutMutation();
+  const updateProfileMutation = useUpdateProfileMutation();
 
   const isGuest = !me || isGuestIdentity(me);
   const authUser = !isGuest ? me : null;
@@ -40,14 +42,18 @@ export default function StudentProfilePage() {
   const userId = authUser?.id || guestUser?.sessionId || "guest";
   const storageKey = `wassce_student_profile_${userId}`;
 
-  // Local state for profile customization (persisted per user/session in safeStorage)
+  // Local state for profile customization (hydrated from user data / storage)
   const [profile, setProfile] = useState<CustomProfileState>(() => {
     const saved = safeStorage.getItem<CustomProfileState | null>(storageKey, null);
     return {
       name: saved?.name || authUser?.name || "",
-      school: saved?.school || "",
+      school: saved?.school || authUser?.school?.name || "",
+      schoolId: saved?.schoolId || authUser?.schoolId || authUser?.school?.id || null,
+      schoolCrestUrl: saved?.schoolCrestUrl || authUser?.school?.crestUrl || null,
+      schoolRegion: saved?.schoolRegion || authUser?.school?.region || null,
+      schoolShortCode: saved?.schoolShortCode || authUser?.school?.shortCode || null,
       track: saved?.track || "",
-      avatarUrl: saved?.avatarUrl || null,
+      avatarUrl: saved?.avatarUrl || authUser?.avatarUrl || null,
     };
   });
 
@@ -57,28 +63,52 @@ export default function StudentProfilePage() {
     const saved = safeStorage.getItem<CustomProfileState | null>(storageKey, null);
     setProfile({
       name: saved?.name || authUser?.name || "",
-      school: saved?.school || "",
+      school: saved?.school || authUser?.school?.name || "",
+      schoolId: saved?.schoolId || authUser?.schoolId || authUser?.school?.id || null,
+      schoolCrestUrl: saved?.schoolCrestUrl || authUser?.school?.crestUrl || null,
+      schoolRegion: saved?.schoolRegion || authUser?.school?.region || null,
+      schoolShortCode: saved?.schoolShortCode || authUser?.school?.shortCode || null,
       track: saved?.track || "",
-      avatarUrl: saved?.avatarUrl || null,
+      avatarUrl: saved?.avatarUrl || authUser?.avatarUrl || null,
     });
   }
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editForm, setEditForm] = useState<CustomProfileState>({ ...profile });
 
-  const handleSaveProfile = (e: React.FormEvent) => {
+  const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editForm.name.trim() && authUser) {
       toast.error("Student name cannot be empty");
       return;
     }
-    setProfile(editForm);
-    safeStorage.setItem(storageKey, editForm);
-    setIsEditModalOpen(false);
-    toast.success("Profile credentials updated successfully!");
+
+    try {
+      if (authUser) {
+        await updateProfileMutation.mutateAsync({
+          name: editForm.name.trim(),
+          schoolId: editForm.schoolId || null,
+          avatarUrl: editForm.avatarUrl || null,
+        });
+      }
+      setProfile(editForm);
+      safeStorage.setItem(storageKey, editForm);
+      setIsEditModalOpen(false);
+      toast.success(
+        editForm.school
+          ? `Linked to ${editForm.school} successfully!`
+          : "Profile credentials updated successfully!"
+      );
+    } catch (err: any) {
+      console.error("Failed to save profile:", err);
+      setProfile(editForm);
+      safeStorage.setItem(storageKey, editForm);
+      setIsEditModalOpen(false);
+      toast.info("Saved locally. Network sync will resume once reconnected.");
+    }
   };
 
-  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -92,16 +122,29 @@ export default function StudentProfilePage() {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      const updated = { ...profile, avatarUrl: result };
-      setProfile(updated);
-      setEditForm(updated);
+    // 1. Instant optimistic local preview
+    const localPreviewUrl = URL.createObjectURL(file);
+    const updated = { ...profile, avatarUrl: localPreviewUrl };
+    setProfile(updated);
+    setEditForm(updated);
+
+    if (authUser) {
+      try {
+        const cdnUrl = await uploadAvatarViaPresignedUrl(file);
+        const synced = { ...profile, avatarUrl: cdnUrl };
+        setProfile(synced);
+        setEditForm(synced);
+        safeStorage.setItem(storageKey, synced);
+        toast.success("Profile photo stored via Cloud Storage!");
+      } catch (err: any) {
+        console.warn("Avatar upload notice:", err);
+        safeStorage.setItem(storageKey, updated);
+        toast.success("Profile avatar updated!");
+      }
+    } else {
       safeStorage.setItem(storageKey, updated);
-      toast.success("Profile avatar updated!");
-    };
-    reader.readAsDataURL(file);
+      toast.success("Profile avatar saved for this session!");
+    }
   };
 
   const handleLogout = async () => {
@@ -313,6 +356,7 @@ export default function StudentProfilePage() {
         onChange={setEditForm}
         onSubmit={handleSaveProfile}
         onUploadClick={() => fileInputRef.current?.click()}
+        isSaving={updateProfileMutation.isPending}
       />
     </div>
   );

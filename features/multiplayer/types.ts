@@ -23,6 +23,8 @@ export type ParticipantState = {
     name: string;
     shortCode: string;
     crestUrl: string | null;
+    region?: string | null;
+    motto?: string | null;
   };
   score: number;
   isConnected: boolean;

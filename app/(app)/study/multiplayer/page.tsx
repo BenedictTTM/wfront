@@ -5,13 +5,14 @@ import { AlertCircle, ChevronRight, Swords, Zap } from "lucide-react";
 import { useSubjects } from "@/features/curriculum/hooks";
 import { useMatchmaking } from "@/features/multiplayer/hooks";
 import { MatchmakingLobby } from "@/features/multiplayer/components/MatchmakingLobby";
-import {
-  VersusMatchTransition,
-  MOCK_VERSUS_MATCH,
-} from "@/features/multiplayer/components/VersusMatchTransition";
+import { VersusMatchTransition } from "@/features/multiplayer/components/VersusMatchTransition";
+import { useCurrentUser } from "@/features/auth/hooks";
+import { safeStorage } from "@/lib/storage";
+import { type CustomProfileState } from "@/features/auth/constants";
 
 export default function MultiplayerEntryPage() {
   const [isPreviewingVersus, setIsPreviewingVersus] = useState(false);
+  const authUser = useCurrentUser();
   const { data: subjects, isLoading, isError } = useSubjects();
   const {
     selectedSubject,
@@ -64,14 +65,81 @@ export default function MultiplayerEntryPage() {
     );
   }
 
+  const activeUserId = authUser?.id || "guest";
+  const storageKey = `wassce_student_profile_${activeUserId}`;
+  const savedProfile = safeStorage.getItem<CustomProfileState | null>(storageKey, null);
+
+  const studentDisplayName =
+    savedProfile?.name?.trim() ||
+    authUser?.name?.trim() ||
+    (authUser?.email ? authUser.email.split("@")[0] : null) ||
+    "Student";
+
+  const studentSchoolName =
+    savedProfile?.school?.trim() ||
+    authUser?.school?.name ||
+    "Independent Scholar";
+
+  const studentSchoolShortCode =
+    savedProfile?.schoolShortCode ||
+    authUser?.school?.shortCode ||
+    (studentSchoolName !== "Independent Scholar"
+      ? studentSchoolName.replace(/[^a-zA-Z0-9]/g, "").slice(0, 3).toUpperCase()
+      : "IND");
+
+  const studentCrestUrl =
+    savedProfile?.schoolCrestUrl ||
+    authUser?.school?.crestUrl ||
+    null;
+
+  const studentAvatarUrl =
+    savedProfile?.avatarUrl ||
+    authUser?.avatarUrl ||
+    null;
+
+  const studentRegion =
+    savedProfile?.schoolRegion ||
+    authUser?.school?.region ||
+    null;
+
+  const studentMotto =
+    authUser?.school?.motto ||
+    null;
+
   if (isPreviewingVersus) {
+    const previewPlayer1 = {
+      username: studentDisplayName,
+      avatarUrl: studentAvatarUrl,
+      elo: 1000,
+      schoolName: studentSchoolName,
+      schoolShortCode: studentSchoolShortCode,
+      schoolColor: "#055B38",
+      schoolAccentColor: "#F4D06F",
+      crestUrl: studentCrestUrl,
+      motto: studentMotto,
+      region: studentRegion,
+    };
+
+    const previewPlayer2 = {
+      username: "Opponent Scholar",
+      avatarUrl: null,
+      elo: 1000,
+      schoolName: "WASSCE Scholar League",
+      schoolShortCode: "WSL",
+      schoolColor: "#172554",
+      schoolAccentColor: "#93C5FD",
+      crestUrl: null,
+      motto: null,
+      region: null,
+    };
+
     return (
       <div className="flex flex-col items-center gap-4 py-4 max-w-4xl mx-auto w-full">
         <VersusMatchTransition
-          player1={MOCK_VERSUS_MATCH.player1}
-          player2={MOCK_VERSUS_MATCH.player2}
-          subject={selectedSubject ? `${selectedSubject.name.toUpperCase()} • SPEED ROUND` : MOCK_VERSUS_MATCH.subject}
-          stakes={MOCK_VERSUS_MATCH.stakes}
+          player1={previewPlayer1}
+          player2={previewPlayer2}
+          subject={selectedSubject ? `${selectedSubject.name.toUpperCase()} • SPEED ROUND` : "CORE MATHEMATICS • SPEED ROUND"}
+          stakes="+25 SCHOOL TURF PTS"
           onComplete={() => setIsPreviewingVersus(false)}
         />
         <button
@@ -169,7 +237,7 @@ export default function MultiplayerEntryPage() {
         className="w-full py-3 bg-surface hover:bg-surface-muted text-text-primary border-[2px] border-border rounded-2xl text-xs font-black shadow-[0_3px_0_rgba(20,24,39,0.9)] active:translate-y-0.5 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
       >
         <Zap size={14} className="text-amber-500 fill-amber-400" />
-        <span>PREVIEW 1v1 VERSUS TRANSITION (PREMPEH VS. ACHIMOTA)</span>
+        <span>PREVIEW 1v1 VERSUS TRANSITION</span>
       </button>
 
       {/* Rules */}

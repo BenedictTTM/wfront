@@ -14,7 +14,6 @@ import {
   VersusMatchTransition,
   type CombatantProfile,
 } from "@/features/multiplayer/components/VersusMatchTransition";
-import { toast } from "sonner";
 import {
   useMatchmaking,
   useMatchResult,
@@ -22,6 +21,10 @@ import {
   useStreak,
 } from "@/features/multiplayer/hooks";
 import { useSubjects } from "@/features/curriculum/hooks";
+import { toast } from "sonner";
+import { useCurrentUser } from "@/features/auth/hooks";
+import { safeStorage } from "@/lib/storage";
+import { type CustomProfileState } from "@/features/auth/constants";
 
 function getAcademicConceptExplanation(
   questionText?: string,
@@ -102,6 +105,11 @@ export default function LiveMatchPage() {
   const { data: authData } = useMultiplayerToken();
   const token = authData?.token ?? null;
   const currentUserId = authData?.currentUserId ?? null;
+
+  const authUser = useCurrentUser();
+  const activeUserId = authUser?.id || currentUserId || "guest";
+  const storageKey = `wassce_student_profile_${activeUserId}`;
+  const savedProfile = safeStorage.getItem<CustomProfileState | null>(storageKey, null);
 
   const { data: subjects } = useSubjects();
   const { data: matchResult } = useMatchResult(matchId);
@@ -218,35 +226,96 @@ export default function LiveMatchPage() {
   const myRanking = matchEnd?.rankings?.find((r) => r.participantId === currentUserId);
   const oppRanking = matchEnd?.rankings?.find((r) => r.participantId !== currentUserId);
 
+  // Derive genuine student credentials (from cache, user auth state, or WS participant data)
+  const studentDisplayName =
+    savedProfile?.name?.trim() ||
+    authUser?.name?.trim() ||
+    me?.gamerTag ||
+    (me?.name && !me.name.includes("@") ? me.name : null) ||
+    (authUser?.email ? authUser.email.split("@")[0] : null) ||
+    "Student";
+
+  const studentAvatarUrl =
+    savedProfile?.avatarUrl ||
+    authUser?.avatarUrl ||
+    me?.avatarUrl ||
+    null;
+
+  const studentSchoolName =
+    savedProfile?.school?.trim() ||
+    authUser?.school?.name ||
+    me?.school?.name ||
+    "Independent Scholar";
+
+  const studentSchoolShortCode =
+    savedProfile?.schoolShortCode ||
+    authUser?.school?.shortCode ||
+    me?.school?.shortCode ||
+    (studentSchoolName !== "Independent Scholar"
+      ? studentSchoolName.replace(/[^a-zA-Z0-9]/g, "").slice(0, 3).toUpperCase()
+      : "IND");
+
+  const studentCrestUrl =
+    savedProfile?.schoolCrestUrl ||
+    authUser?.school?.crestUrl ||
+    me?.school?.crestUrl ||
+    null;
+
+  const studentRegion =
+    savedProfile?.schoolRegion ||
+    authUser?.school?.region ||
+    me?.school?.region ||
+    null;
+
+  const studentMotto =
+    authUser?.school?.motto ||
+    me?.school?.motto ||
+    null;
+
+  // Derive opponent profile dynamically from match room participants
+  const oppDisplayName =
+    opponent?.gamerTag ||
+    (opponent?.name && !opponent.name.includes("@") ? opponent.name : null) ||
+    "Opponent Scholar";
+
+  const oppSchoolName =
+    opponent?.school?.name ||
+    (opponent ? "WASSCE Scholar League" : "Opponent");
+
+  const oppSchoolShortCode =
+    opponent?.school?.shortCode ||
+    (oppSchoolName === "WASSCE Scholar League" ? "WSL" : "OPP");
+
+  const oppCrestUrl = opponent?.school?.crestUrl || null;
+  const oppAvatarUrl = opponent?.avatarUrl || null;
+  const oppRegion = opponent?.school?.region || null;
+  const oppMotto = opponent?.school?.motto || null;
+
   // Construct combatant profiles for the 1v1 Versus cinematic transition
   const player1: CombatantProfile = {
-    username: me?.gamerTag || (me?.name && !me.name.includes("@") ? me.name : "Kofi_Amanfoo"),
-    avatarUrl: me?.avatarUrl || null,
-    elo: 1420,
-    schoolName: me?.school?.name || "Prempeh College",
-    schoolShortCode: me?.school?.shortCode || "PMP",
+    username: studentDisplayName,
+    avatarUrl: studentAvatarUrl,
+    elo: 1000,
+    schoolName: studentSchoolName,
+    schoolShortCode: studentSchoolShortCode,
     schoolColor: "#055B38",
     schoolAccentColor: "#F4D06F",
-    crestUrl: me?.school?.crestUrl || null,
-    motto: "Suban ne Nimdeε",
-    region: "Kumasi, Ashanti",
-    rankTitle: "Ashanti Regional Champion",
+    crestUrl: studentCrestUrl,
+    motto: studentMotto,
+    region: studentRegion,
   };
 
   const player2: CombatantProfile = {
-    username:
-      opponent?.gamerTag ||
-      (opponent?.name && !opponent.name.includes("@") ? opponent.name : "Nana_Akora"),
-    avatarUrl: opponent?.avatarUrl || null,
-    elo: 1395,
-    schoolName: opponent?.school?.name || "Achimota School",
-    schoolShortCode: opponent?.school?.shortCode || "MOT",
+    username: oppDisplayName,
+    avatarUrl: oppAvatarUrl,
+    elo: 1000,
+    schoolName: oppSchoolName,
+    schoolShortCode: oppSchoolShortCode,
     schoolColor: "#172554",
     schoolAccentColor: "#93C5FD",
-    crestUrl: opponent?.school?.crestUrl || null,
-    motto: "Ut Omnes Unum Sint",
-    region: "Legon, Greater Accra",
-    rankTitle: "Greater Accra Top Seed",
+    crestUrl: oppCrestUrl,
+    motto: oppMotto,
+    region: oppRegion,
   };
 
   return (
@@ -287,16 +356,14 @@ export default function LiveMatchPage() {
         <div className="max-w-lg mx-auto w-full">
           <MatchHUD
             player={{
-              gamerTag: me?.gamerTag || (me?.name && !me.name.includes("@") ? me.name : "You"),
-              avatarUrl: me?.avatarUrl || "",
+              gamerTag: studentDisplayName,
+              avatarUrl: studentAvatarUrl || "",
               score: me?.score ?? 0,
               streak: currentStreak,
             }}
             opponent={{
-              gamerTag:
-                opponent?.gamerTag ||
-                (opponent?.name && !opponent.name.includes("@") ? opponent.name : "Ghost Scholar"),
-              avatarUrl: opponent?.avatarUrl || "",
+              gamerTag: oppDisplayName,
+              avatarUrl: oppAvatarUrl || "",
               score: opponent?.score ?? 0,
               streak: 0,
               status:
@@ -420,8 +487,8 @@ export default function LiveMatchPage() {
                     ? "DEFEAT"
                     : "DRAW",
                 player: {
-                  gamerTag: me?.gamerTag || (me?.name && !me.name.includes("@") ? me.name : "You"),
-                  avatarUrl: me?.avatarUrl || "",
+                  gamerTag: studentDisplayName,
+                  avatarUrl: studentAvatarUrl || "",
                   finalScore: myRanking?.score ?? me?.score ?? 0,
                   eloDelta:
                     (myRanking?.score ?? me?.score ?? 0) > (oppRanking?.score ?? opponent?.score ?? 0)
@@ -430,20 +497,18 @@ export default function LiveMatchPage() {
                       ? -12
                       : 0,
                   newElo:
-                    1100 +
+                    1000 +
                     ((myRanking?.score ?? me?.score ?? 0) > (oppRanking?.score ?? opponent?.score ?? 0)
                       ? 16
                       : (myRanking?.score ?? me?.score ?? 0) < (oppRanking?.score ?? opponent?.score ?? 0)
                       ? -12
                       : 0),
-                  schoolCode: "TEMASHS",
+                  schoolCode: studentSchoolShortCode,
                 },
                 opponent: {
                   id: opponent?.id || "opp-1",
-                  gamerTag:
-                    opponent?.gamerTag ||
-                    (opponent?.name && !opponent.name.includes("@") ? opponent.name : "Opponent"),
-                  avatarUrl: opponent?.avatarUrl || "",
+                  gamerTag: oppDisplayName,
+                  avatarUrl: oppAvatarUrl || "",
                   finalScore: oppRanking?.score ?? opponent?.score ?? 0,
                 },
                 subject: {
