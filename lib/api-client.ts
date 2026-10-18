@@ -105,25 +105,44 @@ function getRequestUrl(path: string): string {
     }
     return path;
   }
-  return `${API_URL}${path.startsWith("/") ? path : `/${path}`}`;
+  const cleanPath = path.startsWith("/") ? path : `/${path}`;
+
+  // In the browser, route through the same-origin proxy rewrite so httpOnly cookies are attached
+  if (typeof window !== "undefined") {
+    return `/api/backend${cleanPath}`;
+  }
+
+  return `${API_URL}${cleanPath}`;
 }
+
+let activeRefreshPromise: Promise<boolean> | null = null;
 
 /** Calls the Next.js refresh proxy to silently rotate tokens. */
 async function silentRefresh(): Promise<boolean> {
-  try {
-    // Use the internal Next.js route so the proxy can set the new httpOnly cookies.
-    const base =
-      typeof window === "undefined"
-        ? process.env.NEXTAUTH_URL || "http://localhost:3000"
-        : "";
-    const res = await fetch(`${base}/api/auth/refresh`, {
-      method: "POST",
-      credentials: "include",
-    });
-    return res.ok;
-  } catch {
-    return false;
+  if (activeRefreshPromise) {
+    return activeRefreshPromise;
   }
+
+  activeRefreshPromise = (async () => {
+    try {
+      // Use the internal Next.js route so the proxy can set the new httpOnly cookies.
+      const base =
+        typeof window === "undefined"
+          ? process.env.NEXTAUTH_URL || "http://localhost:3000"
+          : "";
+      const res = await fetch(`${base}/api/auth/refresh`, {
+        method: "POST",
+        credentials: "include",
+      });
+      return res.ok;
+    } catch {
+      return false;
+    } finally {
+      activeRefreshPromise = null;
+    }
+  })();
+
+  return activeRefreshPromise;
 }
 
 async function request<T>(

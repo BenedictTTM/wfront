@@ -121,7 +121,9 @@ export function useMatchmaking(excludeMatchId?: string) {
     } catch (err: unknown) {
       const httpError = err as { status?: number; message?: string };
       const message =
-        httpError?.status === 400
+        httpError?.status === 401
+          ? "Your session has expired. Please sign in again to play multiplayer."
+          : httpError?.status === 400
           ? "A matchmaking request is already in progress. Please wait a moment."
           : httpError?.status === 404
           ? "Guests cannot enter the multiplayer arena. Please log in first."
