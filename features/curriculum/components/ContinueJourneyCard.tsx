@@ -97,14 +97,14 @@ export function ContinueJourneyCard({ subject, journey }: ContinueJourneyCardPro
 
   return (
     <section aria-labelledby="continue-journey-heading" className="w-full">
-      <div className="bg-surface border-[3px] border-border rounded-2xl shadow-[0_6px_0_rgba(20,24,39,0.9)] p-6 md:p-8 flex flex-col gap-6 relative overflow-hidden">
+      <div className="bg-surface border-2.5 border-border rounded-xl shadow-offset p-4 sm:p-5 md:p-6 flex flex-col gap-4 relative overflow-hidden">
         {/* Subtle decorative background accent */}
-        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 right-0 w-28 h-28 bg-primary/10 rounded-full blur-2xl pointer-events-none" />
 
         {/* Header pill & Subject indicator */}
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b-[2px] border-border pb-4">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b-2 border-border pb-3">
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-1 bg-primary border-[2px] border-border rounded-full text-[10px] font-black uppercase tracking-widest text-text-primary shadow-[0_2px_0_#141827]">
+            <span className="px-2.5 py-0.5 bg-primary border-[1.5px] border-border rounded-full text-[10px] font-black uppercase tracking-widest text-text-primary shadow-[0_1px_0_#141827]">
               Next Recommended Step
             </span>
             <span className="text-xs font-bold text-text-secondary flex items-center gap-1">
@@ -113,31 +113,31 @@ export function ContinueJourneyCard({ subject, journey }: ContinueJourneyCardPro
             </span>
           </div>
 
-          <span className="px-2 py-0.5 bg-surface-muted border-[2px] border-border rounded-md text-[10px] font-black text-text-primary uppercase tracking-wide">
+          <span className="px-2 py-0.5 bg-surface-muted border-[1.5px] border-border rounded-md text-[10px] font-black text-text-primary uppercase tracking-wide">
             {subject.code}
           </span>
         </div>
 
         {/* Current Objective Details */}
-        <div className="flex flex-col gap-1.5">
-          <span className="text-xs font-black text-text-secondary uppercase tracking-wider">
+        <div className="flex flex-col gap-1">
+          <span className="text-[11px] font-black text-text-secondary uppercase tracking-wider">
             {currentUnit?.title || "Active Unit"}
           </span>
           <h2
             id="continue-journey-heading"
-            className="text-xl md:text-2xl font-black text-text-primary tracking-tight"
+            className="text-lg md:text-xl font-black text-text-primary tracking-tight"
           >
             {currentNode?.title || "Continue Learning Path"}
           </h2>
           {currentNode?.description && (
-            <p className="text-xs md:text-sm text-text-secondary font-medium mt-0.5">
+            <p className="text-xs text-text-secondary font-medium mt-0.5 leading-relaxed">
               {currentNode.description}
             </p>
           )}
         </div>
 
         {/* Progress & Mastery Metrics */}
-        <div className="flex flex-col gap-2.5 bg-surface-muted/80 p-4 border-[2.5px] border-border rounded-xl shadow-inner">
+        <div className="flex flex-col gap-2 bg-surface-muted/80 p-3 sm:p-3.5 border-2 border-border rounded-xl shadow-inner">
           <div className="flex justify-between items-center text-xs font-black text-text-primary">
             <span>Journey Progress</span>
             <span className="text-text-secondary font-bold">
@@ -146,7 +146,7 @@ export function ContinueJourneyCard({ subject, journey }: ContinueJourneyCardPro
           </div>
 
           <div
-            className="w-full h-3.5 border-[2px] border-border rounded-full bg-surface overflow-hidden p-0.5"
+            className="w-full h-2.5 border-[1.5px] border-border rounded-full bg-surface overflow-hidden p-0.5"
             role="progressbar"
             aria-valuenow={percentComplete}
             aria-valuemin={0}
@@ -154,15 +154,15 @@ export function ContinueJourneyCard({ subject, journey }: ContinueJourneyCardPro
             aria-label="Subject journey completion percentage"
           >
             <div
-              className="h-full bg-primary border-[1.5px] border-border rounded-full transition-all duration-500 shadow-sm"
+              className="h-full bg-primary border-[1px] border-border rounded-full transition-all duration-500 shadow-sm"
               style={{ width: `${Math.max(percentComplete, 4)}%` }}
             />
           </div>
 
           {/* Badges: Mastery & XP */}
-          <div className="flex flex-wrap items-center gap-3 pt-1">
-            <div className="flex items-center gap-1.5 text-xs font-black text-text-primary bg-surface px-3 py-1.5 border-[2px] border-border rounded-xl shadow-[0_2px_0_#141827]">
-              <Star size={14} className="fill-[#F6D86B] text-[#141827] stroke-[2.5]" />
+          <div className="flex flex-wrap items-center gap-2 pt-0.5">
+            <div className="flex items-center gap-1.5 text-[11px] font-black text-text-primary bg-surface px-2.5 py-1 border-[1.5px] border-border rounded-lg shadow-[0_1px_0_#141827]">
+              <Star size={13} className="fill-[#F6D86B] text-[#141827] stroke-[2.5]" />
               <span>
                 {journey.overallMasteryPercent > 0
                   ? `${journey.overallMasteryPercent}% Mastery`
@@ -170,37 +170,37 @@ export function ContinueJourneyCard({ subject, journey }: ContinueJourneyCardPro
               </span>
             </div>
 
-            <div className="flex items-center gap-1.5 text-xs font-black text-text-primary bg-surface px-3 py-1.5 border-[2px] border-border rounded-xl shadow-[0_2px_0_#141827]">
-              <Zap size={14} className="fill-text-primary text-text-primary stroke-[2]" />
+            <div className="flex items-center gap-1.5 text-[11px] font-black text-text-primary bg-surface px-2.5 py-1 border-[1.5px] border-border rounded-lg shadow-[0_1px_0_#141827]">
+              <Zap size={13} className="fill-text-primary text-text-primary stroke-[2]" />
               <span>+{xpAvailable} XP Reward</span>
             </div>
           </div>
         </div>
 
         {/* Primary Action Button */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 pt-1">
           <button
             type="button"
             onClick={handleContinueJourney}
             disabled={isStarting}
-            className="flex-1 py-3.5 px-6 bg-primary text-text-primary border-[3px] border-border rounded-xl text-xs md:text-sm font-black shadow-[0_4px_0_#141827] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-[0_1px_0_#141827] focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary transition-all flex items-center justify-center gap-2 tracking-wider cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
+            className="flex-1 py-2.5 px-5 bg-primary text-text-primary border-2 border-border rounded-xl text-xs md:text-sm font-black shadow-[0_2.5px_0_#141827] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-[0_1px_0_#141827] focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary transition-all flex items-center justify-center gap-2 tracking-wider cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
           >
             {isStarting ? (
               <>
-                <Loader2 size={16} className="animate-spin stroke-[3]" />
+                <Loader2 size={15} className="animate-spin stroke-[3]" />
                 <span>STARTING QUIZ…</span>
               </>
             ) : (
               <>
                 <span>CONTINUE JOURNEY</span>
-                <ArrowRight size={16} className="stroke-[3]" />
+                <ArrowRight size={15} className="stroke-[3]" />
               </>
             )}
           </button>
 
           <Link
             href={`/study/${subject.slug}`}
-            className="py-3.5 px-5 bg-surface hover:bg-bg-primary text-text-primary border-[2.5px] border-border rounded-xl text-xs font-black shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 transition-all text-center tracking-wider"
+            className="py-2.5 px-4 bg-surface hover:bg-bg-primary text-text-primary border-2 border-border rounded-xl text-xs font-black shadow-[0_2px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 transition-all text-center tracking-wider"
           >
             VIEW FULL MAP
           </Link>

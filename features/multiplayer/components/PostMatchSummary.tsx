@@ -54,14 +54,16 @@ export const PostMatchSummary = React.memo(function PostMatchSummary({
   onBookmarkQuestion,
   rematchAcceptedMatchId = null,
 }: PostMatchSummaryProps) {
-  const { result, player, opponent, subject, schoolTurfContribution, missedQuestions } = data;
+  const { result, player, opponent, subject, schoolTurfContribution, missedQuestions, allQuestions } = data;
 
   // ── Rematch Handshake State Machine ──
   const [rematchState, setRematchState] = useState<RematchState>("IDLE");
   const [countdown, setCountdown] = useState(5);
 
-  // ── Missed Questions Accordion & Bookmarking State ──
-  const [isAccordionOpen, setIsAccordionOpen] = useState(missedQuestions.length > 0);
+  // ── Questions Review & Bookmarking State ──
+  const totalAvailable = allQuestions?.length ?? missedQuestions.length;
+  const [isAccordionOpen, setIsAccordionOpen] = useState(totalAvailable > 0);
+  const [reviewFilter, setReviewFilter] = useState<"ALL" | "MISSED">("ALL");
   const [bookmarkedQuestionIds, setBookmarkedQuestionIds] = useState<Set<string>>(new Set());
 
   // Handle external acceptance of rematch
@@ -298,129 +300,230 @@ export const PostMatchSummary = React.memo(function PostMatchSummary({
       </div>
 
       {/* =================================================================== */}
-      {/* 4. EXPANDABLE NEO-BRUTALIST ACCORDION: REVIEW MISSED QUESTIONS      */}
+      {/* 4. EXPANDABLE NEO-BRUTALIST ACCORDION: REVIEW ALL QUESTIONS & CONCEPTS */}
       {/* =================================================================== */}
-      <div
-        data-testid="missed-concepts-accordion"
-        className="w-full bg-surface border-[2.5px] border-border rounded-2xl overflow-hidden shadow-[0_4px_0_#141827]"
-      >
-        <button
-          type="button"
-          onClick={() => setIsAccordionOpen((prev) => !prev)}
-          className="w-full p-4 flex items-center justify-between text-left hover:bg-surface-muted transition-colors cursor-pointer"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-primary border-[2px] border-border flex items-center justify-center text-text-primary shrink-0 shadow-[0_1px_0_#141827]">
-              <Lightbulb size={18} className="stroke-[2.5]" />
-            </div>
-            <div>
-              <span className="text-xs sm:text-sm font-black text-text-primary uppercase tracking-wide">
-                {missedQuestions.length > 0
-                  ? `Review ${missedQuestions.length} Missed Question${missedQuestions.length > 1 ? "s" : ""}`
-                  : "Perfect Run • 0 Missed Concepts"}
-              </span>
-              <span className="block text-[11px] text-text-secondary font-medium">
-                {missedQuestions.length > 0
-                  ? "Reinforce critical knowledge gaps before next duel"
-                  : "All questions answered correctly"}
-              </span>
-            </div>
-          </div>
-          <div className="p-1.5 rounded-xl bg-surface border-[1.5px] border-border text-text-primary shadow-[0_1px_0_#141827]">
-            {isAccordionOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-          </div>
-        </button>
+      {(() => {
+        const effectiveMissed = missedQuestions.map((q) => ({ ...q, isCorrect: false }));
+        const baseQuestions = allQuestions && allQuestions.length > 0 ? allQuestions : effectiveMissed;
+        const missedCount = baseQuestions.filter((q) => q.isCorrect === false).length;
+        const displayedQuestions = reviewFilter === "MISSED"
+          ? baseQuestions.filter((q) => q.isCorrect === false)
+          : baseQuestions;
 
-        {isAccordionOpen && missedQuestions.length > 0 && (
-          <div className="p-4 pt-2 flex flex-col gap-3.5 border-t-[2px] border-border bg-surface-muted/30">
-            {missedQuestions.map((q, idx) => {
-              const isBookmarked = bookmarkedQuestionIds.has(q.id);
-              return (
-                <div
-                  key={q.id || idx}
-                  data-testid={`missed-question-${idx}`}
-                  className="p-4 rounded-2xl bg-surface border-[2px] border-border flex flex-col gap-3 shadow-[0_2px_0_#141827]"
-                >
-                  <p className="text-xs sm:text-sm font-black text-text-primary leading-snug">
-                    <span className="inline-block px-1.5 py-0.5 rounded-md bg-primary border border-border text-[10px] mr-2">
-                      #{idx + 1}
-                    </span>
-                    {q.questionText}
-                  </p>
+        return (
+          <div
+            data-testid="missed-concepts-accordion"
+            className="w-full bg-surface border-[2.5px] border-border rounded-2xl overflow-hidden shadow-[0_4px_0_#141827]"
+          >
+            {/* Accordion Header */}
+            <div className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-surface-muted/50 transition-colors">
+              <button
+                type="button"
+                onClick={() => setIsAccordionOpen((prev) => !prev)}
+                className="flex items-center gap-3 text-left flex-1 min-w-0 cursor-pointer"
+              >
+                <div className="w-9 h-9 rounded-xl bg-primary border-[2px] border-border flex items-center justify-center text-text-primary shrink-0 shadow-[0_1px_0_#141827]">
+                  <Lightbulb size={18} className="stroke-[2.5]" />
+                </div>
+                <div className="min-w-0">
+                  <span className="text-xs sm:text-sm font-black text-text-primary uppercase tracking-wide block truncate">
+                    Question Feedback &amp; Concept Breakdown
+                  </span>
+                  <span className="block text-[11px] text-text-secondary font-medium">
+                    {missedCount > 0
+                      ? `${missedCount} concept gap${missedCount > 1 ? "s" : ""} identified • Review all questions below`
+                      : "Flawless duel • Review concepts and reinforce learning"}
+                  </span>
+                </div>
+              </button>
 
-                  {/* Answers Comparison with Neo-Brutalist High-Contrast Pills */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
-                    {/* User Selection Pill */}
-                    <div className="p-3 rounded-xl bg-rose-50 border-[1.5px] border-border flex items-start gap-2.5 shadow-[0_1px_0_#141827]">
-                      <XCircle size={16} className="text-rose-700 shrink-0 mt-0.5 stroke-[2.5]" />
-                      <div className="min-w-0">
-                        <span className="block text-[10px] uppercase font-black text-rose-800 tracking-wider mb-0.5">
-                          YOUR ANSWER
-                        </span>
-                        <span className="font-bold text-text-primary text-xs sm:text-sm break-words leading-snug">
-                          {q.selectedAnswer}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Correct Answer Pill */}
-                    <div className="p-3 rounded-xl bg-emerald-50 border-[1.5px] border-border flex items-start gap-2.5 shadow-[0_1px_0_#141827]">
-                      <CheckCircle2 size={16} className="text-emerald-700 shrink-0 mt-0.5 stroke-[2.5]" />
-                      <div className="min-w-0">
-                        <span className="block text-[10px] uppercase font-black text-emerald-800 tracking-wider mb-0.5">
-                          CORRECT ANSWER
-                        </span>
-                        <span className="font-bold text-text-primary text-xs sm:text-sm break-words leading-snug">
-                          {q.correctAnswer}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Dynamic Rule Breakdown Card */}
-                  <div className="p-3 rounded-xl bg-surface-muted border border-border flex items-start gap-2.5 shadow-sm">
-                    <Lightbulb size={16} className="text-text-primary shrink-0 mt-0.5 stroke-[2.5]" />
-                    <div className="flex-1 min-w-0">
-                      <span className="block text-[10px] uppercase font-black text-text-secondary tracking-wider mb-0.5">
-                        Pedagogical Rule
-                      </span>
-                      <p className="text-xs font-bold text-text-primary leading-relaxed break-words">
-                        {formatAcademicRule(q.conceptExplanation, q.questionText)}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Save to Revision Deck Action */}
-                  <div className="flex justify-end pt-0.5">
+              <div className="flex items-center justify-between sm:justify-end gap-2 shrink-0">
+                {/* Filter Pills */}
+                {baseQuestions.length > 0 && (
+                  <div className="flex items-center gap-1.5 p-1 rounded-xl bg-surface-muted border border-border">
                     <button
                       type="button"
-                      onClick={() => handleToggleBookmark(q.id)}
-                      disabled={isBookmarked}
-                      className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border-[1.5px] border-border text-xs font-black uppercase tracking-wider transition-all shadow-[0_2px_0_#141827] active:shadow-[0_1px_0_#141827] active:translate-y-0.5 cursor-pointer ${
-                        isBookmarked
-                          ? "bg-secondary text-text-primary opacity-80 cursor-default"
-                          : "bg-surface hover:bg-surface-muted text-text-primary hover:-translate-y-0.5"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setReviewFilter("ALL");
+                        setIsAccordionOpen(true);
+                      }}
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-black uppercase tracking-wider transition-all ${
+                        reviewFilter === "ALL"
+                          ? "bg-primary text-text-primary shadow-[0_1px_0_#141827]"
+                          : "text-text-secondary hover:text-text-primary"
                       }`}
                     >
-                      {isBookmarked ? (
-                        <>
-                          <BookmarkCheck size={14} className="stroke-[3]" />
-                          <span>Saved to Revision Deck</span>
-                        </>
-                      ) : (
-                        <>
-                          <Bookmark size={14} className="stroke-[2.5]" />
-                          <span>🔖 Save to Revision Deck</span>
-                        </>
-                      )}
+                      All ({baseQuestions.length})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setReviewFilter("MISSED");
+                        setIsAccordionOpen(true);
+                      }}
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-black uppercase tracking-wider transition-all ${
+                        reviewFilter === "MISSED"
+                          ? "bg-rose-100 text-rose-950 shadow-[0_1px_0_#141827]"
+                          : "text-text-secondary hover:text-text-primary"
+                      }`}
+                    >
+                      Missed ({missedCount})
                     </button>
                   </div>
-                </div>
-              );
-            })}
+                )}
+
+                {/* Chevron Toggle */}
+                <button
+                  type="button"
+                  onClick={() => setIsAccordionOpen((prev) => !prev)}
+                  className="p-1.5 rounded-xl bg-surface border-[1.5px] border-border text-text-primary shadow-[0_1px_0_#141827] cursor-pointer"
+                  aria-label={isAccordionOpen ? "Collapse review" : "Expand review"}
+                >
+                  {isAccordionOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                </button>
+              </div>
+            </div>
+
+            {/* Accordion Content */}
+            {isAccordionOpen && (
+              <div className="p-4 pt-2 flex flex-col gap-3.5 border-t-[2px] border-border bg-surface-muted/30">
+                {displayedQuestions.length === 0 ? (
+                  <div className="p-6 rounded-xl bg-surface border border-border text-center">
+                    <p className="text-xs font-black uppercase text-emerald-700">
+                      Zero missed questions — 100% accuracy on these concepts!
+                    </p>
+                  </div>
+                ) : (
+                  displayedQuestions.map((q, idx) => {
+                    const isBookmarked = bookmarkedQuestionIds.has(q.id);
+                    const isQuestionCorrect = q.isCorrect ?? false;
+                    const displayIndex = q.questionIndex !== undefined ? q.questionIndex + 1 : idx + 1;
+
+                    return (
+                      <div
+                        key={q.id || idx}
+                        data-testid={`missed-question-${idx}`}
+                        className="p-4 rounded-2xl bg-surface border-[2px] border-border flex flex-col gap-3 shadow-[0_2px_0_#141827]"
+                      >
+                        {/* Question Header & Correctness Badge */}
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <p className="text-xs sm:text-sm font-black text-text-primary leading-snug flex-1 min-w-0">
+                            <span className="inline-block px-1.5 py-0.5 rounded-md bg-primary border border-border text-[10px] mr-2">
+                              #{displayIndex}
+                            </span>
+                            {q.questionText}
+                          </p>
+                          <span
+                            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full border text-[10px] font-black uppercase tracking-wider shrink-0 ${
+                              isQuestionCorrect
+                                ? "bg-emerald-100 border-emerald-400 text-emerald-950"
+                                : "bg-rose-100 border-rose-400 text-rose-950"
+                            }`}
+                          >
+                            {isQuestionCorrect ? (
+                              <>
+                                <CheckCircle2 size={12} className="text-emerald-700 stroke-[3]" />
+                                <span>Verified</span>
+                              </>
+                            ) : (
+                              <>
+                                <XCircle size={12} className="text-rose-700 stroke-[3]" />
+                                <span>Countered</span>
+                              </>
+                            )}
+                          </span>
+                        </div>
+
+                        {/* Answers Breakdown */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+                          {/* User Selection Pill */}
+                          <div
+                            className={`p-3 rounded-xl border-[1.5px] border-border flex items-start gap-2.5 shadow-[0_1px_0_#141827] ${
+                              isQuestionCorrect ? "bg-emerald-50" : "bg-rose-50"
+                            }`}
+                          >
+                            {isQuestionCorrect ? (
+                              <CheckCircle2 size={16} className="text-emerald-700 shrink-0 mt-0.5 stroke-[2.5]" />
+                            ) : (
+                              <XCircle size={16} className="text-rose-700 shrink-0 mt-0.5 stroke-[2.5]" />
+                            )}
+                            <div className="min-w-0">
+                              <span
+                                className={`block text-[10px] uppercase font-black tracking-wider mb-0.5 ${
+                                  isQuestionCorrect ? "text-emerald-800" : "text-rose-800"
+                                }`}
+                              >
+                                {isQuestionCorrect ? "YOUR ANSWER (CORRECT)" : "YOUR ANSWER"}
+                              </span>
+                              <span className="font-bold text-text-primary text-xs sm:text-sm break-words leading-snug">
+                                {q.selectedAnswer}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Correct Answer Pill (always displayed for complete feedback) */}
+                          <div className="p-3 rounded-xl bg-emerald-50 border-[1.5px] border-border flex items-start gap-2.5 shadow-[0_1px_0_#141827]">
+                            <CheckCircle2 size={16} className="text-emerald-700 shrink-0 mt-0.5 stroke-[2.5]" />
+                            <div className="min-w-0">
+                              <span className="block text-[10px] uppercase font-black text-emerald-800 tracking-wider mb-0.5">
+                                CORRECT ANSWER
+                              </span>
+                              <span className="font-bold text-text-primary text-xs sm:text-sm break-words leading-snug">
+                                {q.correctAnswer}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Concept Rule Breakdown Card */}
+                        <div className="p-3 rounded-xl bg-surface-muted border border-border flex items-start gap-2.5 shadow-sm">
+                          <Lightbulb size={16} className="text-text-primary shrink-0 mt-0.5 stroke-[2.5]" />
+                          <div className="flex-1 min-w-0">
+                            <span className="block text-[10px] uppercase font-black text-text-secondary tracking-wider mb-0.5">
+                              Concept Breakdown
+                            </span>
+                            <p className="text-xs font-bold text-text-primary leading-relaxed break-words">
+                              {formatAcademicRule(q.conceptExplanation, q.questionText)}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Save to Revision Deck Action */}
+                        <div className="flex justify-end pt-0.5">
+                          <button
+                            type="button"
+                            onClick={() => handleToggleBookmark(q.id)}
+                            disabled={isBookmarked}
+                            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border-[1.5px] border-border text-xs font-black uppercase tracking-wider transition-all shadow-[0_2px_0_#141827] active:shadow-[0_1px_0_#141827] active:translate-y-0.5 cursor-pointer ${
+                              isBookmarked
+                                ? "bg-secondary text-text-primary opacity-80 cursor-default"
+                                : "bg-surface hover:bg-surface-muted text-text-primary hover:-translate-y-0.5"
+                            }`}
+                          >
+                            {isBookmarked ? (
+                              <>
+                                <BookmarkCheck size={14} className="stroke-[3]" />
+                                <span>Saved to Revision Deck</span>
+                              </>
+                            ) : (
+                              <>
+                                <Bookmark size={14} className="stroke-[2.5]" />
+                                <span>🔖 Save to Revision Deck</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        );
+      })()}
     </div>
   );
 });

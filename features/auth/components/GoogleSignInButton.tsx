@@ -20,7 +20,7 @@ declare global {
             auto_select?: boolean;
             cancel_on_tap_outside?: boolean;
           }) => void;
-          prompt: (notification?: (notification: any) => void) => void;
+          prompt: (notification?: (notification: unknown) => void) => void;
           renderButton: (
             parent: HTMLElement,
             options: {
@@ -126,10 +126,11 @@ function GoogleSignInButtonInner({
           !fromParam.includes("\\");
         const targetUrl = isSafeLocalPath ? fromParam : "/dashboard";
         router.push(targetUrl);
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const errorObj = err as { message?: string; code?: string } | undefined;
         const errorMsg =
-          err?.message ||
-          (err?.code === "ACCOUNT_EXISTS_WITH_PASSWORD"
+          errorObj?.message ||
+          (errorObj?.code === "ACCOUNT_EXISTS_WITH_PASSWORD"
             ? "An account with this email already exists using password authentication. Please sign in with your password."
             : "Google sign-in failed. Please try again.");
 

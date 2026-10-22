@@ -127,31 +127,31 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Main Viewport Container */}
-        <div className="flex-1 w-full px-3.5 py-6 sm:px-6 sm:py-8 md:p-8 lg:p-10 flex flex-col gap-6 sm:gap-8 md:gap-10 max-w-5xl mx-auto">
+        <div className="flex-1 w-full px-3.5 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-6 flex flex-col gap-5 sm:gap-6 md:gap-7 max-w-5xl mx-auto">
           {children}
         </div>
       </main>
 
       {/* ─── RIGHT SIDEBAR (STATS & QUESTS) ─────────────────────────────────────── */}
-      <aside className="hidden xl:flex w-72 2xl:w-80 bg-bg-primary h-screen flex-col p-4 2xl:p-6 sticky top-0 overflow-y-auto gap-5 2xl:gap-6 shrink-0 border-l border-border/20">
+      <aside className="hidden xl:flex w-64 2xl:w-72 bg-bg-primary h-screen flex-col p-3.5 2xl:p-4 sticky top-0 overflow-y-auto gap-4 shrink-0 border-l border-border/20">
         {/* Top Header stats */}
         <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2.5 2xl:gap-3 bg-surface px-3 2xl:px-4 py-2 border-2 border-border rounded-xl">
+          <div className="flex items-center gap-2 2xl:gap-2.5 bg-surface px-2.5 2xl:px-3 py-1.5 border-2 border-border rounded-xl">
             {/* Battery / Energy */}
-            <div className="flex items-center gap-1.5 font-extrabold text-sm text-[#FF9E2C]" title="Energy">
-              <span className="text-lg">🔋</span>
+            <div className="flex items-center gap-1.5 font-extrabold text-xs sm:text-sm text-[#FF9E2C]" title="Energy">
+              <span className="text-base sm:text-lg">🔋</span>
               <span suppressHydrationWarning>{energy}</span>
             </div>
 
             {/* Streak */}
-            <div className="flex items-center gap-1.5 font-extrabold text-sm text-red-500" title="Streak count">
-              <Flame size={16} fill="currentColor" />
+            <div className="flex items-center gap-1.5 font-extrabold text-xs sm:text-sm text-red-500" title="Streak count">
+              <Flame size={15} fill="currentColor" />
               <span suppressHydrationWarning>{streak}</span>
             </div>
 
             {/* Gems / Diamonds */}
-            <div className="flex items-center gap-1.5 font-extrabold text-sm text-blue-500" title="Gems / Diamonds">
-              <Gem size={15} fill="currentColor" />
+            <div className="flex items-center gap-1.5 font-extrabold text-xs sm:text-sm text-blue-500" title="Gems / Diamonds">
+              <Gem size={14} fill="currentColor" />
               <span suppressHydrationWarning>{gems}</span>
             </div>
           </div>
@@ -159,14 +159,14 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-2">
             <button
               onClick={() => toast.info("No new notifications")}
-              className="p-2 border-2 border-border bg-surface rounded-xl text-text-primary hover:bg-bg-secondary transition-colors cursor-pointer"
+              className="p-1.5 border-2 border-border bg-surface rounded-xl text-text-primary hover:bg-bg-secondary transition-colors cursor-pointer"
             >
-              <Bell size={16} />
+              <Bell size={15} />
             </button>
             <Link
               href="/profile"
               suppressHydrationWarning
-              className="w-10 h-10 rounded-full border-2 border-border overflow-hidden bg-primary cursor-pointer flex items-center justify-center font-black text-text-primary text-sm shadow-[0_2px_0_#141827]"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border-2 border-border overflow-hidden bg-primary cursor-pointer flex items-center justify-center font-black text-text-primary text-xs shadow-[0_1.5px_0_#141827]"
               title={user?.name || "Profile"}
             >
               {userInitial}
@@ -175,16 +175,16 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Try Premium Promo Card */}
-        <div className="bg-surface border-2 border-border rounded-2xl p-5 shadow-offset flex flex-col gap-4">
+        <div className="bg-surface border-2 border-border rounded-xl p-3.5 shadow-offset flex flex-col gap-3">
           <div className="flex justify-between items-start">
-            <div className="flex flex-col gap-1.5">
-              <h3 className="font-extrabold text-[#FF9E2C] text-sm tracking-wide uppercase">Try Premium for free</h3>
-              <p className="text-xs font-bold text-text-secondary">
+            <div className="flex flex-col gap-1">
+              <h3 className="font-extrabold text-[#FF9E2C] text-xs tracking-wide uppercase">Try Premium for free</h3>
+              <p className="text-[11px] font-bold text-text-secondary leading-snug">
                 Get up to 2 weeks free. Cancel anytime.
               </p>
             </div>
-            <div className="w-10 h-10 shrink-0 bg-blue-50 border-2 border-border rounded-lg flex items-center justify-center">
-              <Gem size={20} className="text-blue-500" fill="#3b82f6" />
+            <div className="w-8 h-8 shrink-0 bg-blue-50 border-2 border-border rounded-lg flex items-center justify-center">
+              <Gem size={16} className="text-blue-500" fill="#3b82f6" />
             </div>
           </div>
 
@@ -192,39 +192,39 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
             onClick={() => {
               toast.success("💎 Premium active! +100 bonus Gems granted.");
             }}
-            className="w-full text-center py-2.5 bg-primary text-text-primary border-2 border-border rounded-xl font-extrabold text-xs tracking-wider shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 transition-all cursor-pointer"
+            className="w-full text-center py-2 bg-primary text-text-primary border-2 border-border rounded-lg font-extrabold text-xs tracking-wider shadow-[0_2px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 transition-all cursor-pointer"
           >
             START FREE TRIAL
           </button>
         </div>
 
         {/* Unlock Leaderboards Status Card */}
-        <div className="bg-surface border-2 border-border rounded-2xl p-5 flex flex-col gap-4">
-          <h3 className="font-extrabold text-xs text-text-secondary tracking-widest uppercase">Unlock Leaderboards</h3>
+        <div className="bg-surface border-2 border-border rounded-xl p-3.5 flex flex-col gap-3">
+          <h3 className="font-extrabold text-[11px] text-text-secondary tracking-widest uppercase">Unlock Leaderboards</h3>
 
-          <div className="flex flex-col items-center gap-3 py-2 text-center">
+          <div className="flex flex-col items-center gap-2 py-1 text-center">
             {mounted && xp >= 30 ? (
               <>
-                <div className="w-12 h-12 rounded-full bg-[#FFFDF6] border-2 border-border flex items-center justify-center text-green-600">
-                  <CheckCircle2 size={24} />
+                <div className="w-10 h-10 rounded-full bg-[#FFFDF6] border-2 border-border flex items-center justify-center text-green-600">
+                  <CheckCircle2 size={20} />
                 </div>
-                <div className="flex flex-col gap-1">
-                  <span className="text-sm font-extrabold text-text-primary">Rankings Unlocked!</span>
-                  <span className="text-xs text-text-secondary">View standings under the Leaderboard tab.</span>
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-xs font-extrabold text-text-primary">Rankings Unlocked!</span>
+                  <span className="text-[11px] text-text-secondary">View standings under the Leaderboard tab.</span>
                 </div>
                 <Link
                   href="/leaderboards"
-                  className="px-4 py-1.5 border-2 border-border rounded-lg text-xs font-bold hover:bg-bg-secondary transition-colors block"
+                  className="px-3.5 py-1.5 border-2 border-border rounded-lg text-xs font-bold hover:bg-bg-secondary transition-colors block mt-1"
                 >
                   VIEW LEADERBOARD
                 </Link>
               </>
             ) : (
               <>
-                <div className="w-12 h-12 rounded-full border-2 border-dashed border-border-muted flex items-center justify-center text-text-secondary bg-bg-secondary">
-                  <Lock size={20} />
+                <div className="w-10 h-10 rounded-full border-2 border-dashed border-border-muted flex items-center justify-center text-text-secondary bg-bg-secondary">
+                  <Lock size={18} />
                 </div>
-                <p className="text-xs text-text-secondary px-2">
+                <p className="text-[11px] text-text-secondary px-2">
                   Earn <span className="font-bold text-text-primary">{30 - xp} more XP</span> to start competing
                 </p>
               </>
@@ -233,14 +233,14 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Active Quests Card */}
-        <div className="bg-surface border-2 border-border rounded-2xl p-5 shadow-offset flex flex-col gap-4">
-          <h3 className="font-extrabold text-xs text-text-secondary tracking-widest uppercase">Active Quests</h3>
+        <div className="bg-surface border-2 border-border rounded-xl p-3.5 shadow-offset flex flex-col gap-3">
+          <h3 className="font-extrabold text-[11px] text-text-secondary tracking-widest uppercase">Active Quests</h3>
 
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3">
             {!mounted || (isQuestsLoading && displayQuests.length === 0) ? (
-              <div className="flex flex-col gap-3 animate-pulse">
-                <div className="h-14 bg-bg-primary rounded-xl" />
-                <div className="h-14 bg-bg-primary rounded-xl" />
+              <div className="flex flex-col gap-2.5 animate-pulse">
+                <div className="h-12 bg-bg-primary rounded-xl" />
+                <div className="h-12 bg-bg-primary rounded-xl" />
               </div>
             ) : displayQuests && displayQuests.length > 0 ? (
               displayQuests.map((quest) => {

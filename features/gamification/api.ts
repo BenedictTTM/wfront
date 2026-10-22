@@ -2,11 +2,9 @@ import { apiGet, apiPost } from "@/lib/api-client";
 import {
   ClaimRewardResponse,
   LeaderboardResponse,
-  QuestDefinition,
   UserDashboard,
   UserEnergy,
   UserQuest,
-  UserStreak,
 } from "./types";
 
 export async function getDashboard(): Promise<UserDashboard> {

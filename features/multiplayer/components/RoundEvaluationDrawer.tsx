@@ -8,7 +8,6 @@ import {
   BookmarkCheck,
   CheckCircle2,
   Sparkles,
-  ArrowRight,
 } from "lucide-react";
 
 export interface RoundEvaluationProps {
@@ -24,7 +23,7 @@ export interface RoundEvaluationProps {
   };
   explanationText: string; // Specific, rule-based concept breakdown
   onBookmarkConcept: () => void;
-  onNextQuestionReady: () => void; // Auto-triggered after 1.2 seconds (or on user click)
+  onNextQuestionReady?: () => void; // Optional auto-triggered callback
 }
 
 /**
@@ -33,7 +32,7 @@ export interface RoundEvaluationProps {
  * Features:
  * - Header Row: State badge ("COUNTERED • FOCUS ON CONCEPT" / "LOCKED & VERIFIED") & Points delta badge ("+0 PTS")
  * - Content Card: Specific rule-based academic concept breakdown
- * - Actions Row: "[ 🔖 Save to Revision Deck ]" button & "[ Next Question → ]" progression CTA
+ * - Actions Row: "[ 🔖 Save to Revision Deck ]" button & automated server-paced indicator (no manual next button)
  */
 export const RoundEvaluationDrawer = React.memo(function RoundEvaluationDrawer({
   isOpen,
@@ -47,18 +46,19 @@ export const RoundEvaluationDrawer = React.memo(function RoundEvaluationDrawer({
 }: RoundEvaluationProps) {
   const [isBookmarked, setIsBookmarked] = useState(false);
 
-  // Auto-advance sequencing timer: triggers onNextQuestionReady after exactly 1200ms
+  // Reset bookmark state when drawer closes
   useEffect(() => {
     if (!isOpen) {
       setIsBookmarked(false);
       return;
     }
 
-    const timer = setTimeout(() => {
-      onNextQuestionReady();
-    }, 1200);
-
-    return () => clearTimeout(timer);
+    if (onNextQuestionReady) {
+      const timer = setTimeout(() => {
+        onNextQuestionReady();
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
   }, [isOpen, onNextQuestionReady]);
 
   const handleBookmark = () => {
@@ -88,7 +88,7 @@ export const RoundEvaluationDrawer = React.memo(function RoundEvaluationDrawer({
             aria-label="Round countdown progress"
           >
             <div
-              className={`h-full transition-all duration-[1200ms] ease-linear ${
+              className={`h-full transition-all duration-[4000ms] ease-linear ${
                 isOpen ? "w-full" : "w-0"
               } ${isCorrect ? "bg-emerald-500" : "bg-primary"}`}
             />
@@ -148,7 +148,7 @@ export const RoundEvaluationDrawer = React.memo(function RoundEvaluationDrawer({
               </div>
             )}
 
-            {/* ── 3. Actions Row: Clean Pill Buttons ── */}
+            {/* ── 3. Actions Row: Revision Bookmark & Automated Server Indicator ── */}
             <div className="flex items-center justify-between gap-3 pt-0.5 shrink-0">
               {/* Left: Bookmark to Revision Deck Pill Button */}
               <button
@@ -174,15 +174,14 @@ export const RoundEvaluationDrawer = React.memo(function RoundEvaluationDrawer({
                 )}
               </button>
 
-              {/* Right: Next Question CTA Pill Button */}
-              <button
-                type="button"
-                onClick={onNextQuestionReady}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary hover:bg-[#ebd060] border-[2px] border-border font-black text-xs tracking-wider uppercase text-text-primary shadow-[0_3px_0_#141827] active:shadow-[0_1px_0_#141827] active:translate-y-0.5 hover:-translate-y-0.5 transition-all cursor-pointer"
+              {/* Right: Automated Round Flow Status Indicator */}
+              <div
+                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-surface-muted border-[1.5px] border-border text-[11px] font-black tracking-wide uppercase text-text-secondary select-none shadow-[0_1px_0_#141827]"
+                aria-live="polite"
               >
-                <span>Next Question</span>
-                <ArrowRight size={14} className="stroke-[3]" />
-              </button>
+                <span className="w-2 h-2 rounded-full bg-primary animate-pulse shrink-0" />
+                <span>Next Question Starting…</span>
+              </div>
             </div>
           </div>
         </div>

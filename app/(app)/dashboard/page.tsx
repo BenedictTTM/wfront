@@ -10,6 +10,7 @@ import {
   Target,
   LogIn,
   Zap,
+  Swords,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -106,11 +107,11 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="flex flex-col gap-8 md:gap-10 pb-16 w-full max-w-5xl mx-auto">
+    <div className="flex flex-col gap-5 sm:gap-6 md:gap-7 pb-12 w-full max-w-5xl mx-auto">
       {/* ── Top Action Row (Study Mode Switcher) ── */}
-      <div className="flex flex-wrap justify-between items-center gap-2.5">
+      <div className="flex flex-wrap justify-between items-center gap-2">
         <div className="flex items-center gap-2">
-          <span className="px-3 py-1 bg-primary/20 border-2 border-border rounded-full text-[10px] font-black uppercase tracking-widest text-text-primary shadow-[0_1.5px_0_#141827]">
+          <span className="px-2.5 py-0.5 bg-primary/20 border-2 border-border rounded-full text-[10px] font-black uppercase tracking-widest text-text-primary shadow-[0_1px_0_#141827]">
             WASSCE Scholar Portal
           </span>
         </div>
@@ -118,15 +119,15 @@ export default function Dashboard() {
         <div className="relative">
           <button
             onClick={() => setShowStudyModeDropdown(!showStudyModeDropdown)}
-            className="flex items-center gap-2 px-3.5 sm:px-4 py-2 bg-surface border-[2.5px] border-border rounded-xl text-xs font-black shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 transition-all cursor-pointer text-text-primary"
+            className="flex items-center gap-2 px-3 sm:px-3.5 py-1.5 bg-surface border-2 border-border rounded-xl text-xs font-black shadow-[0_2px_0_#141827] active:translate-y-0.5 active:shadow-[0_0.5px_0_#141827] hover:-translate-y-0.5 transition-all cursor-pointer text-text-primary"
           >
-            <BookOpen size={15} className="text-text-primary" />
+            <BookOpen size={14} className="text-text-primary" />
             <span>{studyMode}</span>
-            <ChevronDown size={14} className="stroke-[2.5]" />
+            <ChevronDown size={13} className="stroke-[2.5]" />
           </button>
 
           {showStudyModeDropdown && (
-            <div className="absolute right-0 mt-2 w-48 bg-surface border-[2.5px] border-border rounded-xl shadow-[0_6px_0_rgba(20,24,39,0.9)] py-1.5 z-30 animate-in fade-in zoom-in-95 duration-100">
+            <div className="absolute right-0 mt-1.5 w-44 bg-surface border-2 border-border rounded-xl shadow-offset py-1 z-30 animate-in fade-in zoom-in-95 duration-100">
               {["Study Mode", "Exam Prep Mode", "Flashcard Drill"].map((mode) => (
                 <button
                   key={mode}
@@ -135,10 +136,10 @@ export default function Dashboard() {
                     setShowStudyModeDropdown(false);
                     toast.info(`Active Mode: ${mode}`);
                   }}
-                  className="w-full text-left px-4 py-2.5 text-xs font-black hover:bg-bg-primary transition-colors text-text-primary flex items-center justify-between cursor-pointer"
+                  className="w-full text-left px-3.5 py-2 text-xs font-black hover:bg-bg-primary transition-colors text-text-primary flex items-center justify-between cursor-pointer"
                 >
                   <span>{mode}</span>
-                  {studyMode === mode && <span className="w-2.5 h-2.5 rounded-full bg-primary border border-border" />}
+                  {studyMode === mode && <span className="w-2 h-2 rounded-full bg-primary border border-border" />}
                 </button>
               ))}
             </div>
@@ -148,47 +149,47 @@ export default function Dashboard() {
 
       {/* ── Guest Mode Banner ── */}
       {mounted && isGuest && (
-        <div className="w-full bg-surface border-[3px] border-border rounded-2xl p-4 sm:p-5 shadow-[0_4px_0_rgba(20,24,39,0.9)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-start sm:items-center gap-3.5 min-w-0">
-            <div className="w-11 h-11 rounded-xl bg-primary border-[2px] border-border flex items-center justify-center shadow-[0_2px_0_#141827] shrink-0 mt-0.5 sm:mt-0">
-              <Zap size={20} className="text-text-primary fill-text-primary" />
+        <div className="w-full bg-surface border-2.5 border-border rounded-xl p-3.5 sm:p-4 shadow-offset flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5">
+          <div className="flex items-start sm:items-center gap-3 min-w-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary border-2 border-border flex items-center justify-center shadow-[0_1.5px_0_#141827] shrink-0 mt-0.5 sm:mt-0">
+              <Zap size={18} className="text-text-primary fill-text-primary" />
             </div>
             <div className="text-left min-w-0">
-              <p className="text-sm font-black text-text-primary">
+              <p className="text-xs sm:text-sm font-black text-text-primary">
                 Exploring in Guest Scholar Mode
               </p>
-              <p className="text-xs font-extrabold text-text-secondary leading-relaxed">
+              <p className="text-[11px] sm:text-xs font-extrabold text-text-secondary leading-relaxed">
                 You have <span className="text-text-primary font-black">{guestEnergy} / {GUEST_MAX_ENERGY} ⚡</span> guest energy. Sign in to unlock unlimited sessions, save progress &amp; compete on leaderboards.
               </p>
             </div>
           </div>
           <button
             onClick={() => router.push("/login")}
-            className="w-full sm:w-auto shrink-0 flex items-center justify-center gap-2 px-5 py-2.5 bg-primary hover:bg-[#ebd060] text-text-primary border-[2.5px] border-border rounded-xl text-xs font-black shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 transition-all cursor-pointer whitespace-nowrap text-center"
+            className="w-full sm:w-auto shrink-0 flex items-center justify-center gap-1.5 px-4 py-2 bg-primary hover:bg-[#ebd060] text-text-primary border-2 border-border rounded-xl text-xs font-black shadow-[0_2px_0_#141827] active:translate-y-0.5 active:shadow-[0_0.5px_0_#141827] hover:-translate-y-0.5 transition-all cursor-pointer whitespace-nowrap text-center"
           >
-            <LogIn size={15} strokeWidth={2.5} />
+            <LogIn size={14} strokeWidth={2.5} />
             <span>SIGN IN TO SAVE</span>
           </button>
         </div>
       )}
 
       {/* ── Mascot & Hero Welcome Banner ── */}
-      <div className="relative bg-surface border-[3px] border-border rounded-3xl p-5 sm:p-6 md:p-8 shadow-[0_6px_0_rgba(20,24,39,0.9)] overflow-hidden">
+      <div className="relative bg-surface border-2.5 border-border rounded-2xl p-4 sm:p-5 md:p-6 shadow-offset overflow-hidden">
         {/* Decorative corner accent */}
-        <div className="absolute top-0 right-0 w-44 h-44 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 right-0 w-36 h-36 bg-primary/10 rounded-full blur-2xl pointer-events-none" />
 
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
-          <div className="flex flex-col items-center md:items-start text-center md:text-left gap-3 max-w-xl">
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
-              <span className="px-2.5 py-0.5 bg-primary border-[2px] border-border rounded-full text-[10px] font-black uppercase tracking-wider text-text-primary shadow-[0_1.5px_0_#141827]">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-5 relative z-10">
+          <div className="flex flex-col items-center md:items-start text-center md:text-left gap-2.5 max-w-xl">
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-1.5">
+              <span className="px-2 py-0.5 bg-primary border-[1.5px] border-border rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-text-primary shadow-[0_1px_0_#141827]">
                 🎓 WASSCE Prep
               </span>
-              <span className="px-2.5 py-0.5 bg-secondary border-[2px] border-border rounded-full text-[10px] font-black uppercase tracking-wider text-text-primary shadow-[0_1.5px_0_#141827]">
+              <span className="px-2 py-0.5 bg-secondary border-[1.5px] border-border rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-text-primary shadow-[0_1px_0_#141827]">
                 ⚡ {mounted && isGuest ? guestEnergy : currentEnergy} Energy Ready
               </span>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-text-primary leading-tight">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-text-primary leading-tight">
               {mounted && user
                 ? `Welcome back, ${user.name || user.email?.split("@")[0] || "Scholar"}! 🎓`
                 : mounted && isGuest
@@ -196,25 +197,25 @@ export default function Dashboard() {
                 : "Welcome, Scholar! 👋"}
             </h1>
 
-            <p className="text-xs sm:text-sm font-bold text-text-secondary leading-relaxed">
+            <p className="text-xs sm:text-[13px] font-bold text-text-secondary leading-relaxed">
               {mounted && isGuest
                 ? "Prepare for your West African examinations with authoritative quizzes, syllabus tracking, and instant explanations."
                 : "Master your curriculum today. Attempt practice challenges, collect mastery stars, and climb the leaderboard rankings!"}
             </p>
 
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 pt-1 w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2.5 pt-1 w-full sm:w-auto">
               <button
                 type="button"
                 onClick={() => router.push("/study")}
-                className="px-5 py-2.5 bg-primary hover:bg-[#ebd060] text-text-primary border-[2.5px] border-border rounded-xl text-xs font-black shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer text-center"
+                className="px-4 py-2 bg-primary hover:bg-[#ebd060] text-text-primary border-2 border-border rounded-xl text-xs font-black shadow-[0_2px_0_#141827] active:translate-y-0.5 active:shadow-[0_0.5px_0_#141827] hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer text-center"
               >
                 <span>OPEN STUDY CENTER</span>
-                <ArrowRight size={14} className="stroke-[3]" />
+                <ArrowRight size={13} className="stroke-[3]" />
               </button>
               <button
                 type="button"
                 onClick={() => handleStartQuiz("/study")}
-                className="px-4 py-2.5 bg-surface hover:bg-bg-primary text-text-primary border-[2.5px] border-border rounded-xl text-xs font-black shadow-[0_2px_0_#141827] active:translate-y-0.5 transition-all cursor-pointer text-center"
+                className="px-3.5 py-2 bg-surface hover:bg-bg-primary text-text-primary border-2 border-border rounded-xl text-xs font-black shadow-[0_1.5px_0_#141827] active:translate-y-0.5 transition-all cursor-pointer text-center"
               >
                 QUICK QUIZ (3 🔋)
               </button>
@@ -222,7 +223,7 @@ export default function Dashboard() {
           </div>
 
           {/* Animated Capybara Mascot */}
-          <div className="w-32 h-32 sm:w-36 sm:h-36 md:w-44 md:h-44 shrink-0 flex items-center justify-center animate-capy-bob select-none p-2 bg-bg-primary border-[3px] border-border rounded-3xl shadow-[0_4px_0_rgba(20,24,39,0.9)]">
+          <div className="w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 shrink-0 flex items-center justify-center animate-capy-bob select-none p-1.5 bg-bg-primary border-2.5 border-border rounded-2xl shadow-offset">
             <svg viewBox="0 0 160 160" className="w-full h-full drop-shadow-sm">
               <ellipse cx="55" cy="55" rx="7" ry="10" fill="#b06e33" stroke="#141827" strokeWidth="3" transform="rotate(-15 55 55)" />
               <ellipse cx="55" cy="55" rx="3.5" ry="6" fill="#eed2bc" />
@@ -268,23 +269,23 @@ export default function Dashboard() {
       </div>
 
       {/* ── Search Bar & Quick Subject Jump Pills ── */}
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-2.5">
         <form onSubmit={handleSearchSubmit} className="w-full">
-          <div className="relative flex items-center bg-surface border-[3px] border-border rounded-2xl shadow-[0_4px_0_rgba(20,24,39,0.9)] focus-within:ring-2 focus-within:ring-primary/60 focus-within:-translate-y-0.5 transition-all duration-150">
-            <div className="absolute left-4 text-text-secondary pointer-events-none">
-              <Search size={18} className="stroke-[2.5]" />
+          <div className="relative flex items-center bg-surface border-2.5 border-border rounded-xl shadow-offset focus-within:ring-2 focus-within:ring-primary/60 focus-within:-translate-y-0.5 transition-all duration-150">
+            <div className="absolute left-3.5 text-text-secondary pointer-events-none">
+              <Search size={16} className="stroke-[2.5]" />
             </div>
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search syllabus topics, formulas, or concepts (e.g., Quadratic Equations)…"
-              className="w-full bg-transparent border-0 outline-none pl-12 pr-28 py-3.5 text-xs sm:text-sm font-black placeholder:font-bold placeholder:text-text-secondary text-text-primary"
+              className="w-full bg-transparent border-0 outline-none pl-10 pr-24 py-2.5 sm:py-3 text-xs sm:text-sm font-black placeholder:font-bold placeholder:text-text-secondary text-text-primary"
             />
             <div className="absolute right-2">
               <button
                 type="submit"
-                className="px-4 py-2 bg-primary hover:bg-[#ebd060] text-text-primary border-[2px] border-border rounded-xl text-xs font-black shadow-[0_2px_0_#141827] active:translate-y-0.5 active:shadow-[0_0.5px_0_#141827] transition-all flex items-center gap-1.5 cursor-pointer"
+                className="px-3 py-1.5 bg-primary hover:bg-[#ebd060] text-text-primary border-2 border-border rounded-lg text-xs font-black shadow-[0_1.5px_0_#141827] active:translate-y-0.5 transition-all flex items-center gap-1 cursor-pointer"
               >
                 <span>SEARCH</span>
               </button>
@@ -293,8 +294,8 @@ export default function Dashboard() {
         </form>
 
         {/* Quick Subject Chips */}
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[11px] font-black uppercase tracking-wider text-text-secondary shrink-0">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="text-[10px] font-black uppercase tracking-wider text-text-secondary shrink-0">
             Quick Jump:
           </span>
           {QUICK_SUBJECTS.map((s) => (
@@ -302,7 +303,7 @@ export default function Dashboard() {
               key={s.slug}
               type="button"
               onClick={() => router.push(`/study/${s.slug}`)}
-              className="px-3 py-1 bg-surface hover:bg-bg-primary text-text-primary border-[2px] border-border rounded-xl text-xs font-black shadow-[0_2px_0_#141827] active:translate-y-0.5 active:shadow-[0_0.5px_0_#141827] transition-all flex items-center gap-1.5 cursor-pointer"
+              className="px-2.5 py-1 bg-surface hover:bg-bg-primary text-text-primary border-2 border-border rounded-lg text-xs font-black shadow-[0_1.5px_0_#141827] active:translate-y-0.5 transition-all flex items-center gap-1.5 cursor-pointer"
             >
               <span>{s.icon}</span>
               <span>{s.name}</span>
@@ -312,77 +313,77 @@ export default function Dashboard() {
       </div>
 
       {/* ── QUICK LAUNCH STUDY ACTIONS ── */}
-      <section className="flex flex-col gap-4">
-        <div className="flex items-center gap-2.5 border-b-[2.5px] border-border pb-3">
-          <div className="w-9 h-9 rounded-xl bg-secondary border-[2px] border-border flex items-center justify-center shadow-[0_2px_0_#141827]">
-            <Target size={18} className="text-text-primary" />
+      <section className="flex flex-col gap-3.5">
+        <div className="flex items-center gap-2.5 border-b-2 border-border pb-2.5">
+          <div className="w-8 h-8 rounded-lg bg-secondary border-2 border-border flex items-center justify-center shadow-[0_1.5px_0_#141827]">
+            <Target size={16} className="text-text-primary" />
           </div>
           <div>
-            <h2 className="text-xl font-black text-text-primary tracking-tight">
+            <h2 className="text-lg sm:text-xl font-black text-text-primary tracking-tight">
               Study Launchpad
             </h2>
-            <p className="text-xs font-bold text-text-secondary">
-              Jump straight into active challenge questions or explore structured journeys.
+            <p className="text-[11px] sm:text-xs font-bold text-text-secondary">
+              Jump straight into solo practice challenges or duel peer students in real-time multiplayer.
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4">
           {/* Action 1: Practice Quiz */}
-          <div className="bg-surface border-[3px] border-border rounded-2xl p-5 sm:p-6 flex flex-col justify-between gap-5 group shadow-[0_6px_0_rgba(20,24,39,0.9)] hover:-translate-y-1 transition-all duration-200">
+          <div className="bg-surface border-2.5 border-border rounded-xl p-4 sm:p-5 flex flex-col justify-between gap-4 group shadow-offset hover:-translate-y-0.5 transition-all duration-200">
             <div className="flex items-start justify-between">
-              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-primary border-[2.5px] border-border flex items-center justify-center text-text-primary text-xl font-black shadow-[0_3px_0_#141827] shrink-0">
-                <Play size={22} fill="currentColor" />
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-primary border-2 border-border flex items-center justify-center text-text-primary text-lg font-black shadow-[0_2px_0_#141827] shrink-0">
+                <Play size={18} fill="currentColor" />
               </div>
-              <span className="text-xs font-black px-3 py-1 bg-primary/20 border-[2px] border-border rounded-xl whitespace-nowrap text-text-primary shadow-[0_1.5px_0_#141827]">
+              <span className="text-[11px] font-black px-2.5 py-0.5 bg-primary/20 border-2 border-border rounded-lg whitespace-nowrap text-text-primary shadow-[0_1px_0_#141827]">
                 Cost: 3 🔋
               </span>
             </div>
 
             <div>
-              <h3 className="text-lg font-black text-text-primary">
+              <h3 className="text-base sm:text-lg font-black text-text-primary">
                 Practice Challenges
               </h3>
-              <p className="text-xs font-bold text-text-secondary mt-1.5 leading-relaxed">
+              <p className="text-xs font-bold text-text-secondary mt-1 leading-relaxed">
                 Take curriculum-aligned WASSCE questions with instant pedagogical explanations, answer key breakdown, and live scoring.
               </p>
             </div>
 
             <button
               onClick={() => handleStartQuiz("/study")}
-              className="w-full py-3 bg-primary hover:bg-[#ebd060] text-text-primary border-[2.5px] border-border rounded-xl font-black text-xs md:text-sm shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer tracking-wider text-center"
+              className="w-full py-2.5 bg-primary hover:bg-[#ebd060] text-text-primary border-2 border-border rounded-xl font-black text-xs sm:text-[13px] shadow-[0_2.5px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer tracking-wider text-center"
             >
               <span>START PRACTICE CHALLENGE</span>
-              <ArrowRight size={16} strokeWidth={3} />
+              <ArrowRight size={15} strokeWidth={3} />
             </button>
           </div>
 
-          {/* Action 2: Learning Paths */}
-          <div className="bg-surface border-[3px] border-border rounded-2xl p-5 sm:p-6 flex flex-col justify-between gap-5 group shadow-[0_6px_0_rgba(20,24,39,0.9)] hover:-translate-y-1 transition-all duration-200">
+          {/* Action 2: Multiplayer 1v1 Arena */}
+          <div className="bg-surface border-2.5 border-border rounded-xl p-4 sm:p-5 flex flex-col justify-between gap-4 group shadow-offset hover:-translate-y-0.5 transition-all duration-200">
             <div className="flex items-start justify-between">
-              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-secondary border-[2.5px] border-border flex items-center justify-center text-text-primary text-xl font-black shadow-[0_3px_0_#141827] shrink-0">
-                <BookOpen size={22} />
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-secondary border-2 border-border flex items-center justify-center text-text-primary text-lg font-black shadow-[0_2px_0_#141827] shrink-0">
+                <Swords size={18} className="stroke-[2.5]" />
               </div>
-              <span className="text-xs font-black px-3 py-1 bg-secondary/30 border-[2px] border-border rounded-xl whitespace-nowrap text-text-primary shadow-[0_1.5px_0_#141827]">
-                Free Access
+              <span className="text-[11px] font-black px-2.5 py-0.5 bg-secondary/30 border-2 border-border rounded-lg whitespace-nowrap text-text-primary shadow-[0_1px_0_#141827]">
+                Ranked 1v1 • Live ⚔️
               </span>
             </div>
 
             <div>
-              <h3 className="text-lg font-black text-text-primary">
-                Syllabus Learning Paths
+              <h3 className="text-base sm:text-lg font-black text-text-primary">
+                Multiplayer 1v1 Duels
               </h3>
-              <p className="text-xs font-bold text-text-secondary mt-1.5 leading-relaxed">
-                Explore structured WASSCE curriculum maps stage-by-stage, unlock levels, and track topic mastery stars.
+              <p className="text-xs font-bold text-text-secondary mt-1 leading-relaxed">
+                Challenge peer students in real-time, synchronized academic battles. Test your speed, climb the national ELO leaderboard, and defend your school.
               </p>
             </div>
 
             <button
-              onClick={() => router.push("/study")}
-              className="w-full py-3 bg-secondary hover:bg-[#b2c3bc] text-text-primary border-[2.5px] border-border rounded-xl font-black text-xs md:text-sm shadow-[0_3px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer tracking-wider text-center"
+              onClick={() => router.push("/study/multiplayer")}
+              className="w-full py-2.5 bg-secondary hover:bg-[#b2c3bc] text-text-primary border-2 border-border rounded-xl font-black text-xs sm:text-[13px] shadow-[0_2.5px_0_#141827] active:translate-y-0.5 active:shadow-[0_1px_0_#141827] hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer tracking-wider text-center"
             >
-              <span>BROWSE CURRICULUM JOURNEYS</span>
-              <ArrowRight size={16} strokeWidth={3} />
+              <span>START MULTIPLAYER DUEL</span>
+              <ArrowRight size={15} strokeWidth={3} />
             </button>
           </div>
         </div>

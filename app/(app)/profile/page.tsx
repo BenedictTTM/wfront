@@ -109,7 +109,7 @@ export default function StudentProfilePage() {
           ? `Linked to ${editForm.school} successfully!`
           : "Profile credentials updated successfully!"
       );
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Failed to save profile:", err);
       setProfile(editForm);
       safeStorage.setItem(storageKey, editForm);
@@ -146,7 +146,7 @@ export default function StudentProfilePage() {
         setEditForm(synced);
         safeStorage.setItem(storageKey, synced);
         toast.success("Profile photo stored via Cloud Storage!");
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.warn("Avatar upload notice:", err);
         safeStorage.setItem(storageKey, updated);
         toast.success("Profile avatar updated!");

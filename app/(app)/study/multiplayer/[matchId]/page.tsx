@@ -20,6 +20,7 @@ import {
   useMultiplayerToken,
   useStreak,
 } from "@/features/multiplayer/hooks";
+import type { QuestionFeedbackItem } from "@/features/multiplayer/utils/post-match";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSubjects } from "@/features/curriculum/hooks";
 import { toast } from "sonner";
@@ -137,7 +138,7 @@ export default function LiveMatchPage() {
     status,
     matchState,
     participants,
-    countdown,
+    countdown: _countdown,
     currentQuestion,
     selectedOptionId,
     roundReveal,
@@ -157,6 +158,9 @@ export default function LiveMatchPage() {
     totalQuestions: 0,
   });
 
+  // Accumulate feedback and answers for every question throughout the match
+  const [matchQuestionsHistory, setMatchQuestionsHistory] = useState<QuestionFeedbackItem[]>([]);
+
   const [remainingTimeMs, setRemainingTimeMs] = useState(15_000);
 
   useEffect(() => {
@@ -173,6 +177,8 @@ export default function LiveMatchPage() {
       if (lastEvaluatedQuestionIndexRef.current !== currentQuestion.questionIndex) {
         lastEvaluatedQuestionIndexRef.current = currentQuestion.questionIndex;
         const myResult = roundReveal.results.find((r) => r.participantId === currentUserId);
+        const isAnswerCorrect = myResult?.isCorrect ?? false;
+
         if (myResult) {
           recordAnswer(myResult.isCorrect);
           setMatchStats((prev) => ({
@@ -182,11 +188,63 @@ export default function LiveMatchPage() {
             totalQuestions: currentQuestion.totalQuestions,
           }));
         }
+
+        // Record full question feedback item for post-match review
+        const mySelectedOption = currentQuestion.question.options.find(
+          (o) => o.id === selectedOptionId
+        );
+        const correctOption = currentQuestion.question.options.find(
+          (o) => o.id === roundReveal.correctOptionId
+        );
+        const conceptExplanation = getAcademicConceptExplanation(
+          currentQuestion.question.text,
+          currentQuestion.question.explanation,
+          roundReveal.explanation
+        );
+
+        const feedbackItem: QuestionFeedbackItem = {
+          id: currentQuestion.question.id,
+          questionIndex: currentQuestion.questionIndex,
+          questionText: currentQuestion.question.text,
+          selectedAnswer: mySelectedOption?.text || "No selection submitted",
+          correctAnswer: correctOption?.text || "Correct option",
+          isCorrect: isAnswerCorrect,
+          conceptExplanation,
+        };
+
+        setMatchQuestionsHistory((prev) => {
+          const exists = prev.some((p) => p.questionIndex === currentQuestion.questionIndex);
+          return exists ? prev : [...prev, feedbackItem];
+        });
+
+        // Automatically save wrong question to student's mistake database storage
+        if (!isAnswerCorrect) {
+          try {
+            const mistakesKey = `wassce_mistakes_${activeUserId}`;
+            const existingMistakes = safeStorage.getItem<Array<{ id?: string; [key: string]: unknown }>>(mistakesKey, []);
+            if (!existingMistakes.some((m) => m.id === currentQuestion.question.id)) {
+              safeStorage.setItem(mistakesKey, [
+                {
+                  id: currentQuestion.question.id,
+                  questionText: currentQuestion.question.text,
+                  selectedAnswer: mySelectedOption?.text || "No selection submitted",
+                  correctAnswer: correctOption?.text || "Correct option",
+                  conceptExplanation,
+                  subjectId: activeSubject?.id || null,
+                  timestamp: new Date().toISOString(),
+                },
+                ...existingMistakes,
+              ]);
+            }
+          } catch (storageErr) {
+            console.warn("[Multiplayer] Failed to store mistake in local storage:", storageErr);
+          }
+        }
       }
     }
-  }, [matchState, roundReveal, currentQuestion, currentUserId, recordAnswer]);
+  }, [matchState, roundReveal, currentQuestion, currentUserId, recordAnswer, selectedOptionId, activeUserId, activeSubject]);
 
-  // Reset evaluated question index, streak, and match stats when match restarts or lobby begins
+  // Reset evaluated question index, streak, match stats, and round history when match restarts
   useEffect(() => {
     if (matchState === "STARTING" || matchState === "LOBBY") {
       lastEvaluatedQuestionIndexRef.current = null;
@@ -197,6 +255,7 @@ export default function LiveMatchPage() {
         questionsCompleted: 0,
         totalQuestions: 0,
       });
+      setMatchQuestionsHistory([]);
     }
   }, [matchState, resetStreak]);
 
@@ -220,6 +279,51 @@ export default function LiveMatchPage() {
       submitAnswer(questionId, optionId, timeTakenMs);
     },
     [submitAnswer]
+  );
+
+  const handleSaveToRevisionDeck = useCallback(
+    (questionId?: string) => {
+      try {
+        const target = questionId
+          ? matchQuestionsHistory.find((q) => q.id === questionId)
+          : currentQuestion
+          ? {
+              id: currentQuestion.question.id,
+              questionText: currentQuestion.question.text,
+              selectedAnswer:
+                currentQuestion.question.options.find((o) => o.id === selectedOptionId)?.text || "",
+              correctAnswer:
+                currentQuestion.question.options.find(
+                  (o) => o.id === (roundReveal?.correctOptionId || currentQuestion.question.options[0]?.id)
+                )?.text || "",
+              conceptExplanation: getAcademicConceptExplanation(
+                currentQuestion.question.text,
+                currentQuestion.question.explanation,
+                roundReveal?.explanation
+              ),
+            }
+          : null;
+
+        if (target) {
+          const deckKey = `wassce_revision_deck_${activeUserId}`;
+          const existingDeck = safeStorage.getItem<Array<{ id?: string; [key: string]: unknown }>>(deckKey, []);
+          if (!existingDeck.some((item) => item.id === target.id)) {
+            safeStorage.setItem(deckKey, [
+              {
+                ...target,
+                subjectId: activeSubject?.id || null,
+                savedAt: new Date().toISOString(),
+              },
+              ...existingDeck,
+            ]);
+          }
+        }
+        toast.success("Concept saved to Revision Deck!");
+      } catch {
+        toast.error("Failed to save to Revision Deck.");
+      }
+    },
+    [activeUserId, activeSubject, currentQuestion, matchQuestionsHistory, roundReveal, selectedOptionId]
   );
 
   const isConnected = status === "authenticated" || status === "connected";
@@ -474,16 +578,11 @@ export default function LiveMatchPage() {
                 currentQuestion?.question.explanation,
                 roundReveal.explanation
               )}
-              onBookmarkConcept={() => {
-                toast.success("Concept saved to Revision Deck!");
-              }}
-              onNextQuestionReady={() => {
-                // Auto-advance sequencing callback
-              }}
+              onBookmarkConcept={() => handleSaveToRevisionDeck()}
             />
           )}
 
-          {/* 4. Match Settlement Summary (PostMatchSummary with Three Pillars & Rematch Handshake) */}
+          {/* 4. Match Settlement Summary (PostMatchSummary with All Question Reviews & Rematch Handshake) */}
           {matchState === "FINISHED" && matchEnd && (
             <PostMatchSummary
               data={{
@@ -529,30 +628,13 @@ export default function LiveMatchPage() {
                 },
                 schoolTurfContribution:
                   (myRanking?.score ?? me?.score ?? 0) > (oppRanking?.score ?? opponent?.score ?? 0) ? 35 : 10,
-                missedQuestions: currentQuestion
-                  ? [
-                      {
-                        id: currentQuestion.question.id,
-                        questionText: currentQuestion.question.text,
-                        selectedAnswer:
-                          currentQuestion.question.options.find((o) => o.id === selectedOptionId)?.text ||
-                          "Selected Option",
-                        correctAnswer:
-                          currentQuestion.question.options.find(
-                            (o) => o.id === (roundReveal?.correctOptionId || currentQuestion.question.options[0]?.id)
-                          )?.text || "Correct Option",
-                        conceptExplanation: getAcademicConceptExplanation(
-                          currentQuestion.question.text,
-                          currentQuestion.question.explanation,
-                          roundReveal?.explanation
-                        ),
-                      },
-                    ]
-                  : [],
+                missedQuestions: matchQuestionsHistory.filter((q) => q.isCorrect === false),
+                allQuestions: matchQuestionsHistory,
               }}
               onLaunchRematch={(newId) => router.push(`/study/multiplayer/${newId}`)}
               onFindNewOpponent={handleBackToMultiplayer}
               onEmitRematchRequest={handleRematch}
+              onBookmarkQuestion={handleSaveToRevisionDeck}
             />
           )}
 

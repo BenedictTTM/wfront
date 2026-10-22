@@ -92,9 +92,10 @@ export async function PATCH(req: Request) {
 
     const data = await response.json();
     return NextResponse.json(data);
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Failed to update user profile";
     return NextResponse.json(
-      { message: error?.message || "Failed to update user profile" },
+      { message },
       { status: 500 }
     );
   }

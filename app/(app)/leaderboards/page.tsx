@@ -57,36 +57,36 @@ export default function LeaderboardsPage() {
   const isUnlocked = currentTotalXp >= 30;
 
   return (
-    <div className="flex flex-col gap-8 py-2 w-full max-w-4xl mx-auto">
+    <div className="flex flex-col gap-5 py-1 w-full max-w-4xl mx-auto">
       {/* ── Page Header ── */}
       <PageHeader
         title="Weekly Leaderboards"
         description="Compete weekly with fellow WASSCE scholars across West Africa."
-        icon={<Trophy className="w-6 h-6 text-text-primary" />}
+        icon={<Trophy className="w-5 h-5 text-text-primary" />}
         actions={
-          <div className="flex items-center bg-bg-secondary p-1 border-2.5 border-border rounded-2xl shadow-sm self-start md:self-auto">
+          <div className="flex items-center bg-bg-secondary p-1 border-2 border-border rounded-xl shadow-sm self-start md:self-auto">
           <button
             type="button"
             onClick={() => setScope("global")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
               scope === "global"
-                ? "bg-primary text-text-primary border-2 border-border shadow-[0_2px_0_#141827]"
+                ? "bg-primary text-text-primary border-2 border-border shadow-[0_1.5px_0_#141827]"
                 : "text-text-secondary hover:text-text-primary"
             }`}
           >
-            <Globe size={14} />
+            <Globe size={13} />
             <span>GLOBAL</span>
           </button>
           <button
             type="button"
             onClick={() => setScope("subject")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
               scope === "subject"
-                ? "bg-primary text-text-primary border-2 border-border shadow-[0_2px_0_#141827]"
+                ? "bg-primary text-text-primary border-2 border-border shadow-[0_1.5px_0_#141827]"
                 : "text-text-secondary hover:text-text-primary"
             }`}
           >
-            <BookOpen size={14} />
+            <BookOpen size={13} />
             <span>BY SUBJECT</span>
           </button>
         </div>
@@ -95,17 +95,17 @@ export default function LeaderboardsPage() {
 
       {/* ── Subject Filter Bar (When Scope is Subject) ── */}
       {scope === "subject" && (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-surface border-2.5 border-border p-4 rounded-2xl shadow-offset animate-in fade-in duration-200">
-          <span className="text-xs font-black text-text-secondary uppercase tracking-wider">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 bg-surface border-2 border-border p-3 rounded-xl shadow-offset animate-in fade-in duration-200">
+          <span className="text-[11px] font-black text-text-secondary uppercase tracking-wider">
             Select Subject:
           </span>
           {loadingSubjects ? (
             <div className="flex items-center gap-2 text-xs font-bold text-text-secondary">
-              <Loader2 className="w-4 h-4 animate-spin text-primary" />
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
               <span>Loading subjects...</span>
             </div>
           ) : (
-            <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+            <div className="flex flex-wrap gap-1.5 w-full sm:w-auto">
               {(subjects || []).map((subj) => {
                 const isSelected = selectedSubjectId === subj.id;
                 return (
@@ -113,9 +113,9 @@ export default function LeaderboardsPage() {
                     key={subj.id}
                     type="button"
                     onClick={() => setSelectedSubjectId(subj.id)}
-                    className={`px-3 py-1.5 border-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
+                    className={`px-2.5 py-1 border-[1.5px] rounded-lg text-xs font-extrabold transition-all cursor-pointer ${
                       isSelected
-                        ? "bg-primary border-border text-text-primary shadow-[0_2px_0_#141827]"
+                        ? "bg-primary border-border text-text-primary shadow-[0_1.5px_0_#141827]"
                         : "bg-bg-primary border-border text-text-secondary hover:bg-surface-muted"
                     }`}
                   >
@@ -130,30 +130,30 @@ export default function LeaderboardsPage() {
 
       {/* ── 1. Initial Loading Skeleton (while fetching and no leaderboard exists yet) ── */}
       {loadingLeaderboard && !leaderboard ? (
-        <div className="flex flex-col gap-6 animate-pulse">
+        <div className="flex flex-col gap-4 animate-pulse">
           {/* Standing Card Skeleton */}
-          <div className="h-24 bg-surface border-2.5 border-border rounded-2xl shadow-offset" />
+          <div className="h-20 bg-surface border-2 border-border rounded-xl shadow-offset" />
           {/* Standings Table Skeleton */}
-          <div className="border-2.5 border-border bg-surface rounded-2xl shadow-offset p-6 flex flex-col gap-4">
-            <div className="h-6 w-44 bg-surface-muted rounded-lg" />
-            <div className="h-14 bg-surface-muted rounded-xl" />
-            <div className="h-14 bg-surface-muted rounded-xl" />
-            <div className="h-14 bg-surface-muted rounded-xl" />
+          <div className="border-2 border-border bg-surface rounded-xl shadow-offset p-4 flex flex-col gap-3">
+            <div className="h-5 w-40 bg-surface-muted rounded-lg" />
+            <div className="h-12 bg-surface-muted rounded-lg" />
+            <div className="h-12 bg-surface-muted rounded-lg" />
+            <div className="h-12 bg-surface-muted rounded-lg" />
           </div>
         </div>
       ) : !isUnlocked ? (
         /* ── 2. Truly Locked State (<30 XP) ── */
-        <div className="p-8 border-3 border-dashed border-border rounded-2xl text-center bg-surface flex flex-col items-center gap-4 shadow-offset animate-in fade-in duration-300">
-          <div className="w-16 h-16 rounded-full bg-surface-muted border-2 border-border flex items-center justify-center text-text-secondary">
-            <Lock size={32} />
+        <div className="p-6 border-2 border-dashed border-border rounded-xl text-center bg-surface flex flex-col items-center gap-3 shadow-offset animate-in fade-in duration-300">
+          <div className="w-12 h-12 rounded-full bg-surface-muted border-2 border-border flex items-center justify-center text-text-secondary">
+            <Lock size={24} />
           </div>
           <div className="flex flex-col gap-1 max-w-sm">
-            <h3 className="text-xl font-black text-text-primary">Leaderboard Locked</h3>
-            <p className="text-xs md:text-sm font-extrabold text-text-secondary leading-relaxed">
+            <h3 className="text-lg font-black text-text-primary">Leaderboard Locked</h3>
+            <p className="text-xs font-extrabold text-text-secondary leading-relaxed">
               Earn at least <span className="text-text-primary font-black">30 XP</span> to unlock weekly rankings. Currently you have <span className="text-[#FF9E2C] font-black">{currentTotalXp} XP</span>.
             </p>
           </div>
-          <div className="w-full max-w-xs bg-surface-muted border-2 border-border rounded-full h-3.5 overflow-hidden mt-1">
+          <div className="w-full max-w-xs bg-surface-muted border-2 border-border rounded-full h-3 overflow-hidden mt-1">
             <div
               className="h-full bg-primary border-r-2 border-border transition-all duration-300"
               style={{ width: `${Math.min(100, (currentTotalXp / 30) * 100)}%` }}
@@ -165,7 +165,7 @@ export default function LeaderboardsPage() {
         </div>
       ) : (
         /* ── 3. Live Leaderboard View ── */
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-4">
           {/* Current User Standings Card */}
           {leaderboard?.currentUserEntry && (() => {
             const userSchool = userProfile?.school || leaderboard.currentUserEntry.school;
@@ -173,15 +173,15 @@ export default function LeaderboardsPage() {
             const myInitial = ((currentUser?.name || leaderboard.currentUserEntry.name)?.[0] || "U").toUpperCase();
 
             return (
-              <div className="bg-primary/20 border-2.5 border-border p-4 rounded-2xl shadow-offset flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3.5 min-w-0">
-                  <div className="w-10 h-10 rounded-xl bg-primary border-2 border-border flex items-center justify-center text-text-primary font-black text-sm shadow-[0_2px_0_#141827] shrink-0">
+              <div className="bg-primary/20 border-2 border-border p-3 sm:p-3.5 rounded-xl shadow-offset flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded-lg bg-primary border-2 border-border flex items-center justify-center text-text-primary font-black text-xs shadow-[0_1.5px_0_#141827] shrink-0">
                     #{leaderboard.currentUserEntry.rank}
                   </div>
 
                   {/* User Avatar Circle */}
-                  <div className="w-10 h-10 rounded-full bg-primary border-2 border-border flex items-center justify-center font-black text-sm text-text-primary shrink-0 shadow-sm overflow-hidden select-none relative">
-                    <span className="absolute inset-0 flex items-center justify-center font-black text-sm text-text-primary">
+                  <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-primary border-2 border-border flex items-center justify-center font-black text-xs text-text-primary shrink-0 shadow-sm overflow-hidden select-none relative">
+                    <span className="absolute inset-0 flex items-center justify-center font-black text-xs text-text-primary">
                       {myInitial}
                     </span>
                     {myAvatar && (
@@ -197,26 +197,26 @@ export default function LeaderboardsPage() {
                   </div>
 
                   <div className="flex flex-col min-w-0">
-                    <span className="text-xs font-black text-text-secondary uppercase tracking-wider block">Your Standing</span>
+                    <span className="text-[10px] font-black text-text-secondary uppercase tracking-wider block">Your Standing</span>
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-base font-black text-text-primary">
+                      <span className="text-sm font-black text-text-primary">
                         {currentUser?.name || leaderboard.currentUserEntry.name}
                       </span>
-                      <span className="text-[10px] font-black px-2 py-0.5 bg-primary border border-border rounded-full uppercase shrink-0">
+                      <span className="text-[9px] font-black px-1.5 py-0.5 bg-primary border border-border rounded-full uppercase shrink-0">
                         YOU
                       </span>
                     </div>
                     {userSchool && (
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-text-secondary mt-0.5">
-                        <School size={13} className="shrink-0 text-text-secondary/80" />
+                      <div className="flex items-center gap-1 text-[11px] font-bold text-text-secondary">
+                        <School size={12} className="shrink-0 text-text-secondary/80" />
                         <span className="truncate">{userSchool}</span>
                       </div>
                     )}
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1.5 font-black text-base text-[#FF9E2C] shrink-0">
-                  <Zap size={18} className="fill-[#FF9E2C]" />
+                <div className="flex items-center gap-1 font-black text-sm text-[#FF9E2C] shrink-0">
+                  <Zap size={16} className="fill-[#FF9E2C]" />
                   <span>{leaderboard.currentUserEntry.score} XP</span>
                 </div>
               </div>
@@ -224,20 +224,20 @@ export default function LeaderboardsPage() {
           })()}
 
           {/* Leaderboard Table Container */}
-          <div className="border-2.5 border-border bg-surface rounded-2xl shadow-offset overflow-hidden animate-in fade-in duration-300">
-            <div className="bg-[#FFFDF6] border-b-2.5 border-border p-4 flex items-center justify-between">
-              <span className="text-xs font-black text-text-secondary uppercase tracking-widest flex items-center gap-2">
-                <Sparkles size={14} className="text-[#FF9E2C]" />
+          <div className="border-2 border-border bg-surface rounded-xl shadow-offset overflow-hidden animate-in fade-in duration-300">
+            <div className="bg-[#FFFDF6] border-b-2 border-border px-3.5 py-2.5 flex items-center justify-between">
+              <span className="text-xs font-black text-text-secondary uppercase tracking-widest flex items-center gap-1.5">
+                <Sparkles size={13} className="text-[#FF9E2C]" />
                 <span>Top Weekly Standings</span>
               </span>
-              <span className="text-[10px] font-extrabold text-text-secondary uppercase bg-surface border border-border px-2.5 py-1 rounded-lg">
+              <span className="text-[10px] font-extrabold text-text-secondary uppercase bg-surface border border-border px-2 py-0.5 rounded-md">
                 Resets Sunday 23:59 UTC
               </span>
             </div>
 
             {loadingLeaderboard ? (
-              <div className="flex flex-col items-center justify-center p-12 gap-3 text-text-secondary">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              <div className="flex flex-col items-center justify-center p-8 gap-2.5 text-text-secondary">
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
                 <span className="text-xs font-black">Fetching live rankings...</span>
               </div>
             ) : isError ? (
@@ -249,12 +249,12 @@ export default function LeaderboardsPage() {
               />
             ) : !leaderboard?.entries || leaderboard.entries.length === 0 ? (
               <EmptyState
-                icon={<Trophy size={32} className="text-text-secondary opacity-40" />}
+                icon={<Trophy size={28} className="text-text-secondary opacity-40" />}
                 title="No Rankings Registered This Week Yet!"
                 description="Complete quizzes to earn XP and take the #1 spot!"
               />
             ) : (
-              <div className="divide-y-2 divide-border/20">
+              <div className="divide-y-[1.5px] divide-border/20">
                 {leaderboard.entries.map((entry, idx) => {
                   const isCurrent = currentUser?.id === entry.userId || entry.rank === leaderboard.currentUserEntry?.rank;
                   const rank = entry.rank || idx + 1;
@@ -271,26 +271,26 @@ export default function LeaderboardsPage() {
                   const bgHighlight = isCurrent ? "bg-primary/20" : "hover:bg-bg-primary/50";
 
                   if (rank === 1) {
-                    rankBadge = <Crown size={18} className="text-amber-500 fill-amber-400" />;
+                    rankBadge = <Crown size={15} className="text-amber-500 fill-amber-400" />;
                   } else if (rank === 2) {
-                    rankBadge = <Medal size={18} className="text-slate-400 fill-slate-300" />;
+                    rankBadge = <Medal size={15} className="text-slate-400 fill-slate-300" />;
                   } else if (rank === 3) {
-                    rankBadge = <Medal size={18} className="text-amber-700 fill-amber-600" />;
+                    rankBadge = <Medal size={15} className="text-amber-700 fill-amber-600" />;
                   }
 
                   return (
                     <div
                       key={entry.userId || idx}
-                      className={`flex items-center justify-between p-4 transition-colors ${bgHighlight}`}
+                      className={`flex items-center justify-between px-3.5 py-2.5 transition-colors ${bgHighlight}`}
                     >
-                      <div className="flex items-center gap-4 min-w-0">
+                      <div className="flex items-center gap-3 min-w-0">
                         {/* Rank Badge */}
-                        <div className="w-8 h-8 rounded-xl bg-surface border-2 border-border flex items-center justify-center shrink-0 font-black text-xs shadow-sm">
+                        <div className="w-7 h-7 rounded-lg bg-surface border-[1.5px] border-border flex items-center justify-center shrink-0 font-black text-xs shadow-sm">
                           {rankBadge || `#${rank}`}
                         </div>
 
                         {/* User Avatar Circle with Image */}
-                        <div className="w-9 h-9 rounded-full bg-primary border-2 border-border flex items-center justify-center font-black text-xs text-text-primary shrink-0 shadow-sm overflow-hidden select-none relative">
+                        <div className="w-8 h-8 rounded-full bg-primary border-2 border-border flex items-center justify-center font-black text-xs text-text-primary shrink-0 shadow-sm overflow-hidden select-none relative">
                           <span className="absolute inset-0 flex items-center justify-center font-black text-xs text-text-primary">
                             {initial}
                           </span>
@@ -308,12 +308,12 @@ export default function LeaderboardsPage() {
 
                         {/* User Name & School */}
                         <div className="flex flex-col min-w-0">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <span className={`text-sm md:text-base truncate ${isCurrent ? "font-black text-text-primary" : "font-bold text-text-primary"}`}>
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <span className={`text-xs sm:text-sm truncate ${isCurrent ? "font-black text-text-primary" : "font-bold text-text-primary"}`}>
                               {entry.name}
                             </span>
                             {isCurrent && (
-                              <span className="text-[10px] font-black px-2 py-0.5 bg-primary border border-border rounded-full uppercase shrink-0">
+                              <span className="text-[9px] font-black px-1.5 py-0.5 bg-primary border border-border rounded-full uppercase shrink-0">
                                 YOU
                               </span>
                             )}

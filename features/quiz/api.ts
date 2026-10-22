@@ -5,7 +5,6 @@ import {
   QuizAnswer,
   AttemptAnswerResponseDto,
   SubmitAttemptResponseDto,
-  AttemptListResponseDto,
   FlashcardListResponse,
 } from "./types";
 

@@ -1,5 +1,15 @@
 // features/multiplayer/utils/post-match.ts
 
+export interface QuestionFeedbackItem {
+  id: string;
+  questionIndex?: number;
+  questionText: string;
+  selectedAnswer: string;
+  correctAnswer: string;
+  isCorrect?: boolean;
+  conceptExplanation: string;
+}
+
 export interface PostMatchData {
   matchId: string;
   result: 'VICTORY' | 'DEFEAT' | 'DRAW';
@@ -23,13 +33,8 @@ export interface PostMatchData {
     deltaAccuracy: number;
   };
   schoolTurfContribution: number; // e.g., +35 points
-  missedQuestions: Array<{
-    id: string;
-    questionText: string;
-    selectedAnswer: string;
-    correctAnswer: string;
-    conceptExplanation: string;
-  }>;
+  missedQuestions: Array<QuestionFeedbackItem>;
+  allQuestions?: QuestionFeedbackItem[];
 }
 
 export type RematchState = 'IDLE' | 'WAITING' | 'ACCEPTED' | 'OPPONENT_LEFT';

@@ -24,9 +24,10 @@ export async function GET(req: NextRequest) {
 
     const data = await res.json();
     return NextResponse.json(data);
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Failed to fetch schools";
     return NextResponse.json(
-      { message: error?.message || "Failed to fetch schools" },
+      { message },
       { status: 500 }
     );
   }

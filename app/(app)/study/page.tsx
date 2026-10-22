@@ -99,13 +99,13 @@ export default function StudyCenterPage() {
   }
 
   return (
-    <div className="flex flex-col gap-8 py-2 max-w-3xl mx-auto w-full">
+    <div className="flex flex-col gap-5 py-1 max-w-3xl mx-auto w-full">
       {/* ─── Page Title Header ────────────────────────────────────────────────── */}
-      <header className="flex flex-col gap-1">
-        <h1 className="text-2xl md:text-3xl font-black text-text-primary tracking-tight">
+      <header className="flex flex-col gap-0.5 border-b-2 border-border pb-3">
+        <h1 className="text-xl md:text-2xl font-black text-text-primary tracking-tight">
           Study
         </h1>
-        <p className="text-xs md:text-sm text-text-secondary font-medium">
+        <p className="text-xs md:text-[13px] text-text-secondary font-medium">
           Continue your guided WASSCE journey, compete in live speed rounds, or practice at your own pace.
         </p>
       </header>
@@ -115,10 +115,10 @@ export default function StudyCenterPage() {
         <ContinueJourneyCard subject={selectedSubject} journey={journey} />
       ) : selectedSubject ? (
         <section aria-labelledby="start-subject-heading" className="w-full">
-          <div className="bg-surface border-[3px] border-border rounded-2xl shadow-[0_6px_0_rgba(20,24,39,0.9)] p-6 md:p-8 flex flex-col gap-5 relative overflow-hidden">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b-[2px] border-border pb-3">
+          <div className="bg-surface border-2.5 border-border rounded-xl shadow-offset p-4 sm:p-5 md:p-6 flex flex-col gap-3.5 relative overflow-hidden">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b-2 border-border pb-2.5">
               <div className="flex items-center gap-2">
-                <span className="px-2.5 py-1 bg-primary border-[2px] border-border rounded-full text-[10px] font-black uppercase tracking-widest text-text-primary shadow-[0_2px_0_#141827]">
+                <span className="px-2.5 py-0.5 bg-primary border-[1.5px] border-border rounded-full text-[10px] font-black uppercase tracking-widest text-text-primary shadow-[0_1px_0_#141827]">
                   Curriculum Module
                 </span>
                 <span className="text-xs font-bold text-text-secondary flex items-center gap-1">
@@ -126,33 +126,33 @@ export default function StudyCenterPage() {
                   {selectedSubject.name}
                 </span>
               </div>
-              <span className="px-2 py-0.5 bg-surface-muted border-[2px] border-border rounded-md text-[10px] font-black text-text-primary uppercase tracking-wide">
+              <span className="px-2 py-0.5 bg-surface-muted border-[1.5px] border-border rounded-md text-[10px] font-black text-text-primary uppercase tracking-wide">
                 {selectedSubject.code}
               </span>
             </div>
 
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-1">
               <h2
                 id="start-subject-heading"
-                className="text-xl md:text-2xl font-black text-text-primary tracking-tight"
+                className="text-lg md:text-xl font-black text-text-primary tracking-tight"
               >
                 {selectedSubject.name} Exam Preparation
               </h2>
-              <p className="text-xs md:text-sm text-text-secondary font-medium">
+              <p className="text-xs text-text-secondary font-medium leading-relaxed">
                 {selectedSubject.description || "Practice official WASSCE past questions, test your speed, and build topic mastery."}
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 pt-1">
               <Link
                 href={`/study/quiz?subjectId=${selectedSubject.id}&mode=quiz`}
-                className="flex-1 py-3.5 px-6 bg-primary text-text-primary border-[3px] border-border rounded-xl text-xs md:text-sm font-black shadow-[0_4px_0_#141827] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-[0_1px_0_#141827] transition-all flex items-center justify-center gap-2 tracking-wider text-center"
+                className="flex-1 py-2.5 px-5 bg-primary text-text-primary border-2 border-border rounded-xl text-xs md:text-sm font-black shadow-[0_2.5px_0_#141827] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-[0_1px_0_#141827] transition-all flex items-center justify-center gap-2 tracking-wider text-center"
               >
                 <span>START PRACTICE QUIZ</span>
               </Link>
               <Link
                 href={`/study/${selectedSubject.slug}`}
-                className="py-3.5 px-5 bg-surface text-text-primary border-[2px] border-border rounded-xl text-xs font-extrabold hover:bg-surface-muted shadow-[0_2px_0_rgba(20,24,39,0.9)] active:translate-y-0.5 transition-all text-center tracking-wide"
+                className="py-2.5 px-4 bg-surface text-text-primary border-2 border-border rounded-xl text-xs font-extrabold hover:bg-surface-muted shadow-[0_1.5px_0_rgba(20,24,39,0.9)] active:translate-y-0.5 transition-all text-center tracking-wide"
               >
                 EXPLORE TOPIC MAP
               </Link>

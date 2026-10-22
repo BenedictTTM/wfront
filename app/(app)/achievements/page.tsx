@@ -78,7 +78,7 @@ export default function AchievementsPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6 py-4 animate-in fade-in duration-300 max-w-5xl mx-auto w-full">
+    <div className="flex flex-col gap-4 sm:gap-5 py-1.5 animate-in fade-in duration-300 max-w-5xl mx-auto w-full">
       {/* ── Page Header ── */}
       <PageHeader
         title="Achievements & Trophies"
@@ -87,9 +87,9 @@ export default function AchievementsPage() {
           <button
             type="button"
             onClick={() => setIsBadgesModalOpen(true)}
-            className="self-start sm:self-auto flex items-center gap-2 px-4 py-2 rounded-xl border-2.5 border-border bg-surface hover:bg-surface-muted text-text-primary font-black text-xs sm:text-sm shadow-[0_3px_0_#141827] active:translate-y-0.5 transition-all cursor-pointer"
+            className="self-start sm:self-auto flex items-center gap-1.5 px-3 py-1.5 rounded-xl border-2 border-border bg-surface hover:bg-surface-muted text-text-primary font-black text-xs shadow-[0_2px_0_#141827] active:translate-y-0.5 transition-all cursor-pointer"
           >
-            <Award className="w-4 h-4 text-text-primary" />
+            <Award className="w-3.5 h-3.5 text-text-primary" />
             <span>Honor Badges</span>
           </button>
         }
@@ -97,13 +97,13 @@ export default function AchievementsPage() {
 
       {/* ── Guest Session Notice ── */}
       {isGuest && (
-        <div className="border-2.5 border-border bg-amber-500/10 rounded-2xl p-4 sm:p-5 shadow-offset flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <div className="flex items-start gap-3">
-            <div className="p-2.5 rounded-xl bg-amber-400 border-2 border-border mt-0.5 shadow-[0_2px_0_#141827] shrink-0">
-              <UserPlus className="w-5 h-5 text-text-primary" />
+        <div className="border-2 border-border bg-amber-500/10 rounded-xl p-3.5 sm:p-4 shadow-offset flex flex-col md:flex-row items-start md:items-center justify-between gap-3.5">
+          <div className="flex items-start gap-2.5">
+            <div className="p-2 rounded-lg bg-amber-400 border-2 border-border mt-0.5 shadow-[0_1.5px_0_#141827] shrink-0">
+              <UserPlus className="w-4 h-4 text-text-primary" />
             </div>
             <div>
-              <h3 className="text-sm font-black text-text-primary">
+              <h3 className="text-xs sm:text-sm font-black text-text-primary">
                 Guest Achievements Mode
               </h3>
               <p className="text-xs font-bold text-text-secondary mt-0.5">
@@ -113,7 +113,7 @@ export default function AchievementsPage() {
           </div>
           <Link
             href="/register"
-            className="w-full md:w-auto px-4 py-2.5 rounded-xl border-2 border-border bg-primary hover:bg-primary/90 text-text-primary font-black text-xs text-center transition-all shadow-[0_2px_0_#141827] active:translate-y-0.5 whitespace-nowrap shrink-0"
+            className="w-full md:w-auto px-3.5 py-2 rounded-lg border-2 border-border bg-primary hover:bg-primary/90 text-text-primary font-black text-xs text-center transition-all shadow-[0_1.5px_0_#141827] active:translate-y-0.5 whitespace-nowrap shrink-0"
           >
             Create Permanent Account
           </Link>
@@ -130,7 +130,7 @@ export default function AchievementsPage() {
       />
 
       {/* ── CATEGORY FILTER CHIPS ── */}
-      <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto pb-1 no-scrollbar">
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
         {CATEGORIES.map((cat) => {
           const count = categoryCounts[cat];
           const isSelected = selectedCategory === cat;
@@ -139,17 +139,17 @@ export default function AchievementsPage() {
               key={cat}
               type="button"
               onClick={() => setSelectedCategory(cat)}
-              className={`flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-all cursor-pointer whitespace-nowrap ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer whitespace-nowrap ${
                 isSelected
-                  ? "bg-primary text-text-primary border-2 border-border shadow-[0_2.5px_0_#141827]"
-                  : "bg-surface text-text-secondary hover:text-text-primary border-2 border-border hover:bg-surface-muted shadow-[0_2px_0_#141827] active:translate-y-0.5"
+                  ? "bg-primary text-text-primary border-2 border-border shadow-[0_2px_0_#141827]"
+                  : "bg-surface text-text-secondary hover:text-text-primary border-2 border-border hover:bg-surface-muted shadow-[0_1.5px_0_#141827] active:translate-y-0.5"
               }`}
             >
               <span>{cat}</span>
               <span
-                className={`text-[10px] px-1.5 py-0.2 rounded-full border ${
+                className={`text-[9px] px-1.5 py-0.2 rounded-full border ${
                   isSelected
-                    ? "bg-surface border-border text-text-primary"
+                    ? "bg-surface border-border text-text-primary font-black"
                     : "bg-surface-muted border-border/40 text-text-secondary"
                 }`}
               >
@@ -161,7 +161,7 @@ export default function AchievementsPage() {
       </div>
 
       {/* ── ACHIEVEMENTS GRID ── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4">
         {filteredItems.map((item) => (
           <AchievementCard key={item.id} item={item} onClaim={handleClaim} />
         ))}

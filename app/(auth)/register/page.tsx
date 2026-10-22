@@ -46,71 +46,71 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4 sm:p-8">
-      <div className="w-full max-w-md bg-card border-[3px] border-border shadow-offset rounded-xl p-8 sm:p-10">
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-foreground mb-3">Create Account</h1>
-          <p className="text-muted-foreground text-lg">Join us to start your preparation</p>
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 sm:p-6">
+      <div className="w-full max-w-md bg-card border-2.5 border-border shadow-offset rounded-xl p-6 sm:p-7">
+        <div className="mb-5 text-center">
+          <h1 className="text-2xl font-black text-foreground mb-1.5">Create Account</h1>
+          <p className="text-muted-foreground text-xs sm:text-sm font-semibold">Join us to start your preparation</p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div className="space-y-2">
-            <label className="block text-sm font-bold text-foreground">Email Address</label>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-3.5">
+          <div className="space-y-1.5">
+            <label className="block text-xs font-bold text-foreground">Email Address</label>
             <input
               type="email"
               placeholder="student@wassceprep.com"
               {...register("email")}
               disabled={isLoading}
-              className={`w-full px-4 py-3 bg-surface border-2 rounded-md outline-none transition-colors text-foreground
+              className={`w-full px-3.5 py-2.5 text-xs sm:text-sm bg-surface border-2 rounded-lg outline-none transition-colors text-foreground
                 ${errors.email ? 'border-destructive focus:border-destructive' : 'border-border focus:ring-2 focus:ring-ring focus:border-ring'}
               `}
             />
             {errors.email && (
-              <p className="text-sm font-semibold text-destructive mt-1">{errors.email.message}</p>
+              <p className="text-xs font-semibold text-destructive mt-0.5">{errors.email.message}</p>
             )}
           </div>
 
-          <div className="space-y-2">
-            <label className="block text-sm font-bold text-foreground">Password</label>
+          <div className="space-y-1.5">
+            <label className="block text-xs font-bold text-foreground">Password</label>
             <input
               type="password"
               placeholder="••••••••"
               {...register("password")}
               disabled={isLoading}
-              className={`w-full px-4 py-3 bg-surface border-2 rounded-md outline-none transition-colors text-foreground
+              className={`w-full px-3.5 py-2.5 text-xs sm:text-sm bg-surface border-2 rounded-lg outline-none transition-colors text-foreground
                 ${errors.password ? 'border-destructive focus:border-destructive' : 'border-border focus:ring-2 focus:ring-ring focus:border-ring'}
               `}
             />
             {errors.password && (
-              <p className="text-sm font-semibold text-destructive mt-1">{errors.password.message}</p>
+              <p className="text-xs font-semibold text-destructive mt-0.5">{errors.password.message}</p>
             )}
           </div>
 
-          <div className="space-y-2">
-            <label className="block text-sm font-bold text-foreground">Confirm Password</label>
+          <div className="space-y-1.5">
+            <label className="block text-xs font-bold text-foreground">Confirm Password</label>
             <input
               type="password"
               placeholder="••••••••"
               {...register("confirmPassword")}
               disabled={isLoading}
-              className={`w-full px-4 py-3 bg-surface border-2 rounded-md outline-none transition-colors text-foreground
+              className={`w-full px-3.5 py-2.5 text-xs sm:text-sm bg-surface border-2 rounded-lg outline-none transition-colors text-foreground
                 ${errors.confirmPassword ? 'border-destructive focus:border-destructive' : 'border-border focus:ring-2 focus:ring-ring focus:border-ring'}
               `}
             />
             {errors.confirmPassword && (
-              <p className="text-sm font-semibold text-destructive mt-1">{errors.confirmPassword.message}</p>
+              <p className="text-xs font-semibold text-destructive mt-0.5">{errors.confirmPassword.message}</p>
             )}
           </div>
 
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full mt-2 bg-primary text-foreground border-2 border-border shadow-offset rounded-lg px-4 py-4 font-bold text-lg hover:-translate-y-0.5 hover:brightness-95 transition-all disabled:opacity-70 disabled:hover:translate-y-0 flex justify-center items-center gap-2"
+            className="w-full mt-1.5 bg-primary text-foreground border-2 border-border shadow-offset rounded-xl px-4 py-2.5 font-black text-xs sm:text-sm hover:-translate-y-0.5 hover:brightness-95 transition-all disabled:opacity-70 disabled:hover:translate-y-0 flex justify-center items-center gap-2 cursor-pointer"
           >
             {isLoading ? (
               <>
-                <Loader2 className="animate-spin" size={20} />
-                Creating account...
+                <Loader2 className="animate-spin" size={16} />
+                <span>Creating account...</span>
               </>
             ) : (
               "Sign Up"
@@ -118,12 +118,12 @@ export default function RegisterPage() {
           </button>
         </form>
 
-        <div className="relative my-6">
+        <div className="relative my-4">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t-2 border-border" />
           </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-card px-3 font-black text-muted-foreground tracking-wider">
+          <div className="relative flex justify-center text-[11px] uppercase">
+            <span className="bg-card px-2.5 font-black text-muted-foreground tracking-wider">
               Or continue with
             </span>
           </div>

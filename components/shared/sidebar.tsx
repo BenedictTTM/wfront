@@ -191,14 +191,14 @@ export function Sidebar({
 
   return (
     <aside className={`
-      fixed inset-y-0 left-0 z-40 w-64 bg-surface border-r-3 border-border flex flex-col justify-between py-6 px-4
+      fixed inset-y-0 left-0 z-40 w-60 lg:w-64 bg-surface border-r-3 border-border flex flex-col justify-between py-4 px-3 sm:px-3.5
       transition-transform duration-300 lg:translate-x-0 lg:static lg:h-screen overflow-y-auto
       ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full"}
     `}>
-      <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-5">
         {/* Logo & Brand */}
-        <div className="flex items-center gap-3 px-2">
-          <div className="relative w-10 h-10 shrink-0">
+        <div className="flex items-center gap-2.5 px-1.5">
+          <div className="relative w-8 h-8 sm:w-9 sm:h-9 shrink-0">
             <svg viewBox="0 0 40 40" className="w-full h-full">
               <circle cx="20" cy="20" r="18" fill="#F6D86B" stroke="#141827" strokeWidth="2.5" />
               <rect x="11" y="14" width="18" height="15" rx="5" fill="#d68d50" stroke="#141827" strokeWidth="2.5" />
@@ -210,7 +210,7 @@ export function Sidebar({
               <path d="M 17.5 13 L 18 10 C 18 9, 22 9, 22 10 L 22.5 13 Z" fill="#a06030" stroke="#141827" strokeWidth="1.5" strokeLinejoin="round" />
             </svg>
           </div>
-          <span className="font-extrabold text-2xl tracking-tight text-text-primary">Panda</span>
+          <span className="font-extrabold text-xl tracking-tight text-text-primary">Panda</span>
           <button 
             className="lg:hidden ml-auto p-1 border-2 border-border rounded-md hover:bg-surface-muted cursor-pointer"
             onClick={() => setMobileMenuOpen(false)}
@@ -220,13 +220,13 @@ export function Sidebar({
         </div>
 
         {/* Navigation Items */}
-        <nav className="flex flex-col gap-2">
+        <nav className="flex flex-col gap-1.5">
           <Link
             href="/dashboard"
             onClick={() => setMobileMenuOpen(false)}
-            className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl border-2 transition-all font-bold text-sm text-left
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl border-2 transition-all font-bold text-xs sm:text-[13px] text-left
               ${activeTab === "home" 
-                ? "bg-[#FFFDF6] text-text-primary border-border shadow-[0_3px_0_#141827] translate-y-[-1px] active:translate-y-[1.5px] active:shadow-[0_1px_0_#141827]" 
+                ? "bg-[#FFFDF6] text-text-primary border-border shadow-[0_2px_0_#141827] translate-y-[-1px] active:translate-y-[1px] active:shadow-[0_0.5px_0_#141827]" 
                 : "bg-transparent text-text-secondary border-transparent hover:text-text-primary hover:bg-bg-secondary"
               }`}
           >
@@ -237,9 +237,9 @@ export function Sidebar({
           <Link
             href="/study"
             onClick={() => setMobileMenuOpen(false)}
-            className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl border-2 transition-all font-bold text-sm text-left
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl border-2 transition-all font-bold text-xs sm:text-[13px] text-left
               ${activeTab === "study" 
-                ? "bg-[#FFFDF6] text-text-primary border-border shadow-[0_3px_0_#141827] translate-y-[-1px] active:translate-y-[1.5px] active:shadow-[0_1px_0_#141827]" 
+                ? "bg-[#FFFDF6] text-text-primary border-border shadow-[0_2px_0_#141827] translate-y-[-1px] active:translate-y-[1px] active:shadow-[0_0.5px_0_#141827]" 
                 : "bg-transparent text-text-secondary border-transparent hover:text-text-primary hover:bg-bg-secondary"
               }`}
           >
@@ -250,9 +250,9 @@ export function Sidebar({
           <Link
             href="/leaderboards"
             onClick={() => setMobileMenuOpen(false)}
-            className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl border-2 transition-all font-bold text-sm text-left
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl border-2 transition-all font-bold text-xs sm:text-[13px] text-left
               ${activeTab === "leaderboard" 
-                ? "bg-[#FFFDF6] text-text-primary border-border shadow-[0_3px_0_#141827] translate-y-[-1px] active:translate-y-[1.5px] active:shadow-[0_1px_0_#141827]" 
+                ? "bg-[#FFFDF6] text-text-primary border-border shadow-[0_2px_0_#141827] translate-y-[-1px] active:translate-y-[1px] active:shadow-[0_0.5px_0_#141827]" 
                 : "bg-transparent text-text-secondary border-transparent hover:text-text-primary hover:bg-bg-secondary"
               }`}
           >
@@ -263,9 +263,9 @@ export function Sidebar({
           <Link
             href="/analytics"
             onClick={() => setMobileMenuOpen(false)}
-            className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl border-2 transition-all font-bold text-sm text-left
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl border-2 transition-all font-bold text-xs sm:text-[13px] text-left
               ${activeTab === "analytics" 
-                ? "bg-[#FFFDF6] text-text-primary border-border shadow-[0_3px_0_#141827] translate-y-[-1px] active:translate-y-[1.5px] active:shadow-[0_1px_0_#141827]" 
+                ? "bg-[#FFFDF6] text-text-primary border-border shadow-[0_2px_0_#141827] translate-y-[-1px] active:translate-y-[1px] active:shadow-[0_0.5px_0_#141827]" 
                 : "bg-transparent text-text-secondary border-transparent hover:text-text-primary hover:bg-bg-secondary"
               }`}
           >
@@ -276,9 +276,9 @@ export function Sidebar({
           <Link
             href="/achievements"
             onClick={() => setMobileMenuOpen(false)}
-            className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl border-2 transition-all font-bold text-sm text-left
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl border-2 transition-all font-bold text-xs sm:text-[13px] text-left
               ${activeTab === "achievements" 
-                ? "bg-[#FFFDF6] text-text-primary border-border shadow-[0_3px_0_#141827] translate-y-[-1px] active:translate-y-[1.5px] active:shadow-[0_1px_0_#141827]" 
+                ? "bg-[#FFFDF6] text-text-primary border-border shadow-[0_2px_0_#141827] translate-y-[-1px] active:translate-y-[1px] active:shadow-[0_0.5px_0_#141827]" 
                 : "bg-transparent text-text-secondary border-transparent hover:text-text-primary hover:bg-bg-secondary"
               }`}
           >
@@ -289,9 +289,9 @@ export function Sidebar({
           <Link
             href="/profile"
             onClick={() => setMobileMenuOpen(false)}
-            className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl border-2 transition-all font-bold text-sm text-left
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl border-2 transition-all font-bold text-xs sm:text-[13px] text-left
               ${activeTab === "profile" 
-                ? "bg-[#FFFDF6] text-text-primary border-border shadow-[0_3px_0_#141827] translate-y-[-1px] active:translate-y-[1.5px] active:shadow-[0_1px_0_#141827]" 
+                ? "bg-[#FFFDF6] text-text-primary border-border shadow-[0_2px_0_#141827] translate-y-[-1px] active:translate-y-[1px] active:shadow-[0_0.5px_0_#141827]" 
                 : "bg-transparent text-text-secondary border-transparent hover:text-text-primary hover:bg-bg-secondary"
               }`}
           >
@@ -302,12 +302,12 @@ export function Sidebar({
       </div>
 
       {/* Sidebar Footer */}
-      <div className="flex flex-col gap-4 pt-4 border-t border-border-muted">
+      <div className="flex flex-col gap-3 pt-3 border-t border-border-muted">
         {/* Language Selector */}
         <div className="relative">
           <button
             onClick={() => setShowLangDropdown(!showLangDropdown)}
-            className="w-full flex items-center justify-between gap-2 px-3 py-2.5 bg-surface border-2 border-border rounded-xl text-sm font-semibold hover:bg-bg-secondary transition-colors cursor-pointer"
+            className="w-full flex items-center justify-between gap-2 px-2.5 py-2 bg-surface border-2 border-border rounded-xl text-xs font-semibold hover:bg-bg-secondary transition-colors cursor-pointer"
           >
             <div className="flex items-center gap-2">
               <GlobeIcon className="w-4 h-4 text-text-secondary" />
@@ -326,7 +326,7 @@ export function Sidebar({
                     setShowLangDropdown(false);
                     toast.info(`Language switched to ${lang}`);
                   }}
-                  className="w-full text-left px-4 py-2 text-xs font-bold hover:bg-bg-primary transition-colors text-text-primary cursor-pointer"
+                  className="w-full text-left px-3.5 py-1.5 text-xs font-bold hover:bg-bg-primary transition-colors text-text-primary cursor-pointer"
                 >
                   {lang}
                 </button>
@@ -340,7 +340,7 @@ export function Sidebar({
           href="https://nayprep.com/support"
           target="_blank"
           rel="noreferrer"
-          className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-text-secondary hover:text-text-primary hover:underline transition-colors"
+          className="flex items-center gap-2 px-2.5 py-1 text-xs font-bold text-text-secondary hover:text-text-primary hover:underline transition-colors"
         >
           <HelpCircleIcon className="w-4 h-4 text-text-secondary" />
           <span>Ask for Help</span>
@@ -349,11 +349,11 @@ export function Sidebar({
 
         {/* Logout / Sign In */}
         {!mounted ? (
-          <div className="h-10 w-full" />
+          <div className="h-9 w-full" />
         ) : isGuest ? (
           <Link
             href="/login"
-            className="flex items-center gap-2 px-3 py-2.5 bg-primary text-text-primary border-2 border-border rounded-xl text-xs font-black hover:bg-[#ebd060] shadow-[0_2px_0_#141827] active:translate-y-0.5 active:shadow-none hover:-translate-y-0.5 transition-all"
+            className="flex items-center gap-2 px-3 py-2 bg-primary text-text-primary border-2 border-border rounded-xl text-xs font-black hover:bg-[#ebd060] shadow-[0_2px_0_#141827] active:translate-y-0.5 active:shadow-none hover:-translate-y-0.5 transition-all justify-center"
           >
             <LogInIcon className="w-4 h-4 text-text-primary" />
             <span>SIGN IN</span>
@@ -362,7 +362,7 @@ export function Sidebar({
           <button
             onClick={handleLogout}
             disabled={logoutMutation.isPending}
-            className="flex items-center gap-2 px-3 py-2.5 text-xs font-bold text-text-secondary hover:text-red-500 hover:bg-red-50 border-2 border-transparent hover:border-red-200 rounded-xl transition-all disabled:opacity-60 cursor-pointer disabled:cursor-not-allowed w-full"
+            className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-text-secondary hover:text-red-500 hover:bg-red-50 border-2 border-transparent hover:border-red-200 rounded-xl transition-all disabled:opacity-60 cursor-pointer disabled:cursor-not-allowed w-full justify-center"
           >
             <LogOutIcon className="w-4 h-4 text-current" />
             <span>{logoutMutation.isPending ? "Signing out..." : "Sign Out"}</span>
