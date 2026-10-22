@@ -52,7 +52,7 @@ export function PerformanceSnapshotCard({ snapshot, insights }: PerformanceSnaps
             {primaryInsight.actionLabel && primaryInsight.actionUrl && (
               <Link
                 href={primaryInsight.actionUrl}
-                className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-black text-text-primary bg-primary hover:bg-yellow-400 border-2 border-border rounded-xl shadow-[0_2px_0_#141827] hover:translate-y-0.5 hover:shadow-none transition-all shrink-0 cursor-pointer self-start sm:self-auto"
+                className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-black text-text-primary bg-primary hover:bg-yellow-400 border-2 border-border rounded-xl shadow-[0_2px_0_#141827] hover:translate-y-0.5 hover:shadow-none transition-all shrink-0 cursor-pointer self-stretch sm:self-auto text-center"
               >
                 <span>{primaryInsight.actionLabel}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -96,75 +96,75 @@ export function PerformanceSnapshotCard({ snapshot, insights }: PerformanceSnaps
       ) : null}
 
       {/* ── 4 Primary Metric Tiles: 1. Accuracy, 2. Mastery, 3. Questions, 4. Study Time ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* 1. Accuracy */}
-        <div className="p-5 bg-surface border-2 border-border rounded-2xl shadow-[0_3px_0_#141827] flex flex-col justify-between hover:-translate-y-0.5 transition-transform duration-150 ease-out">
-          <div className="flex items-center justify-between gap-2 mb-3">
-            <span className="text-xs font-black uppercase tracking-wider text-text-secondary">Accuracy</span>
-            <div className="w-8 h-8 rounded-xl bg-secondary/35 text-text-primary border-2 border-border flex items-center justify-center shadow-[0_1px_0_#141827]">
-              <Target className="w-4 h-4 stroke-[2.2]" />
+        <div className="p-3.5 sm:p-5 bg-surface border-2 border-border rounded-2xl shadow-[0_3px_0_#141827] flex flex-col justify-between hover:-translate-y-0.5 transition-transform duration-150 ease-out min-w-0">
+          <div className="flex items-center justify-between gap-2 mb-2 sm:mb-3">
+            <span className="text-[11px] sm:text-xs font-black uppercase tracking-wider text-text-secondary truncate">Accuracy</span>
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-secondary/35 text-text-primary border-2 border-border flex items-center justify-center shadow-[0_1px_0_#141827] shrink-0">
+              <Target className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.2]" />
             </div>
           </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-3xl sm:text-4xl font-black text-text-primary tracking-tight">
+          <div className="flex items-baseline gap-1.5 min-w-0">
+            <span className="text-2xl sm:text-3xl lg:text-4xl font-black text-text-primary tracking-tight truncate">
               {overallAccuracy !== null ? `${overallAccuracy}%` : "—"}
             </span>
           </div>
-          <span className="text-[11px] font-bold text-text-secondary mt-2">
+          <span className="text-[10px] sm:text-[11px] font-bold text-text-secondary mt-1.5 sm:mt-2 truncate">
             {overallAccuracy !== null ? "Across answered questions" : "No answers yet"}
           </span>
         </div>
 
         {/* 2. Mastery (Prioritized) */}
-        <div className="p-5 bg-surface border-2 border-border rounded-2xl shadow-[0_3px_0_#141827] flex flex-col justify-between hover:-translate-y-0.5 transition-transform duration-150 ease-out">
-          <div className="flex items-center justify-between gap-2 mb-3">
-            <span className="text-xs font-black uppercase tracking-wider text-text-secondary">Mastery</span>
-            <div className="w-8 h-8 rounded-xl bg-primary/40 text-text-primary border-2 border-border flex items-center justify-center shadow-[0_1px_0_#141827]">
-              <Award className="w-4 h-4 stroke-[2.2]" />
+        <div className="p-3.5 sm:p-5 bg-surface border-2 border-border rounded-2xl shadow-[0_3px_0_#141827] flex flex-col justify-between hover:-translate-y-0.5 transition-transform duration-150 ease-out min-w-0">
+          <div className="flex items-center justify-between gap-2 mb-2 sm:mb-3">
+            <span className="text-[11px] sm:text-xs font-black uppercase tracking-wider text-text-secondary truncate">Mastery</span>
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-primary/40 text-text-primary border-2 border-border flex items-center justify-center shadow-[0_1px_0_#141827] shrink-0">
+              <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.2]" />
             </div>
           </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-3xl sm:text-4xl font-black text-text-primary tracking-tight">
+          <div className="flex items-baseline gap-1.5 min-w-0">
+            <span className="text-2xl sm:text-3xl lg:text-4xl font-black text-text-primary tracking-tight truncate">
               {masteryPercentage !== null ? `${masteryPercentage}%` : "—"}
             </span>
           </div>
-          <span className="text-[11px] font-bold text-text-secondary mt-2">
+          <span className="text-[10px] sm:text-[11px] font-bold text-text-secondary mt-1.5 sm:mt-2 truncate">
             {masteryPercentage !== null ? "Curriculum mastery" : "Building topic mastery"}
           </span>
         </div>
 
         {/* 3. Questions */}
-        <div className="p-5 bg-surface border-2 border-border rounded-2xl shadow-[0_3px_0_#141827] flex flex-col justify-between hover:-translate-y-0.5 transition-transform duration-150 ease-out">
-          <div className="flex items-center justify-between gap-2 mb-3">
-            <span className="text-xs font-black uppercase tracking-wider text-text-secondary">Questions</span>
-            <div className="w-8 h-8 rounded-xl bg-bg-secondary text-text-primary border-2 border-border flex items-center justify-center shadow-[0_1px_0_#141827]">
-              <CheckCircle2 className="w-4 h-4 stroke-[2.2]" />
+        <div className="p-3.5 sm:p-5 bg-surface border-2 border-border rounded-2xl shadow-[0_3px_0_#141827] flex flex-col justify-between hover:-translate-y-0.5 transition-transform duration-150 ease-out min-w-0">
+          <div className="flex items-center justify-between gap-2 mb-2 sm:mb-3">
+            <span className="text-[11px] sm:text-xs font-black uppercase tracking-wider text-text-secondary truncate">Questions</span>
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-bg-secondary text-text-primary border-2 border-border flex items-center justify-center shadow-[0_1px_0_#141827] shrink-0">
+              <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.2]" />
             </div>
           </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-3xl sm:text-4xl font-black text-text-primary tracking-tight">
+          <div className="flex items-baseline gap-1.5 min-w-0">
+            <span className="text-2xl sm:text-3xl lg:text-4xl font-black text-text-primary tracking-tight truncate">
               {questionsCompleted.toLocaleString()}
             </span>
           </div>
-          <span className="text-[11px] font-bold text-text-secondary mt-2">
+          <span className="text-[10px] sm:text-[11px] font-bold text-text-secondary mt-1.5 sm:mt-2 truncate">
             {quizzesCompleted > 0 ? `${quizzesCompleted} quizzes completed` : "Ready to practice"}
           </span>
         </div>
 
         {/* 4. Study Time */}
-        <div className="p-5 bg-surface border-2 border-border rounded-2xl shadow-[0_3px_0_#141827] flex flex-col justify-between hover:-translate-y-0.5 transition-transform duration-150 ease-out">
-          <div className="flex items-center justify-between gap-2 mb-3">
-            <span className="text-xs font-black uppercase tracking-wider text-text-secondary">Study Time</span>
-            <div className="w-8 h-8 rounded-xl bg-surface-muted text-text-primary border-2 border-border flex items-center justify-center shadow-[0_1px_0_#141827]">
-              <Clock className="w-4 h-4 stroke-[2.2]" />
+        <div className="p-3.5 sm:p-5 bg-surface border-2 border-border rounded-2xl shadow-[0_3px_0_#141827] flex flex-col justify-between hover:-translate-y-0.5 transition-transform duration-150 ease-out min-w-0">
+          <div className="flex items-center justify-between gap-2 mb-2 sm:mb-3">
+            <span className="text-[11px] sm:text-xs font-black uppercase tracking-wider text-text-secondary truncate">Study Time</span>
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-surface-muted text-text-primary border-2 border-border flex items-center justify-center shadow-[0_1px_0_#141827] shrink-0">
+              <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.2]" />
             </div>
           </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-3xl sm:text-4xl font-black text-text-primary tracking-tight">
+          <div className="flex items-baseline gap-1.5 min-w-0">
+            <span className="text-2xl sm:text-3xl lg:text-4xl font-black text-text-primary tracking-tight truncate">
               {formatStudyTime(studyTimeMinutes)}
             </span>
           </div>
-          <span className="text-[11px] font-bold text-text-secondary mt-2">
+          <span className="text-[10px] sm:text-[11px] font-bold text-text-secondary mt-1.5 sm:mt-2 truncate">
             {studyTimeMinutes > 0 ? "Active practice time" : "Take a quiz to track time"}
           </span>
         </div>

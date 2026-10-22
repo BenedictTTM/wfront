@@ -431,14 +431,14 @@ export function VersusMatchTransition({
                 damping: 18,
                 delay: 0.1,
               }}
-              className="w-20 h-20 sm:w-24 sm:h-24 bg-[#F4D06F] border-[3px] border-black shadow-[4px_4px_0px_#000] rounded-xl flex items-center justify-center pointer-events-auto select-none"
+              className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-[#F4D06F] border-[3px] border-black shadow-[3px_3px_0px_#000] sm:shadow-[4px_4px_0px_#000] rounded-xl flex items-center justify-center pointer-events-auto select-none"
             >
               {/* Inside text un-rotated (-rotate-45) */}
               <div className="-rotate-45 flex flex-col items-center justify-center text-center">
-                <span className="text-2xl sm:text-3xl font-black italic text-black leading-none tracking-tighter">
+                <span className="text-xl sm:text-2xl md:text-3xl font-black italic text-black leading-none tracking-tighter">
                   VS
                 </span>
-                <span className="text-[9px] sm:text-[10px] font-black uppercase text-black/90 tracking-widest mt-0.5">
+                <span className="text-[8px] sm:text-[9px] md:text-[10px] font-black uppercase text-black/90 tracking-widest mt-0.5">
                   ROUND 1
                 </span>
               </div>

@@ -40,31 +40,9 @@ export async function GET() {
     reqHeaders["X-Guest-Token"] = guestToken;
   }
 
-  let response = await fetchMe(reqHeaders);
-
-  // On 401 with accessToken, attempt a silent token refresh via the auth proxy then retry once.
-  if (response.status === 401 && accessToken) {
-    const refreshRes = await fetch(
-      `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/api/auth/refresh`,
-      { method: "POST" }
-    );
-
-    if (refreshRes.ok) {
-      // The refresh proxy has already set new cookies — re-read them.
-      const updatedCookies = await cookies();
-      const newAccessToken = updatedCookies.get("accessToken")?.value;
-      if (newAccessToken) {
-        response = await fetchMe({ Authorization: `Bearer ${newAccessToken}` });
-      }
-    }
-  }
+  const response = await fetchMe(reqHeaders);
 
   if (!response.ok) {
-    if (response.status === 401) {
-      cookieStore.delete("accessToken");
-      cookieStore.delete("refreshToken");
-      cookieStore.delete("role");
-    }
     let errorBody: unknown = {};
     try {
       errorBody = await response.json();

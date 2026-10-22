@@ -1,9 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { AlertCircle, ChevronRight, Swords, Zap } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useSubjects } from "@/features/curriculum/hooks";
 import { useMatchmaking } from "@/features/multiplayer/hooks";
+import { useEnergy } from "@/features/gamification/hooks";
+import { EnergyWarningModal } from "@/features/quiz/components/EnergyWarningModal";
 import { MatchmakingLobby } from "@/features/multiplayer/components/MatchmakingLobby";
 import { VersusMatchTransition } from "@/features/multiplayer/components/VersusMatchTransition";
 import { useCurrentUser } from "@/features/auth/hooks";
@@ -11,9 +14,17 @@ import { safeStorage } from "@/lib/storage";
 import { type CustomProfileState } from "@/features/auth/constants";
 
 export default function MultiplayerEntryPage() {
+  const queryClient = useQueryClient();
   const [isPreviewingVersus, setIsPreviewingVersus] = useState(false);
+  const [showEnergyWarning, setShowEnergyWarning] = useState(false);
+  const { data: energyData } = useEnergy();
+  const userEnergy = energyData?.current ?? 30;
   const authUser = useCurrentUser();
   const { data: subjects, isLoading, isError } = useSubjects();
+
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ["gamification"] });
+  }, [queryClient]);
   const {
     selectedSubject,
     setSelectedSubject,
@@ -25,6 +36,12 @@ export default function MultiplayerEntryPage() {
     isJoining,
     isLeaving,
   } = useMatchmaking();
+
+  React.useEffect(() => {
+    if (joinError && joinError.toLowerCase().includes("energy")) {
+      setShowEnergyWarning(true);
+    }
+  }, [joinError]);
 
   if (isLoading) {
     return (
@@ -225,12 +242,18 @@ export default function MultiplayerEntryPage() {
       {/* CTA: Find Opponent */}
       <button
         type="button"
-        onClick={() => startSearch()}
+        onClick={() => {
+          if (userEnergy < 3) {
+            setShowEnergyWarning(true);
+            return;
+          }
+          startSearch();
+        }}
         disabled={!selectedSubject || isJoining}
         className="w-full py-4 bg-secondary text-text-primary border-[2px] border-border rounded-2xl text-sm font-black shadow-[0_4px_0_rgba(20,24,39,0.9)] active:translate-y-0.5 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <Swords size={16} />
-        {isJoining ? "ENTERING QUEUE…" : "FIND OPPONENT"}
+        {isJoining ? "ENTERING QUEUE…" : "FIND OPPONENT (3 🔋)"}
         <ChevronRight size={15} className="stroke-[3]" />
       </button>
 
@@ -248,11 +271,18 @@ export default function MultiplayerEntryPage() {
       <div className="p-4 bg-surface-muted border-[2px] border-border rounded-2xl flex flex-col gap-2 text-xs">
         <span className="font-black uppercase tracking-widest text-text-secondary">Match rules</span>
         <ul className="flex flex-col gap-1 text-text-secondary font-medium">
+          <li>🔋 Match Entry: 3 Energy per session</li>
           <li>⚡ Answer fast for a speed bonus (up to +50 pts)</li>
           <li>🔥 Build streaks for +15 pts per correct answer in a row</li>
-          <li>🏆 Highest score after all questions wins</li>
+          <li>🏆 Highest score after all questions wins (+50 XP for win, +20 XP participate)</li>
         </ul>
       </div>
+
+      <EnergyWarningModal
+        isOpen={showEnergyWarning}
+        onClose={() => setShowEnergyWarning(false)}
+        currentEnergy={userEnergy}
+      />
     </div>
   );
 }

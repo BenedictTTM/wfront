@@ -9,6 +9,7 @@ import { Loader2 } from "lucide-react";
 import Link from "next/link";
 
 import { useLoginMutation } from "@/features/auth/hooks";
+import { GoogleSignInButton } from "@/features/auth/components";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
@@ -96,6 +97,19 @@ export default function LoginPage() {
             )}
           </button>
         </form>
+
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t-2 border-border" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-card px-3 font-black text-muted-foreground tracking-wider">
+              Or continue with
+            </span>
+          </div>
+        </div>
+
+        <GoogleSignInButton label="Sign in with Google" />
 
         <div className="mt-8 text-center text-sm font-medium text-muted-foreground">
           Don&apos;t have an account?{" "}

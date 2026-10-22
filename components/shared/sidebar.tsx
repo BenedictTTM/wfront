@@ -192,7 +192,7 @@ export function Sidebar({
   return (
     <aside className={`
       fixed inset-y-0 left-0 z-40 w-64 bg-surface border-r-3 border-border flex flex-col justify-between py-6 px-4
-      transition-transform duration-300 lg:translate-x-0 lg:static lg:h-screen
+      transition-transform duration-300 lg:translate-x-0 lg:static lg:h-screen overflow-y-auto
       ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full"}
     `}>
       <div className="flex flex-col gap-8">

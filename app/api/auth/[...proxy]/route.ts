@@ -51,7 +51,7 @@ async function setCookiesFromResponse(
     cookieStore.set({ name: "refreshToken", value: data.refreshToken, ...COOKIE_DEFAULTS, maxAge: REFRESH_TOKEN_MAX_AGE });
   }
   if (data.user?.role && typeof data.user.role === "string") {
-    cookieStore.set({ name: "role", value: data.user.role, ...COOKIE_DEFAULTS });
+    cookieStore.set({ name: "role", value: data.user.role, ...COOKIE_DEFAULTS, maxAge: REFRESH_TOKEN_MAX_AGE });
   }
 }
 

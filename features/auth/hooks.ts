@@ -9,6 +9,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   fetchCurrentUser,
   loginUser,
+  loginWithGoogle,
   logoutUser,
   registerUser,
   requestPasswordReset,
@@ -126,6 +127,25 @@ export function useRegisterMutation() {
 
   return useMutation({
     mutationFn: registerUser,
+    onSuccess: (res) => {
+      if (res?.user && !isGuestIdentity(res.user)) {
+        queryClient.setQueryData(authKeys.me, res.user);
+        safeStorage.setItem(AUTH_STORAGE_KEY, res.user);
+      } else {
+        queryClient.invalidateQueries({ queryKey: authKeys.me });
+      }
+    },
+  });
+}
+
+/**
+ * Google OAuth login mutation. On success, writes the user to cache and safeStorage.
+ */
+export function useGoogleLoginMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: loginWithGoogle,
     onSuccess: (res) => {
       if (res?.user && !isGuestIdentity(res.user)) {
         queryClient.setQueryData(authKeys.me, res.user);

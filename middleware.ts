@@ -37,12 +37,15 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl;
 
   const accessToken = request.cookies.get("accessToken")?.value;
+  const refreshToken = request.cookies.get("refreshToken")?.value;
   const role = request.cookies.get("role")?.value;
   const guestToken = request.cookies.get("guestToken")?.value || request.cookies.get("anonymousToken")?.value;
 
-  const isAuthenticated = !!accessToken;
+  // Authenticated if the user has an active access token or a valid refresh token
+  const isAuthenticated = !!accessToken || !!refreshToken;
   const hasGuestSession = !!guestToken;
   const hasAnySession = isAuthenticated || hasGuestSession;
+
 
   const normalizedRole = role?.toUpperCase();
   const isAdmin = normalizedRole === "ADMIN";

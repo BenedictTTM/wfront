@@ -76,7 +76,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
       `}</style>
 
       {/* ─── LEFT SIDEBAR ─────────────────────────────────────────────────────────── */}
-      <div>
+      <div className="shrink-0">
         <Sidebar
           mobileMenuOpen={mobileMenuOpen}
           setMobileMenuOpen={setMobileMenuOpen}
@@ -94,31 +94,32 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
       {/* ─── CENTER CONTENT AREA ─────────────────────────────────────────────────── */}
       <main className="flex-1 min-w-0 bg-surface border-r-3 border-border flex flex-col h-screen overflow-y-auto">
         {/* Mobile Header Bar */}
-        <header className="lg:hidden flex items-center justify-between p-4 border-b-2 border-border bg-bg-secondary sticky top-0 z-20">
-          <div className="flex items-center gap-2">
+        <header className="lg:hidden flex items-center justify-between p-3.5 sm:p-4 border-b-2 border-border bg-bg-secondary sticky top-0 z-20">
+          <div className="flex items-center gap-2 min-w-0">
             <button
-              className="p-1.5 border-2 border-border rounded-lg bg-surface"
+              className="p-1.5 border-2 border-border rounded-lg bg-surface shrink-0 cursor-pointer"
               onClick={() => setMobileMenuOpen(true)}
+              aria-label="Open navigation menu"
             >
               <Menu size={20} />
             </button>
-            <span className="font-extrabold text-lg tracking-tight">Nay Prep</span>
+            <span className="font-extrabold text-base sm:text-lg tracking-tight truncate">Nay Prep</span>
           </div>
 
           {/* Stats on mobile header */}
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1 font-bold text-sm text-[#E28743]" title="XP Pool">
-              <Zap size={16} fill="#E28743" />
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <div className="flex items-center gap-1 font-bold text-xs sm:text-sm text-[#E28743]" title="XP Pool">
+              <Zap size={15} fill="#E28743" />
               <span suppressHydrationWarning>{xp}</span>
             </div>
-            <div className="flex items-center gap-1 font-bold text-sm text-red-500" title="Streak">
-              <Flame size={16} fill="currentColor" />
+            <div className="flex items-center gap-1 font-bold text-xs sm:text-sm text-red-500" title="Streak">
+              <Flame size={15} fill="currentColor" />
               <span suppressHydrationWarning>{streak}</span>
             </div>
             <Link
               href="/profile"
               suppressHydrationWarning
-              className="w-8 h-8 rounded-full border-2 border-border overflow-hidden bg-primary flex items-center justify-center font-black text-text-primary text-xs"
+              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-border overflow-hidden bg-primary flex items-center justify-center font-black text-text-primary text-xs shrink-0"
             >
               {userInitial}
             </Link>
@@ -126,16 +127,16 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Main Viewport Container */}
-        <div className="flex-1 w-full px-6 py-8 md:p-10 flex flex-col gap-10 max-w-4xl mx-auto">
+        <div className="flex-1 w-full px-3.5 py-6 sm:px-6 sm:py-8 md:p-8 lg:p-10 flex flex-col gap-6 sm:gap-8 md:gap-10 max-w-5xl mx-auto">
           {children}
         </div>
       </main>
 
       {/* ─── RIGHT SIDEBAR (STATS & QUESTS) ─────────────────────────────────────── */}
-      <aside className="hidden lg:flex w-80 bg-bg-primary h-screen flex-col p-6 sticky top-0 overflow-y-auto gap-6 shrink-0 border-l border-border/20">
+      <aside className="hidden xl:flex w-72 2xl:w-80 bg-bg-primary h-screen flex-col p-4 2xl:p-6 sticky top-0 overflow-y-auto gap-5 2xl:gap-6 shrink-0 border-l border-border/20">
         {/* Top Header stats */}
         <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-4 bg-surface px-4 py-2 border-2 border-border rounded-xl">
+          <div className="flex items-center gap-2.5 2xl:gap-3 bg-surface px-3 2xl:px-4 py-2 border-2 border-border rounded-xl">
             {/* Battery / Energy */}
             <div className="flex items-center gap-1.5 font-extrabold text-sm text-[#FF9E2C]" title="Energy">
               <span className="text-lg">🔋</span>

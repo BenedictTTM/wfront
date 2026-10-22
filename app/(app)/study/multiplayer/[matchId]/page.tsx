@@ -20,6 +20,7 @@ import {
   useMultiplayerToken,
   useStreak,
 } from "@/features/multiplayer/hooks";
+import { useQueryClient } from "@tanstack/react-query";
 import { useSubjects } from "@/features/curriculum/hooks";
 import { toast } from "sonner";
 import { useCurrentUser } from "@/features/auth/hooks";
@@ -207,9 +208,12 @@ export default function LiveMatchPage() {
     await startSearch(activeSubject);
   }, [activeSubject, startSearch]);
 
+  const queryClient = useQueryClient();
+
   const handleBackToMultiplayer = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ["gamification"] });
     router.push("/study/multiplayer");
-  }, [router]);
+  }, [queryClient, router]);
 
   const handleSubmitAnswer = useCallback(
     (questionId: string, optionId: string, timeTakenMs: number) => {

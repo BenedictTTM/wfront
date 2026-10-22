@@ -156,9 +156,9 @@ async function request<T>(
 
   const response = await fetch(url, { credentials: "include", ...init, headers });
 
-  // On 401, attempt one silent token refresh then retry (except for auth routes to prevent loops).
-  const isAuthOrProxy = path.startsWith("/api/auth/") || path === "/api/users/me";
-  if (response.status === 401 && !_isRetry && !isAuthOrProxy) {
+  // On 401, attempt one silent token refresh then retry (except for auth endpoints to prevent loops).
+  const isAuthRoute = path.startsWith("/api/auth/");
+  if (response.status === 401 && !_isRetry && !isAuthRoute) {
     const refreshed = await silentRefresh();
     if (refreshed) {
       return request<T>(path, init, true);

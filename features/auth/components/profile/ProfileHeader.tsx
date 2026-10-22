@@ -51,10 +51,11 @@ export function ProfileHeader({
   onAvatarUploadClick,
 }: ProfileHeaderProps) {
   return (
-    <div className="border-2.5 border-border bg-surface rounded-2xl p-5 sm:p-7 shadow-offset flex flex-col gap-6 relative">
+    <div className="border-2.5 border-border bg-surface rounded-2xl p-4 sm:p-6 md:p-7 shadow-offset flex flex-col gap-6 relative min-w-0">
       {/* Top Details Row */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-5">
-        <div className="flex items-center sm:items-start gap-4 sm:gap-6">
+        <div className="flex items-center sm:items-start gap-3.5 sm:gap-6 min-w-0 flex-1">
+          {/* Avatar with Upload trigger */}
           {/* Avatar with Upload trigger */}
           <div className="relative group shrink-0">
             <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-2.5 border-border bg-primary/40 flex items-center justify-center font-black text-2xl sm:text-3xl text-text-primary shadow-[0_4px_0_#141827] overflow-hidden select-none">
@@ -195,7 +196,7 @@ export function ProfileHeader({
         <button
           type="button"
           onClick={onEditClick}
-          className="self-start sm:self-auto flex items-center gap-1.5 px-4 py-2 rounded-xl border-2 border-border bg-surface hover:bg-surface-muted text-text-primary font-black text-xs sm:text-sm shadow-[0_2.5px_0_#141827] active:translate-y-0.5 transition-all cursor-pointer"
+          className="self-stretch sm:self-auto flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl border-2 border-border bg-surface hover:bg-surface-muted text-text-primary font-black text-xs sm:text-sm shadow-[0_2.5px_0_#141827] active:translate-y-0.5 transition-all cursor-pointer"
         >
           <Edit3 className="w-3.5 h-3.5 text-text-secondary" />
           <span>Edit Profile</span>
@@ -203,7 +204,7 @@ export function ProfileHeader({
       </div>
 
       {/* ── Standings Banner ── */}
-      <div className="border-2 border-border bg-bg-secondary/60 rounded-xl p-3.5 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs sm:text-sm font-black text-text-primary shadow-sm">
+      <div className="border-2 border-border bg-bg-secondary/60 rounded-xl p-3.5 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs sm:text-sm font-black text-text-primary shadow-sm">
         <div className="flex items-center gap-2.5">
           <span className="text-base sm:text-lg">🌍</span>
           <span>

@@ -9,6 +9,7 @@
 // - Cleanup: all timers cleared on unmount; close without triggering reconnect
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { getMultiplayerWsUrl } from "./api";
 import {
   MatchEndData,
@@ -60,6 +61,7 @@ export function useMultiplayerWs({
   token,
   matchId,
 }: UseMultiplayerWsOptions): UseMultiplayerWsReturn {
+  const queryClient = useQueryClient();
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectAttemptRef = useRef(0);
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -159,6 +161,7 @@ export function useMultiplayerWs({
         case "match_countdown": {
           const d = data as WsMatchCountdownEvent;
           setMatchState("STARTING");
+          queryClient.invalidateQueries({ queryKey: ["gamification"] });
           let remaining = d.seconds;
           setCountdown(remaining);
           const ticker = setInterval(() => {
@@ -199,6 +202,7 @@ export function useMultiplayerWs({
           const d = data as WsMatchEndEvent;
           setMatchEnd({ matchId: d.matchId, rankings: d.rankings });
           setMatchState("FINISHED");
+          queryClient.invalidateQueries({ queryKey: ["gamification"] });
           setParticipants((prev) =>
             prev.map((p) => {
               const ranking = d.rankings.find((r) => r.participantId === p.id);

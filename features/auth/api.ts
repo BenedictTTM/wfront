@@ -52,6 +52,16 @@ export async function registerUser(data: {
   return res;
 }
 
+export async function loginWithGoogle(data: {
+  idToken: string;
+}): Promise<{ user?: MeResponse }> {
+  const res = await apiPost<{ user?: MeResponse }>("/api/auth/google", data);
+  if (res?.user && !isGuestIdentity(res.user)) {
+    safeStorage.setItem(AUTH_STORAGE_KEY, res.user);
+  }
+  return res;
+}
+
 export async function requestPasswordReset(data: { email: string }): Promise<void> {
   await apiPost<void>("/api/auth/request-password-reset", data);
 }
