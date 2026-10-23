@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import { CheckCircle2, XCircle, ChevronDown, ChevronUp } from "lucide-react";
+import { CheckCircle2, XCircle, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
 import type { ScoredAnswerDto } from "../types";
+import { QuestionAiTutorModal } from "@/features/ai/components/QuestionAiTutorModal";
+import type { QuestionContext } from "@/features/ai/prompts";
 
 interface QuizQuestionReviewListProps {
   scoredAnswers: ScoredAnswerDto[];
@@ -10,6 +12,7 @@ interface QuizQuestionReviewListProps {
 
 export function QuizQuestionReviewList({ scoredAnswers }: QuizQuestionReviewListProps) {
   const [showReview, setShowReview] = useState(false);
+  const [activeTutorContext, setActiveTutorContext] = useState<QuestionContext | null>(null);
 
   if (!scoredAnswers || scoredAnswers.length === 0) return null;
 
@@ -93,11 +96,42 @@ export function QuizQuestionReviewList({ scoredAnswers }: QuizQuestionReviewList
                     </p>
                   </div>
                 )}
+
+                {/* Ask AI Tutor CTA */}
+                <div className="pt-1 flex items-center justify-between">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveTutorContext({
+                        questionText,
+                        options: (ans.questionSnapshot?.options as any) || [],
+                        selectedOptionKey: ans.selectedOptionId,
+                        submittedText: ans.submittedText,
+                        correctOptionKey: ans.correctOption,
+                        officialExplanation: explanation,
+                      });
+                    }}
+                    className="px-3.5 py-1.5 bg-primary/20 hover:bg-primary border-[2px] border-border rounded-xl text-xs font-black text-text-primary flex items-center gap-1.5 shadow-[0_2px_0_#141827] active:translate-y-0.5 hover:-translate-y-0.5 transition-all cursor-pointer"
+                  >
+                    <Sparkles size={14} className="stroke-[2.5]" />
+                    <span>Ask AI Tutor</span>
+                  </button>
+                </div>
               </div>
             );
           })}
         </div>
       )}
+
+      {/* Interactive AI Tutor Modal */}
+      {activeTutorContext && (
+        <QuestionAiTutorModal
+          isOpen={!!activeTutorContext}
+          onClose={() => setActiveTutorContext(null)}
+          context={activeTutorContext}
+        />
+      )}
     </div>
   );
 }
+
