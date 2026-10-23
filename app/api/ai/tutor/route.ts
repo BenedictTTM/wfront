@@ -23,7 +23,7 @@ export async function GET() {
       available: true,
       provider: "gemini",
       activeModel: DEFAULT_GEMINI_MODEL,
-      displayName: "Gemini 3.5 Flash Lite",
+      displayName: "Gemma 4",
       models: GEMINI_MODEL_CHAIN,
     });
   }

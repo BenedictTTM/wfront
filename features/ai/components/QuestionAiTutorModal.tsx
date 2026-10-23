@@ -116,7 +116,7 @@ export function QuestionAiTutorModal({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: chatHistory,
-          model: model || aiStatus?.activeModel || "gemini-2.5-flash",
+          model: model || aiStatus?.activeModel || "gemma-4",
         }),
       });
 
@@ -193,7 +193,7 @@ export function QuestionAiTutorModal({
                 AI Tutor
                 {aiStatus?.available ? (
                   <span className="text-[10px] bg-primary text-text-primary font-black px-2 py-0.5 rounded-full border border-border uppercase">
-                    🟢 {aiStatus.displayName || aiStatus.activeModel || "Gemini 2.5 Flash"}
+                    🟢 {aiStatus.displayName || aiStatus.activeModel || "Gemma 4"}
                   </span>
                 ) : (
                   <span className="text-[10px] bg-surface-muted text-text-secondary font-bold px-2 py-0.5 rounded-full border border-border uppercase">
@@ -237,7 +237,7 @@ export function QuestionAiTutorModal({
             <div className="flex flex-col items-center justify-center my-auto p-6 gap-3 text-center">
               <Loader2 className="w-7 h-7 animate-spin text-primary stroke-[2.5]" />
               <div className="text-xs font-black text-text-primary">
-                Connecting to Gemini AI Tutor...
+                Connecting to Gemma AI Tutor...
               </div>
             </div>
           ) : aiStatus && !aiStatus.available ? (
@@ -248,7 +248,7 @@ export function QuestionAiTutorModal({
               <div>
                 <h4 className="text-sm font-black text-text-primary">AI Service Unavailable</h4>
                 <p className="text-xs font-bold text-text-secondary max-w-sm mt-1">
-                  {aiStatus.error || "Please verify your GEMINI_API_KEY in the .env configuration to use the AI Tutor."}
+                  {aiStatus.error || "Please verify your AI configuration in .env to use the Gemma AI Tutor."}
                 </p>
               </div>
 
@@ -278,7 +278,7 @@ export function QuestionAiTutorModal({
               {visibleMessages.length === 0 && isGenerating && (
                 <div className="flex flex-col items-center justify-center my-auto p-6 gap-2 text-center text-text-secondary text-xs font-bold">
                   <Loader2 className="w-6 h-6 animate-spin text-primary" />
-                  <span>Gemini is analyzing your solution...</span>
+                  <span>Gemma is analyzing your solution...</span>
                 </div>
               )}
 

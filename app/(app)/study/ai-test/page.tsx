@@ -100,7 +100,7 @@ export default function AiTestPage() {
             AI Tutor Sandbox
           </h1>
           <p className="text-xs font-bold text-text-secondary mt-1">
-            Test solutions, streaming explanations, and conversational follow-up questions powered by Google Gemini.
+            Test solutions, streaming explanations, and conversational follow-up questions powered by Gemma.
           </p>
         </div>
 
@@ -137,7 +137,7 @@ export default function AiTestPage() {
             <span className="text-xs font-bold text-text-secondary">AI Service:</span>
             {healthData?.available ? (
               <span className="text-xs font-black text-green-700 bg-green-100 px-2 py-0.5 rounded-lg border border-green-300 flex items-center gap-1">
-                🟢 {healthData?.provider === "gemini" ? "Google Gemini (Online)" : "Ollama (Local)"}
+                🟢 {healthData?.provider === "gemini" ? "Gemma (Online)" : "Gemma (Local)"}
               </span>
             ) : (
               <span className="text-xs font-black text-red-700 bg-red-100 px-2 py-0.5 rounded-lg border border-red-300">
@@ -149,7 +149,7 @@ export default function AiTestPage() {
           <div className="p-3 bg-surface-muted border-[2px] border-border rounded-xl flex items-center justify-between">
             <span className="text-xs font-bold text-text-secondary">Active Target Model:</span>
             <span className="text-xs font-black text-text-primary font-mono bg-surface px-2 py-0.5 rounded-lg border border-border">
-              {healthData?.activeModel || "gemini-2.5-flash"}
+              {healthData?.activeModel || "gemma-4"}
             </span>
           </div>
         </div>
