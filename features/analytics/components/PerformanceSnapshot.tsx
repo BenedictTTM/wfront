@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { Target, Clock, Award, Sparkles, CheckCircle2, ArrowRight } from "lucide-react";
+import { Target, Clock, Sparkles, CheckCircle2, ArrowRight } from "lucide-react";
 import type { PerformanceSnapshot, ActionableInsight } from "../types";
 
 interface PerformanceSnapshotProps {
@@ -15,7 +15,6 @@ export function PerformanceSnapshotCard({ snapshot, insights }: PerformanceSnaps
     overallAccuracy,
     questionsCompleted,
     quizzesCompleted,
-    masteryPercentage,
     studyTimeMinutes,
     headline,
   } = snapshot;
@@ -95,8 +94,8 @@ export function PerformanceSnapshotCard({ snapshot, insights }: PerformanceSnaps
         </div>
       ) : null}
 
-      {/* ── 4 Primary Metric Tiles: 1. Accuracy, 2. Mastery, 3. Questions, 4. Study Time ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      {/* ── 3 Primary Metric Tiles: 1. Accuracy, 2. Questions, 3. Study Time ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         {/* 1. Accuracy */}
         <div className="p-3.5 sm:p-5 bg-surface border-2 border-border rounded-2xl shadow-[0_3px_0_#141827] flex flex-col justify-between hover:-translate-y-0.5 transition-transform duration-150 ease-out min-w-0">
           <div className="flex items-center justify-between gap-2 mb-2 sm:mb-3">
@@ -115,25 +114,7 @@ export function PerformanceSnapshotCard({ snapshot, insights }: PerformanceSnaps
           </span>
         </div>
 
-        {/* 2. Mastery (Prioritized) */}
-        <div className="p-3.5 sm:p-5 bg-surface border-2 border-border rounded-2xl shadow-[0_3px_0_#141827] flex flex-col justify-between hover:-translate-y-0.5 transition-transform duration-150 ease-out min-w-0">
-          <div className="flex items-center justify-between gap-2 mb-2 sm:mb-3">
-            <span className="text-[11px] sm:text-xs font-black uppercase tracking-wider text-text-secondary truncate">Mastery</span>
-            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-primary/40 text-text-primary border-2 border-border flex items-center justify-center shadow-[0_1px_0_#141827] shrink-0">
-              <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.2]" />
-            </div>
-          </div>
-          <div className="flex items-baseline gap-1.5 min-w-0">
-            <span className="text-2xl sm:text-3xl lg:text-4xl font-black text-text-primary tracking-tight truncate">
-              {masteryPercentage !== null ? `${masteryPercentage}%` : "—"}
-            </span>
-          </div>
-          <span className="text-[10px] sm:text-[11px] font-bold text-text-secondary mt-1.5 sm:mt-2 truncate">
-            {masteryPercentage !== null ? "Curriculum mastery" : "Building topic mastery"}
-          </span>
-        </div>
-
-        {/* 3. Questions */}
+        {/* 2. Questions */}
         <div className="p-3.5 sm:p-5 bg-surface border-2 border-border rounded-2xl shadow-[0_3px_0_#141827] flex flex-col justify-between hover:-translate-y-0.5 transition-transform duration-150 ease-out min-w-0">
           <div className="flex items-center justify-between gap-2 mb-2 sm:mb-3">
             <span className="text-[11px] sm:text-xs font-black uppercase tracking-wider text-text-secondary truncate">Questions</span>

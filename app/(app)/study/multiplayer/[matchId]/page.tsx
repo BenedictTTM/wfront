@@ -2,23 +2,21 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Loader2, WifiOff } from "lucide-react";
-import { useMultiplayerWs } from "@/features/multiplayer/use-multiplayer-ws";
+import { Loader2, WifiOff, Trophy, ArrowRight, ShieldAlert } from "lucide-react";
 import { MatchHUD } from "@/features/multiplayer/components/MatchHUD";
 import { LiveQuestion } from "@/features/multiplayer/components/LiveQuestion";
 import { RoundEvaluationDrawer } from "@/features/multiplayer/components/RoundEvaluationDrawer";
 import { ClutchStateBanner } from "@/features/multiplayer/components/ClutchStateBanner";
 import { PostMatchSummary } from "@/features/multiplayer/components/PostMatchSummary";
 import { MatchmakingLobby } from "@/features/multiplayer/components/MatchmakingLobby";
-import {
-  VersusMatchTransition,
-  type CombatantProfile,
-} from "@/features/multiplayer/components/VersusMatchTransition";
+import { type CombatantProfile } from "@/features/multiplayer/components/VersusMatchTransition";
+import { PreMatchFlashcardCountdown } from "@/features/multiplayer/components/PreMatchFlashcardCountdown";
 import {
   useMatchmaking,
   useMatchResult,
   useMultiplayerToken,
   useStreak,
+  useMultiplayer,
 } from "@/features/multiplayer/hooks";
 import type { QuestionFeedbackItem } from "@/features/multiplayer/utils/post-match";
 import { useQueryClient } from "@tanstack/react-query";
@@ -138,17 +136,52 @@ export default function LiveMatchPage() {
     status,
     matchState,
     participants,
-    countdown: _countdown,
+    countdown,
+    flashcards: matchFlashcards,
     currentQuestion,
     selectedOptionId,
     roundReveal,
     matchEnd,
+    disconnectGrace,
+    abandonData,
     submitAnswer,
     reconnect,
-  } = useMultiplayerWs({ token, matchId });
+  } = useMultiplayer();
+
+  // Toast feedback when disconnect grace starts or resolves
+  const prevGraceRef = useRef<boolean>(false);
+  useEffect(() => {
+    if (disconnectGrace && !prevGraceRef.current) {
+      prevGraceRef.current = true;
+      if (disconnectGrace.disconnectedUserId !== currentUserId) {
+        toast.warning("Opponent disconnected! 30-second forfeit timer initiated.", {
+          duration: 4000,
+        });
+      } else {
+        toast.error("You disconnected! Reconnect before the timer expires to avoid forfeit.", {
+          duration: 5000,
+        });
+      }
+    } else if (!disconnectGrace && prevGraceRef.current) {
+      prevGraceRef.current = false;
+      if (matchState !== "ABANDONED" && matchState !== "FINISHED") {
+        toast.success("Player reconnected! Match continuing.", {
+          duration: 3000,
+        });
+      }
+    }
+  }, [disconnectGrace, currentUserId, matchState]);
 
   const { currentStreak, recordAnswer, resetStreak } = useStreak(matchId);
-  const [transitionDone, setTransitionDone] = useState(false);
+
+  // 10-Second Pre-Match Flashcard Warm-Up Drill:
+  // Active while countdown is ticking, or room is in STARTING state, or waiting for Question 1 before match starts
+  const isPreMatch =
+    !matchEnd &&
+    matchState !== "FINISHED" &&
+    matchState !== "ABANDONED" &&
+    ((countdown !== null && countdown > 0) ||
+      (matchState === "STARTING" && !currentQuestion));
 
   // Track match performance statistics from round evaluations
   const [matchStats, setMatchStats] = useState({
@@ -334,6 +367,7 @@ export default function LiveMatchPage() {
   const myRanking = matchEnd?.rankings?.find((r) => r.participantId === currentUserId);
   const oppRanking = matchEnd?.rankings?.find((r) => r.participantId !== currentUserId);
 
+
   // Derive genuine student credentials (from cache, user auth state, or WS participant data)
   const studentDisplayName =
     savedProfile?.name?.trim() ||
@@ -403,7 +437,7 @@ export default function LiveMatchPage() {
   const oppRegion = opponent?.school?.region || null;
   const oppMotto = opponent?.school?.motto || null;
 
-  // Construct combatant profiles for the 1v1 Versus cinematic transition
+  // Construct combatant profiles for the 1v1 duel matchup banner inside PreMatchFlashcardCountdown
   const player1: CombatantProfile = {
     username: studentDisplayName,
     avatarUrl: studentAvatarUrl,
@@ -463,8 +497,9 @@ export default function LiveMatchPage() {
         </div>
       </div>
 
-      {/* ── Unified Competitive Match HUD (Appears after cinematic transition completes) ── */}
-      {participants.length > 0 && currentQuestion && matchState !== "FINISHED" && transitionDone && (
+
+      {/* ── Match HUD: Score, Streak & Timing (Active during questions and round reveals) ── */}
+      {participants.length > 0 && currentQuestion && (matchState === "QUESTION_ACTIVE" || matchState === "ROUND_REVEAL") && (
         <div className="max-w-lg mx-auto w-full">
           <MatchHUD
             player={{
@@ -503,26 +538,28 @@ export default function LiveMatchPage() {
             isCancelling={isCancellingRematch}
           />
         </div>
-      ) : !transitionDone && matchState !== "FINISHED" ? (
-        /* 1. Snappy 1v1 Versus Pre-Match Cinematic Transition (Plays on entry before Question 1) */
-        <div className="flex-1 flex flex-col items-center justify-center py-4 w-full">
-          <VersusMatchTransition
+      ) : isPreMatch ? (
+        /* 1. 10-Second Pre-Match Flashcard Warm-Up Drill (with 1v1 Combatant Duel Banner) */
+        <div className="max-w-lg mx-auto w-full flex flex-col gap-4">
+          <PreMatchFlashcardCountdown
+            countdown={countdown ?? 10}
+            flashcards={matchFlashcards}
+            subjectName={activeSubject?.name}
             player1={player1}
             player2={player2}
-            subject={activeSubject ? `${activeSubject.name.toUpperCase()} • SPEED ROUND` : "CORE MATHEMATICS • SPEED ROUND"}
             stakes="+25 SCHOOL TURF PTS"
-            onComplete={() => setTransitionDone(true)}
           />
         </div>
       ) : (
         <div className="max-w-lg mx-auto w-full flex flex-col gap-4">
-          {/* Waiting for Question 1 after transition completes */}
-          {(!matchState || matchState === "LOBBY" || matchState === "STARTING") && !matchEnd && !currentQuestion && (
+
+          {/* Waiting for opponent / room ready */}
+          {(!matchState || matchState === "LOBBY") && !matchEnd && !currentQuestion && countdown === null && (
             <div className="flex-1 flex flex-col items-center justify-center py-12">
               <div className="flex flex-col items-center gap-3 text-center">
                 <Loader2 size={32} className="text-text-secondary animate-spin" />
                 <span className="text-xs font-black text-text-secondary tracking-wide">
-                  CALIBRATING QUESTION 1…
+                  WAITING FOR OPPONENT TO CONNECT…
                 </span>
               </div>
             </div>
@@ -648,25 +685,98 @@ export default function LiveMatchPage() {
             </div>
           )}
 
-          {/* 6. Match Abandoned */}
-          {matchState === "ABANDONED" && (
-            <div className="flex-1 flex flex-col items-center justify-center py-12 gap-4 text-center">
-              <WifiOff size={32} className="text-text-secondary" />
-              <span className="text-sm font-black text-text-primary">
-                Match Abandoned
-              </span>
-              <span className="text-xs text-text-secondary">
-                Your opponent disconnected. The match has ended.
-              </span>
-              <button
-                type="button"
-                onClick={handleBackToMultiplayer}
-                className="mt-2 px-6 py-2.5 rounded-xl bg-primary border-[2px] border-border text-sm font-black text-text-primary shadow-[0_3px_0_rgba(20,24,39,0.9)] hover:translate-y-[1px] hover:shadow-[0_2px_0_rgba(20,24,39,0.9)] transition-all cursor-pointer"
-              >
-                Back to Arena
-              </button>
-            </div>
-          )}
+          {/* 6. Match Abandoned / Forfeited */}
+          {matchState === "ABANDONED" && (() => {
+            const isForfeitWinner =
+              abandonData?.winnerId === currentUserId ||
+              (abandonData?.disconnectedUserId ? abandonData.disconnectedUserId !== currentUserId : true);
+
+            return (
+              <div className="flex-1 flex flex-col items-center justify-center py-6 w-full animate-in zoom-in-95 duration-300">
+                {isForfeitWinner ? (
+                  <div className="bg-card border-[2.5px] border-border shadow-[0_6px_0_#141827] dark:shadow-[0_6px_0_#000] rounded-3xl p-6 sm:p-8 text-center max-w-md w-full flex flex-col items-center gap-4">
+                    {/* Victory Trophy Badge */}
+                    <div className="w-20 h-20 rounded-2xl bg-amber-400 border-[2.5px] border-border shadow-[0_4px_0_#141827] flex items-center justify-center mb-1 animate-bounce-short">
+                      <Trophy size={40} className="text-[#141827]" />
+                    </div>
+
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-500 font-black text-[11px] uppercase tracking-wider">
+                      <ShieldAlert size={12} />
+                      Opponent Forfeited
+                    </div>
+
+                    <div>
+                      <h2 className="text-2xl sm:text-3xl font-black text-text-primary tracking-tight">
+                        Victory by Forfeit!
+                      </h2>
+                      <p className="text-xs sm:text-sm font-medium text-text-secondary mt-1.5 max-w-xs mx-auto">
+                        Your opponent left the game and failed to rejoin within the 30-second forfeit window. The match has been awarded to you.
+                      </p>
+                    </div>
+
+                    {/* Turf Points & Rewards Pill */}
+                    <div className="grid grid-cols-2 gap-3 w-full mt-2">
+                      <div className="p-3 rounded-2xl bg-muted/60 border-[2px] border-border text-center">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-text-secondary block">
+                          Turf Reward
+                        </span>
+                        <span className="text-lg font-black text-emerald-600 dark:text-emerald-400">
+                          +35 PTS
+                        </span>
+                      </div>
+                      <div className="p-3 rounded-2xl bg-muted/60 border-[2px] border-border text-center">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-text-secondary block">
+                          Skill Delta
+                        </span>
+                        <span className="text-lg font-black text-primary">
+                          +16 ELO
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex flex-col sm:flex-row gap-3 w-full mt-2">
+                      <button
+                        type="button"
+                        onClick={handleBackToMultiplayer}
+                        className="flex-1 px-5 py-3 rounded-xl bg-primary border-[2px] border-border text-sm font-black text-text-primary shadow-[0_3px_0_#141827] hover:translate-y-[1px] hover:shadow-[0_2px_0_#141827] transition-all cursor-pointer flex items-center justify-center gap-2"
+                      >
+                        <span>Play Next Match</span>
+                        <ArrowRight size={16} />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-card border-[2.5px] border-border shadow-[0_6px_0_#141827] dark:shadow-[0_6px_0_#000] rounded-3xl p-6 sm:p-8 text-center max-w-md w-full flex flex-col items-center gap-4">
+                    <div className="w-16 h-16 rounded-2xl bg-red-100 dark:bg-red-950 border-[2.5px] border-red-500 shadow-[0_4px_0_#DC2626] flex items-center justify-center mb-1">
+                      <WifiOff size={32} className="text-red-600 dark:text-red-400" />
+                    </div>
+
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-100 text-red-800 dark:bg-red-950/80 dark:text-red-300 border border-red-500 font-black text-[11px] uppercase tracking-wider">
+                      Match Forfeited
+                    </div>
+
+                    <div>
+                      <h2 className="text-2xl font-black text-text-primary tracking-tight">
+                        Match Forfeited
+                      </h2>
+                      <p className="text-xs text-text-secondary mt-1.5 max-w-xs mx-auto">
+                        You were disconnected from the match for longer than the 30-second rejoin grace period.
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleBackToMultiplayer}
+                      className="mt-2 w-full px-6 py-3 rounded-xl bg-muted border-[2px] border-border text-sm font-black text-text-primary shadow-[0_3px_0_#141827] hover:translate-y-[1px] hover:shadow-[0_2px_0_#141827] transition-all cursor-pointer"
+                    >
+                      Back to Arena
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
         </div>
       )}
     </div>

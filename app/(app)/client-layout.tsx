@@ -221,7 +221,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
               </>
             ) : (
               <>
-                <div className="w-10 h-10 rounded-full border-2 border-dashed border-border-muted flex items-center justify-center text-text-secondary bg-bg-secondary">
+                <div className="w-10 h-10 rounded-full border-2 border-border/30 flex items-center justify-center text-text-secondary bg-bg-secondary">
                   <Lock size={18} />
                 </div>
                 <p className="text-[11px] text-text-secondary px-2">

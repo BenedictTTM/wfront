@@ -45,10 +45,40 @@ export default function MultiplayerEntryPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-4 py-10 max-w-lg mx-auto">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="h-16 bg-surface border-[2px] border-border rounded-2xl animate-pulse" />
-        ))}
+      <div className="flex flex-col gap-8 py-2 max-w-lg mx-auto w-full animate-in fade-in duration-150">
+        <header className="flex flex-col gap-1">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-secondary border-[2px] border-border flex items-center justify-center shadow-[0_2px_0_rgba(20,24,39,0.9)]">
+              <Swords size={20} className="text-text-primary" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-black text-text-primary">Multiplayer Arena</h1>
+              <p className="text-xs text-text-secondary font-medium">
+                1v1 speed rounds — pick a subject to enter the queue
+              </p>
+            </div>
+          </div>
+        </header>
+
+        <div className="flex flex-col gap-3">
+          <span className="text-[10px] font-black uppercase tracking-widest text-text-secondary">
+            Loading subjects…
+          </span>
+          <div className="flex flex-col gap-2">
+            {[1, 2, 3, 4].map((i) => (
+              <div
+                key={i}
+                className="flex items-center gap-3 p-4 rounded-2xl bg-surface border-[2px] border-border/30 shadow-[0_2px_0_rgba(20,24,39,0.15)]"
+              >
+                <div className="w-9 h-9 rounded-xl bg-surface-muted animate-pulse shrink-0" />
+                <div className="flex flex-col gap-2 flex-1">
+                  <div className="h-4 w-32 bg-surface-muted rounded-md animate-pulse" />
+                  <div className="h-2.5 w-20 bg-surface-muted/60 rounded-md animate-pulse" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }

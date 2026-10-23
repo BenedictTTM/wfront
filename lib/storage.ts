@@ -1,10 +1,18 @@
 // lib/storage.ts — SSR-safe, typed wrapper for browser localStorage
 // Prevents window crashes during Next.js SSR/prerender and handles JSON serialization errors gracefully.
 
+const inMemoryStore: Record<string, string> = {};
+
 export const safeStorage = {
   getItem<T>(key: string, fallback: T): T {
     if (typeof window === "undefined") {
-      return fallback;
+      const mem = inMemoryStore[key];
+      if (mem === undefined) return fallback;
+      try {
+        return JSON.parse(mem) as T;
+      } catch {
+        return fallback;
+      }
     }
     try {
       const item = window.localStorage.getItem(key);
@@ -17,7 +25,7 @@ export const safeStorage = {
 
   getItemString(key: string, fallback = ""): string {
     if (typeof window === "undefined") {
-      return fallback;
+      return inMemoryStore[key] ?? fallback;
     }
     try {
       return window.localStorage.getItem(key) ?? fallback;
@@ -27,9 +35,12 @@ export const safeStorage = {
   },
 
   setItem<T>(key: string, value: T): void {
-    if (typeof window === "undefined") return;
+    const serialized = typeof value === "string" ? value : JSON.stringify(value);
+    if (typeof window === "undefined") {
+      inMemoryStore[key] = serialized;
+      return;
+    }
     try {
-      const serialized = typeof value === "string" ? value : JSON.stringify(value);
       window.localStorage.setItem(key, serialized);
     } catch {
       // Ignore quota exceeded or privacy-mode storage blocks
@@ -37,7 +48,10 @@ export const safeStorage = {
   },
 
   removeItem(key: string): void {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined") {
+      delete inMemoryStore[key];
+      return;
+    }
     try {
       window.localStorage.removeItem(key);
     } catch {

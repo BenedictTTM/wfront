@@ -60,16 +60,16 @@ export function OptionSelector({
 
         if (isFeedbackRevealed) {
           if (isCorrectTarget) {
-            buttonStyles = "bg-emerald-500/20 border-emerald-700 text-emerald-950 dark:text-emerald-200 font-black shadow-[0_3px_0_rgba(4,120,87,0.7)]";
-            badgeStyles = "border-border bg-emerald-500 text-white font-black shadow-[0_1px_0_#141827]";
-            icon = <CheckCircle2 className="w-5 h-5 text-emerald-700 dark:text-emerald-400 shrink-0 stroke-[2.5]" />;
+            buttonStyles = "bg-emerald-100 border-emerald-600 text-emerald-950 font-black shadow-[0_3px_0_#141827]";
+            badgeStyles = "border-[2px] border-border bg-emerald-500 text-white font-black shadow-[0_1px_0_#141827]";
+            icon = <CheckCircle2 className="w-5 h-5 text-emerald-700 shrink-0 stroke-[2.5]" />;
           } else if (isSelected && !feedback?.isCorrect) {
-            buttonStyles = "bg-rose-500/20 border-rose-700 text-rose-950 dark:text-rose-200 font-black line-through decoration-rose-700/70 shadow-[0_3px_0_rgba(190,18,60,0.7)]";
-            badgeStyles = "border-border bg-rose-500 text-white font-black shadow-[0_1px_0_#141827]";
-            icon = <XCircle className="w-5 h-5 text-rose-700 dark:text-rose-400 shrink-0 stroke-[2.5]" />;
+            buttonStyles = "bg-rose-100 border-rose-600 text-rose-950 font-black shadow-[0_3px_0_#141827]";
+            badgeStyles = "border-[2px] border-border bg-rose-500 text-white font-black shadow-[0_1px_0_#141827]";
+            icon = <XCircle className="w-5 h-5 text-rose-700 shrink-0 stroke-[2.5]" />;
           } else {
-            buttonStyles = "bg-surface/50 border-border/40 opacity-40 text-text-muted";
-            badgeStyles = "border-border/40 bg-surface-muted text-text-muted";
+            buttonStyles = "bg-surface/50 border-border/40 opacity-40 text-text-secondary";
+            badgeStyles = "border-[1.5px] border-border/40 bg-surface-muted text-text-secondary";
           }
         } else if (isSelected) {
           buttonStyles = "bg-[#fdf6d8] border-border shadow-[0_4px_0_rgba(20,24,39,0.9)] ring-2 ring-primary -translate-y-0.5 text-text-primary cursor-pointer";

@@ -249,7 +249,7 @@ export default function AnalyticsPage() {
             <AnalyticsEmptyState />
           ) : (
             <div className="flex flex-col gap-5 sm:gap-6">
-              {/* 1. PERFORMANCE SNAPSHOT (Accuracy, Mastery, Questions, Time) */}
+              {/* 1. PERFORMANCE SNAPSHOT (Accuracy, Questions, Time) */}
               <section aria-labelledby="heading-snapshot" className="flex flex-col gap-2.5">
                 <h2 id="heading-snapshot" className="text-xs font-black uppercase tracking-widest text-text-secondary">
                   PERFORMANCE SNAPSHOT

@@ -159,4 +159,9 @@ export function useMatchmaking(excludeMatchId?: string) {
 }
 
 export { useStreak } from "./hooks/use-streak";
+export {
+  MultiplayerProvider,
+  useMultiplayer,
+  GlobalForfeitCountdown,
+} from "./context/MultiplayerContext";
 

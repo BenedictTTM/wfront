@@ -12,19 +12,24 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { getMultiplayerWsUrl } from "./api";
 import {
+  DisconnectGraceState,
   MatchEndData,
   MatchState,
+  MultiplayerFlashcard,
   ParticipantState,
   RoundRevealData,
   WsErrorEvent,
+  WsMatchAbandonedEvent,
   WsMatchCountdownEvent,
   WsMatchEndEvent,
+  WsPlayerDisconnectedEvent,
+  WsPlayerReconnectedEvent,
   WsQuestionStartEvent,
   WsRoomStateEvent,
   WsRoundRevealEvent,
 } from "./types";
 
-export type { MatchEndData, RoundRevealData };
+export type { MatchEndData, RoundRevealData, MultiplayerFlashcard, DisconnectGraceState };
 
 export type MultiplayerWsStatus =
   | "idle"
@@ -42,6 +47,8 @@ export type UseMultiplayerWsOptions = {
   token: string | null;
   /** Match ID to join once authenticated. */
   matchId: string | null;
+  /** Authenticated user ID for matching disconnect grace. */
+  currentUserId?: string | null;
 };
 
 export type UseMultiplayerWsReturn = {
@@ -49,10 +56,13 @@ export type UseMultiplayerWsReturn = {
   matchState: MatchState | null;
   participants: ParticipantState[];
   countdown: number | null;
+  flashcards: MultiplayerFlashcard[];
   currentQuestion: WsQuestionStartEvent | null;
   selectedOptionId: string | null;
   roundReveal: RoundRevealData | null;
   matchEnd: MatchEndData | null;
+  disconnectGrace: DisconnectGraceState | null;
+  abandonData: WsMatchAbandonedEvent | null;
   submitAnswer: (questionId: string, optionId: string, timeTakenMs: number) => void;
   reconnect: () => void;
 };
@@ -60,13 +70,21 @@ export type UseMultiplayerWsReturn = {
 export function useMultiplayerWs({
   token,
   matchId,
+  currentUserId,
 }: UseMultiplayerWsOptions): UseMultiplayerWsReturn {
   const queryClient = useQueryClient();
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectAttemptRef = useRef(0);
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const countdownTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const mountedRef = useRef(true);
   const connectRef = useRef<() => void>(() => {});
+  const matchStateRef = useRef<MatchState | null>(null);
+  const currentUserIdRef = useRef<string | null>(currentUserId ?? null);
+
+  useEffect(() => {
+    currentUserIdRef.current = currentUserId ?? null;
+  }, [currentUserId]);
 
   /** Outbound message queue — flushed once connection is authenticated. */
   const messageQueueRef = useRef<Array<{ event: string; data: unknown }>>([]);
@@ -75,10 +93,13 @@ export function useMultiplayerWs({
   const [matchState, setMatchState] = useState<MatchState | null>(null);
   const [participants, setParticipants] = useState<ParticipantState[]>([]);
   const [countdown, setCountdown] = useState<number | null>(null);
+  const [flashcards, setFlashcards] = useState<MultiplayerFlashcard[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState<WsQuestionStartEvent | null>(null);
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [roundReveal, setRoundReveal] = useState<RoundRevealData | null>(null);
   const [matchEnd, setMatchEnd] = useState<MatchEndData | null>(null);
+  const [disconnectGrace, setDisconnectGrace] = useState<DisconnectGraceState | null>(null);
+  const [abandonData, setAbandonData] = useState<WsMatchAbandonedEvent | null>(null);
 
   /** Low-level send — queues if not yet authenticated. */
   const sendRaw = useCallback((event: string, data: unknown = {}) => {
@@ -144,6 +165,18 @@ export function useMultiplayerWs({
           reconnectAttemptRef.current = 0; // reset backoff on success
           setStatus("authenticated");
           flushQueue();
+          // If self had a disconnect grace running, clear it now that connection is restored
+          setDisconnectGrace((prev) => {
+            if (
+              prev &&
+              (!currentUserIdRef.current ||
+                prev.disconnectedUserId === currentUserIdRef.current ||
+                prev.disconnectedUserId === "me")
+            ) {
+              return null;
+            }
+            return prev;
+          });
           // Join room immediately after auth
           if (matchId) {
             ws.send(JSON.stringify({ event: "join_room", data: { matchId } }));
@@ -153,6 +186,7 @@ export function useMultiplayerWs({
 
         case "room_state": {
           const d = data as WsRoomStateEvent;
+          matchStateRef.current = d.state;
           setMatchState(d.state);
           setParticipants(d.participants);
           break;
@@ -161,13 +195,23 @@ export function useMultiplayerWs({
         case "match_countdown": {
           const d = data as WsMatchCountdownEvent;
           setMatchState("STARTING");
+          if (d.flashcards && d.flashcards.length > 0) {
+            setFlashcards(d.flashcards);
+          }
           queryClient.invalidateQueries({ queryKey: ["gamification"] });
+          if (countdownTimerRef.current) {
+            clearInterval(countdownTimerRef.current);
+            countdownTimerRef.current = null;
+          }
           let remaining = d.seconds;
           setCountdown(remaining);
-          const ticker = setInterval(() => {
+          countdownTimerRef.current = setInterval(() => {
             remaining -= 1;
             if (remaining <= 0) {
-              clearInterval(ticker);
+              if (countdownTimerRef.current) {
+                clearInterval(countdownTimerRef.current);
+                countdownTimerRef.current = null;
+              }
               setCountdown(null);
             } else {
               setCountdown(remaining);
@@ -177,6 +221,11 @@ export function useMultiplayerWs({
         }
 
         case "question_start": {
+          if (countdownTimerRef.current) {
+            clearInterval(countdownTimerRef.current);
+            countdownTimerRef.current = null;
+          }
+          setCountdown(null);
           const d = data as WsQuestionStartEvent;
           setCurrentQuestion(d);
           setSelectedOptionId(null);
@@ -198,8 +247,26 @@ export function useMultiplayerWs({
           break;
         }
 
+        case "player_disconnected": {
+          const d = data as WsPlayerDisconnectedEvent;
+          const expiresAt = d.expiresAt || Date.now() + (d.graceSeconds || 30) * 1000;
+          const initialRemaining = Math.max(0, Math.round((expiresAt - Date.now()) / 1000));
+          setDisconnectGrace({
+            disconnectedUserId: d.disconnectedUserId,
+            remainingSeconds: initialRemaining,
+            expiresAt,
+          });
+          break;
+        }
+
+        case "player_reconnected": {
+          setDisconnectGrace(null);
+          break;
+        }
+
         case "match_end": {
           const d = data as WsMatchEndEvent;
+          setDisconnectGrace(null);
           setMatchEnd({ matchId: d.matchId, rankings: d.rankings });
           setMatchState("FINISHED");
           queryClient.invalidateQueries({ queryKey: ["gamification"] });
@@ -215,6 +282,9 @@ export function useMultiplayerWs({
         }
 
         case "match_abandoned": {
+          const d = data as WsMatchAbandonedEvent;
+          setDisconnectGrace(null);
+          setAbandonData(d);
           setMatchState("ABANDONED");
           break;
         }
@@ -238,10 +308,21 @@ export function useMultiplayerWs({
 
       // Don't reconnect if the match is in a terminal state
       const terminalStates: Array<MatchState | null> = ["FINISHED", "ABANDONED", null];
-      const currentMatchState = matchState;
+      const currentMatchState = matchStateRef.current;
 
       // After a finished match, close is expected — no reconnect needed
       if (terminalStates.includes(currentMatchState)) return;
+
+      // Match is in progress and connection severed — initiate local forfeit countdown
+      setDisconnectGrace((prev) => {
+        if (prev) return prev;
+        const expiresAt = Date.now() + 30_000;
+        return {
+          disconnectedUserId: currentUserIdRef.current || "me",
+          remainingSeconds: 30,
+          expiresAt,
+        };
+      });
 
       // Exponential backoff reconnect
       const attempt = reconnectAttemptRef.current;
@@ -254,6 +335,10 @@ export function useMultiplayerWs({
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, matchId, flushQueue]);
+
+  useEffect(() => {
+    matchStateRef.current = matchState;
+  }, [matchState]);
 
   useEffect(() => {
     connectRef.current = connect;
@@ -287,6 +372,10 @@ export function useMultiplayerWs({
     }
     return () => {
       mountedRef.current = false;
+      if (countdownTimerRef.current) {
+        clearInterval(countdownTimerRef.current);
+        countdownTimerRef.current = null;
+      }
       if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
       if (wsRef.current) {
         wsRef.current.onclose = null; // prevent reconnect on intentional unmount
@@ -296,15 +385,65 @@ export function useMultiplayerWs({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
+  // Active ticker to count down forfeit grace seconds in real time
+  useEffect(() => {
+    if (!disconnectGrace) return;
+    const interval = setInterval(() => {
+      const now = Date.now();
+      const diff = Math.max(0, Math.round((disconnectGrace.expiresAt - now) / 1000));
+      setDisconnectGrace((prev) => (prev ? { ...prev, remainingSeconds: diff } : null));
+      if (diff <= 0) {
+        clearInterval(interval);
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [disconnectGrace?.expiresAt]);
+
+  // Network offline / online detection for immediate forfeit timer feedback
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handleOffline = () => {
+      const terminalStates: Array<MatchState | null> = ["FINISHED", "ABANDONED", null];
+      if (!terminalStates.includes(matchStateRef.current)) {
+        setDisconnectGrace((prev) => {
+          if (prev) return prev;
+          const expiresAt = Date.now() + 30_000;
+          return {
+            disconnectedUserId: currentUserIdRef.current || "me",
+            remainingSeconds: 30,
+            expiresAt,
+          };
+        });
+      }
+    };
+
+    const handleOnline = () => {
+      if (mountedRef.current && token && matchId) {
+        connectRef.current();
+      }
+    };
+
+    window.addEventListener("offline", handleOffline);
+    window.addEventListener("online", handleOnline);
+    return () => {
+      window.removeEventListener("offline", handleOffline);
+      window.removeEventListener("online", handleOnline);
+    };
+  }, [token, matchId]);
+
   return {
     status,
     matchState,
     participants,
     countdown,
+    flashcards,
     currentQuestion,
     selectedOptionId,
     roundReveal,
     matchEnd,
+    disconnectGrace,
+    abandonData,
     submitAnswer,
     reconnect: handleReconnect,
   };

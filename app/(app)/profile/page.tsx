@@ -357,6 +357,7 @@ export default function StudentProfilePage() {
         energyPercent={energyPercent}
       />
 
+
       {/* ── EDIT PROFILE MODAL ── */}
       <EditProfileModal
         isOpen={isEditModalOpen}

@@ -61,8 +61,16 @@ export type WsMatchFoundEvent = {
 
 export type WsRoomStateEvent = RoomState;
 
+export type MultiplayerFlashcard = {
+  id: string;
+  front: string;
+  back: string;
+  topic?: string;
+};
+
 export type WsMatchCountdownEvent = {
   seconds: number;
+  flashcards?: MultiplayerFlashcard[];
 };
 
 export type WsQuestionStartEvent = {
@@ -88,6 +96,28 @@ export type WsMatchEndEvent = {
     eloDelta?: number;
     ratingAfter?: number;
   }>;
+};
+
+export type WsPlayerDisconnectedEvent = {
+  disconnectedUserId: string;
+  graceSeconds: number;
+  expiresAt: number;
+};
+
+export type WsPlayerReconnectedEvent = {
+  reconnectedUserId: string;
+};
+
+export type WsMatchAbandonedEvent = {
+  reason: string;
+  winnerId?: string | null;
+  disconnectedUserId?: string;
+};
+
+export type DisconnectGraceState = {
+  disconnectedUserId: string;
+  remainingSeconds: number;
+  expiresAt: number;
 };
 
 export type WsErrorEvent = {

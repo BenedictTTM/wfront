@@ -33,7 +33,7 @@ describe('RoundEvaluationDrawer WCAG AAA & Pedagogical Framing', () => {
     assert.equal(props.scoreEarned.total, 155);
     props.onBookmarkConcept();
     assert.equal(bookmarked, true);
-    props.onNextQuestionReady();
+    props.onNextQuestionReady?.();
     assert.equal(nextReady, true);
   });
 
