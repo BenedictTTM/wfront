@@ -47,33 +47,33 @@ export function OptionSelector({
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-2 sm:gap-2.5">
       {options.map((option, idx) => {
         const optionKey = option.key || String.fromCharCode(65 + idx);
         const isSelected = selectedOptionId === optionKey;
         const isCorrectTarget = feedback?.correctOption === optionKey;
 
         // Styling logic when immediate feedback is revealed
-        let buttonStyles = "bg-surface border-border hover:bg-bg-primary shadow-[0_3px_0_rgba(20,24,39,0.9)] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-[0_1px_0_rgba(20,24,39,0.9)] text-text-primary cursor-pointer";
+        let buttonStyles = "bg-surface border-border hover:bg-bg-primary shadow-[0_2px_0_rgba(20,24,39,0.9)] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-[0_1px_0_rgba(20,24,39,0.9)] text-text-primary cursor-pointer";
         let badgeStyles = "border-border bg-bg-primary text-text-primary shadow-[0_1px_0_#141827]";
         let icon = null;
 
         if (isFeedbackRevealed) {
           if (isCorrectTarget) {
-            buttonStyles = "bg-emerald-100 border-emerald-600 text-emerald-950 font-black shadow-[0_3px_0_#141827]";
-            badgeStyles = "border-[2px] border-border bg-emerald-500 text-white font-black shadow-[0_1px_0_#141827]";
-            icon = <CheckCircle2 className="w-5 h-5 text-emerald-700 shrink-0 stroke-[2.5]" />;
+            buttonStyles = "bg-emerald-100 border-emerald-600 text-emerald-950 font-black shadow-[0_2px_0_#141827]";
+            badgeStyles = "border-[1.5px] border-border bg-emerald-500 text-white font-black shadow-[0_1px_0_#141827]";
+            icon = <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0 stroke-[2.5]" />;
           } else if (isSelected && !feedback?.isCorrect) {
-            buttonStyles = "bg-rose-100 border-rose-600 text-rose-950 font-black shadow-[0_3px_0_#141827]";
-            badgeStyles = "border-[2px] border-border bg-rose-500 text-white font-black shadow-[0_1px_0_#141827]";
-            icon = <XCircle className="w-5 h-5 text-rose-700 shrink-0 stroke-[2.5]" />;
+            buttonStyles = "bg-rose-100 border-rose-600 text-rose-950 font-black shadow-[0_2px_0_#141827]";
+            badgeStyles = "border-[1.5px] border-border bg-rose-500 text-white font-black shadow-[0_1px_0_#141827]";
+            icon = <XCircle className="w-4 h-4 text-rose-700 shrink-0 stroke-[2.5]" />;
           } else {
             buttonStyles = "bg-surface/50 border-border/40 opacity-40 text-text-secondary";
-            badgeStyles = "border-[1.5px] border-border/40 bg-surface-muted text-text-secondary";
+            badgeStyles = "border-[1px] border-border/40 bg-surface-muted text-text-secondary";
           }
         } else if (isSelected) {
-          buttonStyles = "bg-[#fdf6d8] border-border shadow-[0_4px_0_rgba(20,24,39,0.9)] ring-2 ring-primary -translate-y-0.5 text-text-primary cursor-pointer";
-          badgeStyles = "border-border bg-primary text-text-primary shadow-[0_1.5px_0_#141827]";
+          buttonStyles = "bg-[#fdf6d8] border-border shadow-[0_2.5px_0_rgba(20,24,39,0.9)] ring-2 ring-primary -translate-y-0.5 text-text-primary cursor-pointer";
+          badgeStyles = "border-border bg-primary text-text-primary shadow-[0_1px_0_#141827]";
         }
 
         return (
@@ -83,17 +83,17 @@ export function OptionSelector({
             disabled={isFeedbackRevealed}
             onClick={() => !isFeedbackRevealed && onSelectOption(optionKey)}
             className={[
-              "w-full text-left p-4 border-[2.5px] rounded-2xl text-xs md:text-sm font-extrabold transition-all flex items-center justify-between gap-3",
+              "w-full text-left p-2.5 sm:p-3 border-[2px] rounded-xl text-xs sm:text-[13px] font-bold transition-all flex items-center justify-between gap-2.5",
               buttonStyles,
             ].join(" ")}
           >
-            <span className="leading-normal pr-2 flex items-center gap-2.5">
+            <span className="leading-snug pr-2 flex items-center gap-2">
               {icon}
               {option.text}
             </span>
             <span
               className={[
-                "w-8 h-8 rounded-xl border-[2px] flex items-center justify-center text-xs font-black shrink-0 transition-all",
+                "w-6 h-6 sm:w-7 sm:h-7 rounded-lg border-[1.5px] flex items-center justify-center text-[11px] sm:text-xs font-black shrink-0 transition-all",
                 badgeStyles,
               ].join(" ")}
             >

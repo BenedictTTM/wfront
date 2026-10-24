@@ -4,7 +4,7 @@
 // - Parses standard error envelope: { error: { code, message, details } } → typed ApiError
 // - On 401: calls /api/auth/refresh proxy once (rotates httpOnly cookies), then retries
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 export const API_URL = API_BASE;
 
 export type ApiErrorCode =

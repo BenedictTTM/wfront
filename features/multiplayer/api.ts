@@ -31,7 +31,7 @@ export async function fetchMultiplayerToken(): Promise<string> {
  * Derives from the REST API base URL (http → ws, https → wss).
  */
 export function getMultiplayerWsUrl(): string {
-  const base = (API_URL || "http://localhost:3001").replace(/\/$/, "");
+  const base = (API_URL || "http://localhost:4000").replace(/\/$/, "");
   const wsBase = base.replace(/^http/, "ws");
   return `${wsBase}/multiplayer`;
 }
