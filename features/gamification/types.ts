@@ -101,3 +101,52 @@ export interface LeaderboardResponse {
   entries: LeaderboardEntry[];
   currentUserEntry?: LeaderboardEntry | null;
 }
+
+export interface ServerAchievementTier {
+  id: string;
+  tier: number;
+  target: number;
+  xpReward: number;
+  gemReward: number;
+  requirement: Record<string, any>;
+  completed?: boolean;
+  completedAt?: string | null;
+}
+
+export interface ServerAchievementCrest {
+  name?: string | null;
+  rarity?: "COMMON" | "UNCOMMON" | "RARE" | "EPIC" | "LEGENDARY" | null;
+  isUnlocked: boolean;
+  unlockedAt?: string | null;
+}
+
+export interface ServerAchievementProgress {
+  achievementId: string;
+  title: string;
+  description: string;
+  category: "quizzes" | "streaks" | "mastery" | "multiplayer";
+  icon: string;
+  crestName?: string | null;
+  rarity?: "COMMON" | "UNCOMMON" | "RARE" | "EPIC" | "LEGENDARY" | null;
+  currentTier: number;
+  progress: number;
+  nextTarget: number;
+  remaining: number;
+  completed: boolean;
+  unmetRequirementNote?: string | null;
+  tiers: ServerAchievementTier[];
+  crestUnlocked: boolean;
+  crest?: ServerAchievementCrest;
+}
+
+export interface AchievementUnlockedPayload {
+  achievementId: string;
+  achievementTitle: string;
+  tier: number;
+  xpAwarded: number;
+  gemsAwarded: number;
+  crestUnlocked?: {
+    crestName: string;
+    rarity: "COMMON" | "UNCOMMON" | "RARE" | "EPIC" | "LEGENDARY" | string;
+  } | null;
+}

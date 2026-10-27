@@ -20,8 +20,10 @@ import {
   getUserQuests,
   refillEnergy,
   convertDiamondsToEnergy,
+  getMyAchievements,
 } from "./api";
 import type { UserQuest } from "./types";
+import type { AchievementCategory } from "./constants";
 
 
 const QUESTS_STORAGE_KEY = "wassce_cached_quests";
@@ -134,9 +136,17 @@ export function useAchievements() {
   const { data: serverQuests } = useQuests();
   const { addXp, addGems, streak: localStreak, completedQuizzes: localQuizzes } = useStats();
   const claimMutation = useClaimQuestReward();
+  const queryClient = useQueryClient();
 
   const isGuest = !me || isGuestIdentity(me);
   const userId = !isGuest ? me.id : me && isGuestIdentity(me) ? me.sessionId : "guest";
+
+  const { data: serverAchievements, isLoading: isLoadingServerAchievements } = useQuery({
+    queryKey: ["achievements", "me"],
+    queryFn: getMyAchievements,
+    enabled: !isGuest,
+    staleTime: 30 * 1000,
+  });
 
   const storageKey = `wassce_claimed_achievements_${userId}`;
   const [claimedLocalIds, setClaimedLocalIds] = useState<Record<string, boolean>>(() =>
@@ -163,6 +173,64 @@ export function useAchievements() {
 
   // Synthesize genuine achievement items
   const items: AchievementItem[] = useMemo(() => {
+    if (!isGuest && serverAchievements && serverAchievements.length > 0) {
+      const categoryMap: Record<string, "Quizzes" | "Streaks" | "Mastery" | "Multiplayer"> = {
+        quizzes: "Quizzes",
+        streaks: "Streaks",
+        mastery: "Mastery",
+        multiplayer: "Multiplayer",
+      };
+
+      return serverAchievements.map((sa) => {
+        const activeTier = sa.tiers?.find((t) => t.tier === sa.currentTier) ?? sa.tiers?.[0];
+        const isCompleted = Boolean(sa.completed || (sa.currentTier >= 3 && sa.remaining === 0));
+        const status: "IN_PROGRESS" | "CAN_CLAIM" | "UNLOCKED" | "LOCKED" = isCompleted
+          ? "UNLOCKED"
+          : sa.remaining === 0
+          ? "CAN_CLAIM"
+          : "IN_PROGRESS";
+
+        const isCrestUnlocked = Boolean(
+          sa.crestUnlocked ||
+          sa.crest?.isUnlocked ||
+          isCompleted ||
+          status === "UNLOCKED"
+        );
+
+        return {
+          id: sa.achievementId,
+          title: sa.title,
+          description: sa.description,
+          category: categoryMap[sa.category] ?? "Quizzes",
+          icon: sa.icon,
+          badgeName: sa.crestName || sa.title,
+          targetCount: sa.nextTarget,
+          currentCount: sa.progress,
+          xpAward: activeTier?.xpReward ?? 250,
+          gemsAward: activeTier?.gemReward ?? 20,
+          status,
+          currentTier: sa.currentTier,
+          nextTarget: sa.nextTarget,
+          remaining: sa.remaining,
+          completed: isCompleted,
+          unmetRequirementNote: sa.unmetRequirementNote,
+          crestName: sa.crestName || sa.crest?.name,
+          crestUnlocked: isCrestUnlocked,
+          rarity: sa.rarity || sa.crest?.rarity,
+          tiers: sa.tiers,
+        };
+      });
+    }
+
+    const crestInfoMap: Record<string, { crestName: string; rarity: "COMMON" | "UNCOMMON" | "RARE" | "EPIC" | "LEGENDARY" }> = {
+      "quiz-enthusiast": { crestName: "Achimota Scholar's Crest", rarity: "RARE" },
+      "speed-demon": { crestName: "Chronos Sprinter", rarity: "RARE" },
+      "streak-prodigy": { crestName: "Olympian Torch of Habit", rarity: "EPIC" },
+      "sharpshooter": { crestName: "Centurion Bullseye", rarity: "LEGENDARY" },
+      "arena-contender": { crestName: "Gladiator of WAEC", rarity: "EPIC" },
+      "gladiator-waec": { crestName: "Gladiator of WAEC", rarity: "EPIC" },
+    };
+
     return ACHIEVEMENT_DEFINITIONS.map((def) => {
       // Check if server quest matches
       const serverMatch = serverQuests?.find(
@@ -211,17 +279,27 @@ export function useAchievements() {
         ? "LOCKED"
         : "IN_PROGRESS";
 
+      const crestMeta = crestInfoMap[def.id] ?? {
+        crestName: `${def.title} Crest`,
+        rarity: "RARE" as const,
+      };
+
       return {
         ...def,
         currentCount: current,
         status,
+        completed: isUnlocked,
+        crestName: crestMeta.crestName,
+        crestUnlocked: isUnlocked,
+        rarity: crestMeta.rarity,
       };
     });
-  }, [serverQuests, claimedLocalIds, realQuizzes, realStreak]);
+  }, [serverQuests, claimedLocalIds, realQuizzes, realStreak, serverAchievements, isGuest]);
 
   // Handle claiming rewards
   const handleClaim = useCallback((item: AchievementItem) => {
-    addXp(item.xpAward, `Achievement: ${item.title}`);
+    const xp = item.xpAward ?? 0;
+    addXp(xp, `Achievement: ${item.title}`);
     if (item.gemsAward) {
       addGems(item.gemsAward);
     }
@@ -245,7 +323,11 @@ export function useAchievements() {
   }, [addXp, addGems, claimedLocalIds, storageKey, serverQuests, claimMutation]);
 
   const unlockedCount = items.filter((i) => i.status === "UNLOCKED").length;
-  const isLoading = isLoadingAuth || isLoadingDashboard || isLoadingAnalytics;
+  const isLoading =
+    isLoadingAuth ||
+    isLoadingDashboard ||
+    isLoadingAnalytics ||
+    (!isGuest && isLoadingServerAchievements);
 
   return {
     items,

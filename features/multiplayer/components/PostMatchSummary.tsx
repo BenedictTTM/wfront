@@ -1,7 +1,7 @@
 "use client";
 // features/multiplayer/components/PostMatchSummary.tsx
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Trophy,
   Swords,
@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import {
   PostMatchData,
+  QuestionFeedbackItem,
   RematchState,
   getHeroHeader,
   getTierFromElo,
@@ -40,11 +41,192 @@ export interface PostMatchSummaryProps {
   rematchAcceptedMatchId?: string | null;
 }
 
+interface QuestionReviewCardProps {
+  question: QuestionFeedbackItem;
+  index: number;
+  isExpanded: boolean;
+  isBookmarked: boolean;
+  onToggleDetails: () => void;
+  onBookmark: () => void;
+}
+
+/**
+ * Individual Question Review Card
+ * Displays question title, correctness status, and an expandable dropdown for detailed breakdown.
+ */
+const QuestionReviewCard = React.memo(function QuestionReviewCard({
+  question,
+  index,
+  isExpanded,
+  isBookmarked,
+  onToggleDetails,
+  onBookmark,
+}: QuestionReviewCardProps) {
+  const isQuestionCorrect = question.isCorrect ?? false;
+  const displayIndex = question.questionIndex !== undefined ? question.questionIndex + 1 : index + 1;
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onToggleDetails();
+    }
+  };
+
+  return (
+    <div
+      data-testid={`missed-question-${index}`}
+      className="rounded-2xl bg-surface border-[2px] border-border overflow-hidden shadow-[0_2px_0_#141827] transition-all"
+    >
+      {/* ── Question Header Row: Always Present & Clickable ── */}
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={onToggleDetails}
+        onKeyDown={handleKeyDown}
+        aria-expanded={isExpanded}
+        className="p-3 sm:p-3.5 flex items-center justify-between gap-2.5 sm:gap-3 cursor-pointer hover:bg-surface-muted/40 transition-colors select-none"
+      >
+        <div className="flex items-start gap-2 sm:gap-2.5 min-w-0 flex-1">
+          <span className="inline-block px-1.5 py-0.5 rounded-md bg-primary border border-border text-[10px] font-black text-text-primary shrink-0 mt-0.5 shadow-[0_1px_0_#141827]">
+            #{displayIndex}
+          </span>
+          <p className="text-xs sm:text-sm font-black text-text-primary leading-snug line-clamp-2">
+            {question.questionText}
+          </p>
+        </div>
+
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          {/* Verified / Countered Outcome Badge */}
+          <span
+            className={`inline-flex items-center gap-1 px-2 sm:px-2.5 py-0.5 rounded-full border text-[9px] sm:text-[10px] font-black uppercase tracking-wider shrink-0 ${
+              isQuestionCorrect
+                ? "bg-emerald-100 border-emerald-400 text-emerald-950"
+                : "bg-rose-100 border-rose-400 text-rose-950"
+            }`}
+          >
+            {isQuestionCorrect ? (
+              <>
+                <CheckCircle2 size={11} className="text-emerald-700 stroke-[3]" />
+                <span>Verified</span>
+              </>
+            ) : (
+              <>
+                <XCircle size={11} className="text-rose-700 stroke-[3]" />
+                <span>Countered</span>
+              </>
+            )}
+          </span>
+
+          {/* Dropdown Toggle Button */}
+          <span
+            className={`inline-flex items-center gap-1 px-2 py-0.5 sm:py-1 rounded-lg border border-border text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all shadow-[0_1px_0_#141827] ${
+              isExpanded
+                ? "bg-primary text-text-primary"
+                : "bg-surface hover:bg-surface-muted text-text-primary"
+            }`}
+          >
+            <span>{isExpanded ? "Hide" : "Details"}</span>
+            {isExpanded ? (
+              <ChevronUp size={12} className="stroke-[2.5]" />
+            ) : (
+              <ChevronDown size={12} className="stroke-[2.5]" />
+            )}
+          </span>
+        </div>
+      </div>
+
+      {/* ── Hidden Details: Dropdown Section ── */}
+      {isExpanded && (
+        <div className="p-3.5 sm:p-4 pt-2 sm:pt-2 flex flex-col gap-3 border-t-[1.5px] border-border/30 bg-surface-muted/20 animate-in fade-in duration-150">
+          {/* Answers Breakdown */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+            {/* User Selection Pill */}
+            <div
+              className={`p-3 rounded-xl border-[1.5px] border-border flex items-start gap-2.5 shadow-[0_1px_0_#141827] ${
+                isQuestionCorrect ? "bg-emerald-50" : "bg-rose-50"
+              }`}
+            >
+              {isQuestionCorrect ? (
+                <CheckCircle2 size={16} className="text-emerald-700 shrink-0 mt-0.5 stroke-[2.5]" />
+              ) : (
+                <XCircle size={16} className="text-rose-700 shrink-0 mt-0.5 stroke-[2.5]" />
+              )}
+              <div className="min-w-0">
+                <span
+                  className={`block text-[10px] uppercase font-black tracking-wider mb-0.5 ${
+                    isQuestionCorrect ? "text-emerald-800" : "text-rose-800"
+                  }`}
+                >
+                  {isQuestionCorrect ? "YOUR ANSWER (CORRECT)" : "YOUR ANSWER"}
+                </span>
+                <span className="font-bold text-text-primary text-xs sm:text-sm break-words leading-snug">
+                  {question.selectedAnswer}
+                </span>
+              </div>
+            </div>
+
+            {/* Correct Answer Pill */}
+            <div className="p-3 rounded-xl bg-emerald-50 border-[1.5px] border-border flex items-start gap-2.5 shadow-[0_1px_0_#141827]">
+              <CheckCircle2 size={16} className="text-emerald-700 shrink-0 mt-0.5 stroke-[2.5]" />
+              <div className="min-w-0">
+                <span className="block text-[10px] uppercase font-black text-emerald-800 tracking-wider mb-0.5">
+                  CORRECT ANSWER
+                </span>
+                <span className="font-bold text-text-primary text-xs sm:text-sm break-words leading-snug">
+                  {question.correctAnswer}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Concept Rule Breakdown Card */}
+          <div className="p-3 rounded-xl bg-surface border border-border flex items-start gap-2.5 shadow-sm">
+            <Lightbulb size={16} className="text-text-primary shrink-0 mt-0.5 stroke-[2.5]" />
+            <div className="flex-1 min-w-0">
+              <span className="block text-[10px] uppercase font-black text-text-secondary tracking-wider mb-0.5">
+                Concept Breakdown
+              </span>
+              <p className="text-xs font-bold text-text-primary leading-relaxed break-words">
+                {formatAcademicRule(question.conceptExplanation, question.questionText)}
+              </p>
+            </div>
+          </div>
+
+          {/* Save to Revision Deck Action */}
+          <div className="flex justify-end pt-0.5">
+            <button
+              type="button"
+              onClick={onBookmark}
+              disabled={isBookmarked}
+              className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border-[1.5px] border-border text-xs font-black uppercase tracking-wider transition-all shadow-[0_2px_0_#141827] active:shadow-[0_1px_0_#141827] active:translate-y-0.5 cursor-pointer ${
+                isBookmarked
+                  ? "bg-secondary text-text-primary opacity-80 cursor-default"
+                  : "bg-surface hover:bg-surface-muted text-text-primary hover:-translate-y-0.5"
+              }`}
+            >
+              {isBookmarked ? (
+                <>
+                  <BookmarkCheck size={14} className="stroke-[3]" />
+                  <span>Saved to Revision Deck</span>
+                </>
+              ) : (
+                <>
+                  <Bookmark size={14} className="stroke-[2.5]" />
+                  <span>🔖 Save to Revision Deck</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+});
+
 /**
  * Production-Ready Post-Match Summary Screen
- * Fixes action-loop friction with a persistent above-the-fold Action Dock,
- * corrects Elo arrows & dynamic ladder distance, enhances answer review contrast,
- * and tightens vertical padding by 20% on the hero card.
+ * Tactile Neo-Brutalist settlement screen featuring hero stats, progression pillars,
+ * persistent action dock, and collapsible concept review with question-level dropdowns.
  */
 export const PostMatchSummary = React.memo(function PostMatchSummary({
   data,
@@ -60,13 +242,75 @@ export const PostMatchSummary = React.memo(function PostMatchSummary({
   const [rematchState, setRematchState] = useState<RematchState>("IDLE");
   const [countdown, setCountdown] = useState(5);
 
+  // ── Base & Filtered Questions ──
+  const baseQuestions = useMemo(() => {
+    if (allQuestions && allQuestions.length > 0) return allQuestions;
+    return missedQuestions.map((q) => ({ ...q, isCorrect: false }));
+  }, [allQuestions, missedQuestions]);
+
+  const missedCount = useMemo(() => {
+    return baseQuestions.filter((q) => q.isCorrect === false).length;
+  }, [baseQuestions]);
+
   // ── Questions Review & Bookmarking State ──
-  const totalAvailable = allQuestions?.length ?? missedQuestions.length;
-  const [isAccordionOpen, setIsAccordionOpen] = useState(totalAvailable > 0);
+  const [isAccordionOpen, setIsAccordionOpen] = useState(baseQuestions.length > 0);
   const [reviewFilter, setReviewFilter] = useState<"ALL" | "MISSED">("ALL");
   const [bookmarkedQuestionIds, setBookmarkedQuestionIds] = useState<Set<string>>(new Set());
+  const [expandedQuestionIds, setExpandedQuestionIds] = useState<Set<string>>(new Set());
 
-  // Handle external acceptance of rematch
+  const displayedQuestions = useMemo(() => {
+    return reviewFilter === "MISSED"
+      ? baseQuestions.filter((q) => q.isCorrect === false)
+      : baseQuestions;
+  }, [reviewFilter, baseQuestions]);
+
+  const allExpanded = useMemo(() => {
+    return (
+      displayedQuestions.length > 0 &&
+      displayedQuestions.every((q, i) => expandedQuestionIds.has(q.id || `q-${i}`))
+    );
+  }, [displayedQuestions, expandedQuestionIds]);
+
+  // ── Handlers ──
+  const handleToggleQuestionDetails = useCallback((questionKey: string) => {
+    setExpandedQuestionIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(questionKey)) {
+        next.delete(questionKey);
+      } else {
+        next.add(questionKey);
+      }
+      return next;
+    });
+  }, []);
+
+  const handleToggleExpandAll = useCallback(() => {
+    if (allExpanded) {
+      setExpandedQuestionIds(new Set());
+    } else {
+      setExpandedQuestionIds(
+        new Set(displayedQuestions.map((q, i) => q.id || `q-${i}`))
+      );
+    }
+  }, [allExpanded, displayedQuestions]);
+
+  const handleRequestRematch = useCallback(() => {
+    if (rematchState !== "IDLE") return;
+    setRematchState("WAITING");
+    setCountdown(5);
+    onEmitRematchRequest?.(data.matchId);
+  }, [rematchState, onEmitRematchRequest, data.matchId]);
+
+  const handleToggleBookmark = useCallback((questionId: string) => {
+    setBookmarkedQuestionIds((prev) => {
+      const next = new Set(prev);
+      next.add(questionId);
+      return next;
+    });
+    onBookmarkQuestion?.(questionId);
+  }, [onBookmarkQuestion]);
+
+  // ── Rematch Effects ──
   useEffect(() => {
     if (rematchAcceptedMatchId) {
       setRematchState("ACCEPTED");
@@ -74,7 +318,6 @@ export const PostMatchSummary = React.memo(function PostMatchSummary({
     }
   }, [rematchAcceptedMatchId, onLaunchRematch]);
 
-  // Countdown timer for WAITING state (5s timeout)
   useEffect(() => {
     if (rematchState !== "WAITING") return;
 
@@ -89,22 +332,6 @@ export const PostMatchSummary = React.memo(function PostMatchSummary({
 
     return () => clearInterval(timer);
   }, [rematchState, countdown]);
-
-  const handleRequestRematch = () => {
-    if (rematchState !== "IDLE") return;
-    setRematchState("WAITING");
-    setCountdown(5);
-    onEmitRematchRequest?.(data.matchId);
-  };
-
-  const handleToggleBookmark = (questionId: string) => {
-    setBookmarkedQuestionIds((prev) => {
-      const next = new Set(prev);
-      next.add(questionId);
-      return next;
-    });
-    onBookmarkQuestion?.(questionId);
-  };
 
   const heroMeta = getHeroHeader(result, player.eloDelta);
   const tierMeta = getTierFromElo(player.newElo);
@@ -191,7 +418,6 @@ export const PostMatchSummary = React.memo(function PostMatchSummary({
                 {player.newElo}
               </span>
             </div>
-            {/* Dynamic Ladder Distance */}
             <span className="text-[11px] text-text-secondary font-bold mt-1.5 block truncate">
               {ladderDistance}
             </span>
@@ -215,7 +441,6 @@ export const PostMatchSummary = React.memo(function PostMatchSummary({
                 {subject.deltaAccuracy >= 0 ? `+${subject.deltaAccuracy}%` : `${subject.deltaAccuracy}%`}
               </span>
             </div>
-            {/* Accuracy Progress Bar */}
             <div className="w-full h-2.5 rounded-full bg-surface-muted border-[1.5px] border-border overflow-hidden">
               <div
                 className="h-full bg-primary rounded-full transition-all duration-500"
@@ -302,228 +527,131 @@ export const PostMatchSummary = React.memo(function PostMatchSummary({
       {/* =================================================================== */}
       {/* 4. EXPANDABLE NEO-BRUTALIST ACCORDION: REVIEW ALL QUESTIONS & CONCEPTS */}
       {/* =================================================================== */}
-      {(() => {
-        const effectiveMissed = missedQuestions.map((q) => ({ ...q, isCorrect: false }));
-        const baseQuestions = allQuestions && allQuestions.length > 0 ? allQuestions : effectiveMissed;
-        const missedCount = baseQuestions.filter((q) => q.isCorrect === false).length;
-        const displayedQuestions = reviewFilter === "MISSED"
-          ? baseQuestions.filter((q) => q.isCorrect === false)
-          : baseQuestions;
-
-        return (
-          <div
-            data-testid="missed-concepts-accordion"
-            className="w-full bg-surface border-[2.5px] border-border rounded-2xl overflow-hidden shadow-[0_4px_0_#141827]"
+      <div
+        data-testid="missed-concepts-accordion"
+        className="w-full bg-surface border-[2.5px] border-border rounded-2xl overflow-hidden shadow-[0_4px_0_#141827]"
+      >
+        {/* Accordion Header */}
+        <div className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-surface-muted/50 transition-colors">
+          <button
+            type="button"
+            onClick={() => setIsAccordionOpen((prev) => !prev)}
+            className="flex items-center gap-3 text-left flex-1 min-w-0 cursor-pointer"
           >
-            {/* Accordion Header */}
-            <div className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-surface-muted/50 transition-colors">
-              <button
-                type="button"
-                onClick={() => setIsAccordionOpen((prev) => !prev)}
-                className="flex items-center gap-3 text-left flex-1 min-w-0 cursor-pointer"
-              >
-                <div className="w-9 h-9 rounded-xl bg-primary border-[2px] border-border flex items-center justify-center text-text-primary shrink-0 shadow-[0_1px_0_#141827]">
-                  <Lightbulb size={18} className="stroke-[2.5]" />
-                </div>
-                <div className="min-w-0">
-                  <span className="text-xs sm:text-sm font-black text-text-primary uppercase tracking-wide block truncate">
-                    Question Feedback &amp; Concept Breakdown
-                  </span>
-                  <span className="block text-[11px] text-text-secondary font-medium">
-                    {missedCount > 0
-                      ? `${missedCount} concept gap${missedCount > 1 ? "s" : ""} identified • Review all questions below`
-                      : "Flawless duel • Review concepts and reinforce learning"}
-                  </span>
-                </div>
-              </button>
+            <div className="w-9 h-9 rounded-xl bg-primary border-[2px] border-border flex items-center justify-center text-text-primary shrink-0 shadow-[0_1px_0_#141827]">
+              <Lightbulb size={18} className="stroke-[2.5]" />
+            </div>
+            <div className="min-w-0">
+              <span className="text-xs sm:text-sm font-black text-text-primary uppercase tracking-wide block truncate">
+                Question Feedback &amp; Concept Breakdown
+              </span>
+              <span className="block text-[11px] text-text-secondary font-medium">
+                {missedCount > 0
+                  ? `${missedCount} concept gap${missedCount > 1 ? "s" : ""} identified • Review all questions below`
+                  : "Flawless duel • Review concepts and reinforce learning"}
+              </span>
+            </div>
+          </button>
 
-              <div className="flex items-center justify-between sm:justify-end gap-2 shrink-0">
-                {/* Filter Pills */}
-                {baseQuestions.length > 0 && (
-                  <div className="flex items-center gap-1.5 p-1 rounded-xl bg-surface-muted border border-border">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setReviewFilter("ALL");
-                        setIsAccordionOpen(true);
-                      }}
-                      className={`px-2.5 py-1 rounded-lg text-[11px] font-black uppercase tracking-wider transition-all ${
-                        reviewFilter === "ALL"
-                          ? "bg-primary text-text-primary shadow-[0_1px_0_#141827]"
-                          : "text-text-secondary hover:text-text-primary"
-                      }`}
-                    >
-                      All ({baseQuestions.length})
-                    </button>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setReviewFilter("MISSED");
-                        setIsAccordionOpen(true);
-                      }}
-                      className={`px-2.5 py-1 rounded-lg text-[11px] font-black uppercase tracking-wider transition-all ${
-                        reviewFilter === "MISSED"
-                          ? "bg-rose-100 text-rose-950 shadow-[0_1px_0_#141827]"
-                          : "text-text-secondary hover:text-text-primary"
-                      }`}
-                    >
-                      Missed ({missedCount})
-                    </button>
-                  </div>
-                )}
-
-                {/* Chevron Toggle */}
+          <div className="flex items-center justify-between sm:justify-end gap-2 shrink-0">
+            {/* Filter Pills */}
+            {baseQuestions.length > 0 && (
+              <div className="flex items-center gap-1.5 p-1 rounded-xl bg-surface-muted border border-border">
                 <button
                   type="button"
-                  onClick={() => setIsAccordionOpen((prev) => !prev)}
-                  className="p-1.5 rounded-xl bg-surface border-[1.5px] border-border text-text-primary shadow-[0_1px_0_#141827] cursor-pointer"
-                  aria-label={isAccordionOpen ? "Collapse review" : "Expand review"}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setReviewFilter("ALL");
+                    setIsAccordionOpen(true);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-black uppercase tracking-wider transition-all ${
+                    reviewFilter === "ALL"
+                      ? "bg-primary text-text-primary shadow-[0_1px_0_#141827]"
+                      : "text-text-secondary hover:text-text-primary"
+                  }`}
                 >
-                  {isAccordionOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                  All ({baseQuestions.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setReviewFilter("MISSED");
+                    setIsAccordionOpen(true);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-black uppercase tracking-wider transition-all ${
+                    reviewFilter === "MISSED"
+                      ? "bg-rose-100 text-rose-950 shadow-[0_1px_0_#141827]"
+                      : "text-text-secondary hover:text-text-primary"
+                  }`}
+                >
+                  Missed ({missedCount})
                 </button>
               </div>
-            </div>
+            )}
 
-            {/* Accordion Content */}
-            {isAccordionOpen && (
-              <div className="p-4 pt-2 flex flex-col gap-3.5 border-t-[2px] border-border bg-surface-muted/30">
-                {displayedQuestions.length === 0 ? (
-                  <div className="p-6 rounded-xl bg-surface border border-border text-center">
-                    <p className="text-xs font-black uppercase text-emerald-700">
-                      Zero missed questions — 100% accuracy on these concepts!
-                    </p>
-                  </div>
-                ) : (
-                  displayedQuestions.map((q, idx) => {
-                    const isBookmarked = bookmarkedQuestionIds.has(q.id);
-                    const isQuestionCorrect = q.isCorrect ?? false;
-                    const displayIndex = q.questionIndex !== undefined ? q.questionIndex + 1 : idx + 1;
+            {/* Chevron Toggle */}
+            <button
+              type="button"
+              onClick={() => setIsAccordionOpen((prev) => !prev)}
+              className="p-1.5 rounded-xl bg-surface border-[1.5px] border-border text-text-primary shadow-[0_1px_0_#141827] cursor-pointer"
+              aria-label={isAccordionOpen ? "Collapse review" : "Expand review"}
+            >
+              {isAccordionOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            </button>
+          </div>
+        </div>
 
-                    return (
-                      <div
-                        key={q.id || idx}
-                        data-testid={`missed-question-${idx}`}
-                        className="p-4 rounded-2xl bg-surface border-[2px] border-border flex flex-col gap-3 shadow-[0_2px_0_#141827]"
-                      >
-                        {/* Question Header & Correctness Badge */}
-                        <div className="flex items-center justify-between gap-2 flex-wrap">
-                          <p className="text-xs sm:text-sm font-black text-text-primary leading-snug flex-1 min-w-0">
-                            <span className="inline-block px-1.5 py-0.5 rounded-md bg-primary border border-border text-[10px] mr-2">
-                              #{displayIndex}
-                            </span>
-                            {q.questionText}
-                          </p>
-                          <span
-                            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full border text-[10px] font-black uppercase tracking-wider shrink-0 ${
-                              isQuestionCorrect
-                                ? "bg-emerald-100 border-emerald-400 text-emerald-950"
-                                : "bg-rose-100 border-rose-400 text-rose-950"
-                            }`}
-                          >
-                            {isQuestionCorrect ? (
-                              <>
-                                <CheckCircle2 size={12} className="text-emerald-700 stroke-[3]" />
-                                <span>Verified</span>
-                              </>
-                            ) : (
-                              <>
-                                <XCircle size={12} className="text-rose-700 stroke-[3]" />
-                                <span>Countered</span>
-                              </>
-                            )}
-                          </span>
-                        </div>
-
-                        {/* Answers Breakdown */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
-                          {/* User Selection Pill */}
-                          <div
-                            className={`p-3 rounded-xl border-[1.5px] border-border flex items-start gap-2.5 shadow-[0_1px_0_#141827] ${
-                              isQuestionCorrect ? "bg-emerald-50" : "bg-rose-50"
-                            }`}
-                          >
-                            {isQuestionCorrect ? (
-                              <CheckCircle2 size={16} className="text-emerald-700 shrink-0 mt-0.5 stroke-[2.5]" />
-                            ) : (
-                              <XCircle size={16} className="text-rose-700 shrink-0 mt-0.5 stroke-[2.5]" />
-                            )}
-                            <div className="min-w-0">
-                              <span
-                                className={`block text-[10px] uppercase font-black tracking-wider mb-0.5 ${
-                                  isQuestionCorrect ? "text-emerald-800" : "text-rose-800"
-                                }`}
-                              >
-                                {isQuestionCorrect ? "YOUR ANSWER (CORRECT)" : "YOUR ANSWER"}
-                              </span>
-                              <span className="font-bold text-text-primary text-xs sm:text-sm break-words leading-snug">
-                                {q.selectedAnswer}
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Correct Answer Pill (always displayed for complete feedback) */}
-                          <div className="p-3 rounded-xl bg-emerald-50 border-[1.5px] border-border flex items-start gap-2.5 shadow-[0_1px_0_#141827]">
-                            <CheckCircle2 size={16} className="text-emerald-700 shrink-0 mt-0.5 stroke-[2.5]" />
-                            <div className="min-w-0">
-                              <span className="block text-[10px] uppercase font-black text-emerald-800 tracking-wider mb-0.5">
-                                CORRECT ANSWER
-                              </span>
-                              <span className="font-bold text-text-primary text-xs sm:text-sm break-words leading-snug">
-                                {q.correctAnswer}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Concept Rule Breakdown Card */}
-                        <div className="p-3 rounded-xl bg-surface-muted border border-border flex items-start gap-2.5 shadow-sm">
-                          <Lightbulb size={16} className="text-text-primary shrink-0 mt-0.5 stroke-[2.5]" />
-                          <div className="flex-1 min-w-0">
-                            <span className="block text-[10px] uppercase font-black text-text-secondary tracking-wider mb-0.5">
-                              Concept Breakdown
-                            </span>
-                            <p className="text-xs font-bold text-text-primary leading-relaxed break-words">
-                              {formatAcademicRule(q.conceptExplanation, q.questionText)}
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Save to Revision Deck Action */}
-                        <div className="flex justify-end pt-0.5">
-                          <button
-                            type="button"
-                            onClick={() => handleToggleBookmark(q.id)}
-                            disabled={isBookmarked}
-                            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border-[1.5px] border-border text-xs font-black uppercase tracking-wider transition-all shadow-[0_2px_0_#141827] active:shadow-[0_1px_0_#141827] active:translate-y-0.5 cursor-pointer ${
-                              isBookmarked
-                                ? "bg-secondary text-text-primary opacity-80 cursor-default"
-                                : "bg-surface hover:bg-surface-muted text-text-primary hover:-translate-y-0.5"
-                            }`}
-                          >
-                            {isBookmarked ? (
-                              <>
-                                <BookmarkCheck size={14} className="stroke-[3]" />
-                                <span>Saved to Revision Deck</span>
-                              </>
-                            ) : (
-                              <>
-                                <Bookmark size={14} className="stroke-[2.5]" />
-                                <span>🔖 Save to Revision Deck</span>
-                              </>
-                            )}
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
+        {/* Accordion Content */}
+        {isAccordionOpen && (
+          <div className="p-3 sm:p-4 pt-2 sm:pt-2 flex flex-col gap-3 border-t-[2px] border-border bg-surface-muted/30">
+            {displayedQuestions.length === 0 ? (
+              <div className="p-6 rounded-xl bg-surface border border-border text-center">
+                <p className="text-xs font-black uppercase text-emerald-700">
+                  Zero missed questions — 100% accuracy on these concepts!
+                </p>
               </div>
+            ) : (
+              <>
+                {/* Questions Overview Sub-bar with Master Expand/Collapse */}
+                <div className="flex items-center justify-between px-1 text-[11px] font-bold text-text-secondary">
+                  <span>
+                    {displayedQuestions.length} {displayedQuestions.length === 1 ? "question" : "questions"} • Tap to inspect details
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleToggleExpandAll}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-surface border border-border text-text-primary font-black uppercase tracking-wider hover:bg-surface-muted shadow-[0_1px_0_#141827] cursor-pointer text-[10px] transition-all active:translate-y-0.5"
+                  >
+                    <span>{allExpanded ? "Collapse All" : "Expand All"}</span>
+                    {allExpanded ? (
+                      <ChevronUp size={12} className="stroke-[2.5]" />
+                    ) : (
+                      <ChevronDown size={12} className="stroke-[2.5]" />
+                    )}
+                  </button>
+                </div>
+
+                {/* Render Individual Question Cards */}
+                {displayedQuestions.map((q, idx) => {
+                  const questionKey = q.id || `q-${idx}`;
+                  return (
+                    <QuestionReviewCard
+                      key={questionKey}
+                      question={q}
+                      index={idx}
+                      isExpanded={expandedQuestionIds.has(questionKey)}
+                      isBookmarked={bookmarkedQuestionIds.has(q.id)}
+                      onToggleDetails={() => handleToggleQuestionDetails(questionKey)}
+                      onBookmark={() => handleToggleBookmark(q.id)}
+                    />
+                  );
+                })}
+              </>
             )}
           </div>
-        );
-      })()}
+        )}
+      </div>
     </div>
   );
 });

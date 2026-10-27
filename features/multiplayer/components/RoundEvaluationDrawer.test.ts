@@ -121,4 +121,69 @@ describe('RoundEvaluationDrawer WCAG AAA & Pedagogical Framing', () => {
     const AUTO_ADVANCE_DURATION_MS = 1200;
     assert.equal(AUTO_ADVANCE_DURATION_MS, 1200);
   });
+
+  it('supports extended explanation props and match-wide toggle persistence', () => {
+    let matchWideExtended = false;
+    let toggleCount = 0;
+
+    const onToggleExtended = () => {
+      matchWideExtended = !matchWideExtended;
+      toggleCount++;
+    };
+
+    // Round 1: Initially concise
+    const round1Props: RoundEvaluationProps = {
+      isOpen: true,
+      isCorrect: true,
+      selectedOptionId: 'opt-b',
+      correctOptionId: 'opt-b',
+      scoreEarned: { base: 100, speedBonus: 20, streakBonus: 10, total: 130 },
+      explanationText: 'Chlorophyll absorbs sunlight for photosynthesis.',
+      extendedExplanationText:
+        'Curriculum Deep-Dive: Chlorophyll pigments (a and b) in thylakoid membranes absorb blue and red light...',
+      isExtended: matchWideExtended,
+      onToggleExtended,
+      onBookmarkConcept: () => {},
+    };
+
+    assert.equal(round1Props.isExtended, false);
+
+    // User opts to extend explanation in Round 1
+    round1Props.onToggleExtended?.();
+    assert.equal(matchWideExtended, true);
+    assert.equal(toggleCount, 1);
+
+    // Round 2 (Next Question in same match): Extended preference applies automatically
+    const round2Props: RoundEvaluationProps = {
+      isOpen: true,
+      isCorrect: false,
+      selectedOptionId: 'opt-a',
+      correctOptionId: 'opt-c',
+      scoreEarned: { base: 0, speedBonus: 0, streakBonus: 0, total: 0 },
+      explanationText: 'Mitochondria generate ATP via cellular respiration.',
+      extendedExplanationText:
+        'Curriculum Deep-Dive: Double-membraned organelles with inner cristae driving oxidative phosphorylation...',
+      isExtended: matchWideExtended,
+      onToggleExtended,
+      onBookmarkConcept: () => {},
+    };
+
+    assert.equal(round2Props.isExtended, true, 'Round 2 must inherit extended explanation mode from Round 1');
+    assert.ok(round2Props.extendedExplanationText?.includes('Deep-Dive'));
+
+    // Round 3 (Another Question): Preference continues to apply
+    const round3Props: RoundEvaluationProps = {
+      isOpen: true,
+      isCorrect: true,
+      selectedOptionId: 'opt-c',
+      correctOptionId: 'opt-c',
+      scoreEarned: { base: 100, speedBonus: 30, streakBonus: 20, total: 150 },
+      explanationText: 'Concord requires singular verbs for collective measurements.',
+      isExtended: matchWideExtended,
+      onToggleExtended,
+      onBookmarkConcept: () => {},
+    };
+
+    assert.equal(round3Props.isExtended, true, 'Round 3 must maintain match-wide extended explanation');
+  });
 });

@@ -18,6 +18,11 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
+        source: "/achievement",
+        destination: "/achievements",
+        permanent: true,
+      },
+      {
         source: "/signin",
         destination: "/login",
         permanent: true,

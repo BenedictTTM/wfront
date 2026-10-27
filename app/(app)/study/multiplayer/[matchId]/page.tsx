@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Loader2, WifiOff, Trophy, ArrowRight, ShieldAlert } from "lucide-react";
 import { MatchHUD } from "@/features/multiplayer/components/MatchHUD";
@@ -25,78 +25,10 @@ import { toast } from "sonner";
 import { useCurrentUser } from "@/features/auth/hooks";
 import { safeStorage } from "@/lib/storage";
 import { type CustomProfileState } from "@/features/auth/constants";
-
-function getAcademicConceptExplanation(
-  questionText?: string,
-  serverExplanation?: string,
-  roundRevealExplanation?: string
-): string {
-  if (roundRevealExplanation && roundRevealExplanation.trim().length > 0) {
-    return roundRevealExplanation;
-  }
-  if (serverExplanation && serverExplanation.trim().length > 0) {
-    return serverExplanation;
-  }
-
-  const text = (questionText || "").toLowerCase();
-
-  // WASSCE / SHS English Grammar & Academic Concept Rules
-  if (
-    text.includes("kilometer") ||
-    text.includes("mile") ||
-    text.includes("meter") ||
-    text.includes("too far to walk")
-  ) {
-    return "Grammar Rule: Measurements of distance (e.g., 'ten kilometers') take a singular verb when considered as a single unit or quantity.";
-  }
-  if (
-    text.includes("dollar") ||
-    text.includes("cedi") ||
-    text.includes("naira") ||
-    text.includes("money") ||
-    text.includes("too much to spend")
-  ) {
-    return "Grammar Rule: Sums of money and durations of time function as singular collective units and require a singular verb.";
-  }
-  if (
-    text.includes("each") ||
-    text.includes("every") ||
-    text.includes("neither") ||
-    text.includes("either")
-  ) {
-    return "Grammar Rule: Singular indefinite pronouns ('each', 'neither', 'either') strictly require singular verbs regardless of intervening plural prepositional phrases.";
-  }
-  if (
-    text.includes("if it rains") ||
-    text.includes("conditional") ||
-    text.includes("tomorrow, we")
-  ) {
-    return "Grammar Rule: First conditional structures pair the simple present tense in the 'if' clause with 'will + base verb' in the main clause.";
-  }
-  if (
-    text.includes("mitochondria") ||
-    text.includes("cellular") ||
-    text.includes("atp")
-  ) {
-    return "Biology Rule: Mitochondria synthesize the majority of cellular adenosine triphosphate (ATP) through oxidative phosphorylation during aerobic respiration.";
-  }
-  if (
-    text.includes("farad") ||
-    text.includes("capacit") ||
-    text.includes("electric")
-  ) {
-    return "Physics Rule: Capacitance (C = Q/V) is the ratio of stored electric charge to the potential difference across conductors, measured in farads (F).";
-  }
-  if (
-    text.includes("chain rule") ||
-    text.includes("ln(") ||
-    text.includes("derivative")
-  ) {
-    return "Calculus Rule: By the logarithmic chain rule, d/dx[ln(u)] = u'/u for any differentiable function u(x).";
-  }
-
-  return "Grammar Rule: Concord requires singular verbs for measurements of quantity, distance, or time regarded as an unbroken whole.";
-}
+import {
+  getAcademicConceptExplanation,
+  getExtendedAcademicExplanation,
+} from "@/features/multiplayer/utils/explanation";
 
 export default function LiveMatchPage() {
   const { matchId } = useParams<{ matchId: string }>();
@@ -131,6 +63,28 @@ export default function LiveMatchPage() {
     (resolvedSubjectId ? subjects?.find((s) => s.id === resolvedSubjectId) : null) ??
     subjects?.[0] ??
     null;
+
+  // Match-wide preference for extended explanation (persists across all questions in the match)
+  const [isExplanationExtended, setIsExplanationExtended] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      const matchPref = sessionStorage.getItem(`mp_extended_expl_${matchId}`);
+      if (matchPref !== null) return matchPref === "true";
+      const globalPref = sessionStorage.getItem("mp_extended_expl_pref");
+      if (globalPref !== null) return globalPref === "true";
+    }
+    return false;
+  });
+
+  const handleToggleExtendedExplanation = useCallback(() => {
+    setIsExplanationExtended((prev) => {
+      const next = !prev;
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem(`mp_extended_expl_${matchId}`, String(next));
+        sessionStorage.setItem("mp_extended_expl_pref", String(next));
+      }
+      return next;
+    });
+  }, [matchId]);
 
   const {
     status,
@@ -318,7 +272,24 @@ export default function LiveMatchPage() {
     (questionId?: string) => {
       try {
         const target = questionId
-          ? matchQuestionsHistory.find((q) => q.id === questionId)
+          ? matchQuestionsHistory.find((q) => q.id === questionId) ||
+            (currentQuestion?.question.id === questionId
+              ? {
+                  id: currentQuestion.question.id,
+                  questionText: currentQuestion.question.text,
+                  selectedAnswer:
+                    currentQuestion.question.options.find((o) => o.id === selectedOptionId)?.text || "",
+                  correctAnswer:
+                    currentQuestion.question.options.find(
+                      (o) => o.id === (roundReveal?.correctOptionId || currentQuestion.question.options[0]?.id)
+                    )?.text || "",
+                  conceptExplanation: getAcademicConceptExplanation(
+                    currentQuestion.question.text,
+                    currentQuestion.question.explanation,
+                    roundReveal?.explanation
+                  ),
+                }
+              : null)
           : currentQuestion
           ? {
               id: currentQuestion.question.id,
@@ -349,15 +320,27 @@ export default function LiveMatchPage() {
               },
               ...existingDeck,
             ]);
+            toast.success("Concept saved to Revision Deck!");
+          } else {
+            toast.info("Concept already in Revision Deck.");
           }
+        } else {
+          toast.info("No concept selected to save.");
         }
-        toast.success("Concept saved to Revision Deck!");
-      } catch {
+      } catch (err) {
+        console.error("Save to Revision Deck error:", err);
         toast.error("Failed to save to Revision Deck.");
       }
     },
     [activeUserId, activeSubject, currentQuestion, matchQuestionsHistory, roundReveal, selectedOptionId]
   );
+
+  const isCurrentQuestionSaved = useMemo(() => {
+    if (!currentQuestion?.question?.id) return false;
+    const deckKey = `wassce_revision_deck_${activeUserId}`;
+    const existingDeck = safeStorage.getItem<Array<{ id?: string }>>(deckKey, []);
+    return existingDeck.some((item) => item.id === currentQuestion.question.id);
+  }, [currentQuestion?.question?.id, activeUserId]);
 
   const isConnected = status === "authenticated" || status === "connected";
   const isError = status === "error" || status === "closed";
@@ -615,7 +598,15 @@ export default function LiveMatchPage() {
                 currentQuestion?.question.explanation,
                 roundReveal.explanation
               )}
-              onBookmarkConcept={() => handleSaveToRevisionDeck()}
+              extendedExplanationText={getExtendedAcademicExplanation(
+                currentQuestion?.question.text,
+                currentQuestion?.question.explanation,
+                roundReveal.explanation
+              )}
+              isExtended={isExplanationExtended}
+              onToggleExtended={handleToggleExtendedExplanation}
+              isBookmarked={isCurrentQuestionSaved}
+              onBookmarkConcept={() => handleSaveToRevisionDeck(currentQuestion?.question?.id)}
             />
           )}
 

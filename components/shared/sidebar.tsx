@@ -186,7 +186,7 @@ export function Sidebar({
   else if (pathname.startsWith("/study")) activeTab = "study";
   else if (pathname.startsWith("/leaderboards")) activeTab = "leaderboard";
   else if (pathname.startsWith("/analytics")) activeTab = "analytics";
-  else if (pathname.startsWith("/achievements")) activeTab = "achievements";
+  else if (pathname.startsWith("/achievement")) activeTab = "achievements";
   else if (pathname.startsWith("/profile")) activeTab = "profile";
 
   return (

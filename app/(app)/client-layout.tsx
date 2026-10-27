@@ -18,12 +18,16 @@ import { Sidebar } from "@/components/shared/sidebar";
 import { StatsProvider, useStats } from "@/components/providers/stats-provider";
 import { useCurrentUser } from "@/features/auth/hooks";
 import { useQuests, useClaimQuestReward } from "@/features/gamification/hooks";
+import { useAchievementNotifications } from "@/features/gamification/use-achievement-notifications";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const { xp, gems, streak, energy } = useStats();
   const user = useCurrentUser();
+
+  // Listen for real-time achievement unlocks via BullMQ -> WebSocket worker push
+  useAchievementNotifications(Boolean(user));
 
   const { data: quests, isLoading: isQuestsLoading, isError: isQuestsError, refetch: refetchQuests } = useQuests();
   const claimRewardMutation = useClaimQuestReward();

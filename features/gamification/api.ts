@@ -48,4 +48,14 @@ export async function getLeaderboard(params?: {
   );
 }
 
+export async function getMyAchievements(): Promise<import("./types").ServerAchievementProgress[]> {
+  return apiGet<import("./types").ServerAchievementProgress[]>("/achievements/me");
+}
+
+export async function getAchievementCatalog(): Promise<import("./types").ServerAchievementProgress[]> {
+  return apiGet<import("./types").ServerAchievementProgress[]>("/achievements");
+}
+
+export { getAchievementsWsUrl } from "./ws-utils";
+
 
